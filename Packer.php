@@ -1,5 +1,9 @@
 <?php
 
+require_once 'Node.php';
+require_once 'Relationship.php';
+require_once 'Path.php';
+
 /**
  * Class Packer
  * Pack and unpack bolt messages
@@ -234,12 +238,31 @@ class Packer
     /**
      * @param string $msg
      * @return mixed
+     * @throws Exception
      */
     private function u(string &$msg)
     {
         $marker = ord($msg[0]);
         $msg = mb_strcut($msg, 1, null, '8bit');
         $result = false;
+//        var_dump(dechex($marker));
+
+        $output = $this->unpackStruct($marker, $msg, $result);
+        if ($result) {
+            return $output;
+        }
+        $output = $this->unpackNode($marker, $msg, $result);
+        if ($result) {
+            return $output;
+        }
+        $output = $this->unpackRelationship($marker, $msg, $result);
+        if ($result) {
+            return $output;
+        }
+        $output = $this->unpackPath($marker, $msg, $result);
+        if ($result) {
+            return $output;
+        }
 
         $output = $this->unpackFloat($marker, $msg, $result);
         if ($result) {
@@ -269,7 +292,165 @@ class Packer
      * @param int $marker
      * @param string $msg
      * @param bool $result
+     * @return mixed|null
+     * @throws Exception
+     */
+    private function unpackStruct(int $marker, string &$msg, bool &$result = false)
+    {
+        $size = 0;
+        $offset = 0;
+        if ($marker == 0xDC) { //STRUCT_8
+            $size = unpack('C', $msg[1]);
+            $offset = 1;
+            $result = true;
+        } elseif ($marker == 0xDD) { //STRUCT_16
+            $size = unpack('n', $msg[1] . $msg[2]);
+            $offset = 2;
+            $result = true;
+        } elseif ($marker >> 4 == 0b1011) { //TINY_STRUCT
+            $size = 0b10110000 ^ $marker;
+            $result = true;
+        }
+
+        if ($result) {
+            $msg = mb_strcut($msg, $offset, null, '8bit');
+            return $this->u($msg);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param int $marker
+     * @param string $msg
+     * @param bool $result
+     * @return Node|null
+     * @throws Exception
+     */
+    private function unpackNode(int $marker, string &$msg, bool &$result = false): ?Node
+    {
+        if ($marker != 0x4E) {
+            return null;
+        }
+
+        $identityMarker = ord($msg[0]);
+        $msg = mb_strcut($msg, 1, null, '8bit');
+        $identity = $this->unpackInteger($identityMarker, $msg, $result);
+        if (!$result) {
+            throw new Exception('Node structure identifier unpack error');
+        }
+
+        $labelsMarker = ord($msg[0]);
+        $msg = mb_strcut($msg, 1, null, '8bit');
+        $labels = $this->unpackList($labelsMarker, $msg, $result);
+        if (!$result) {
+            throw new Exception('Node structure labels unpack error');
+        }
+
+        $propertiesMarker = ord($msg[0]);
+        $msg = mb_strcut($msg, 1, null, '8bit');
+        $properties = $this->unpackMap($propertiesMarker, $msg, $result);
+        if (!$result) {
+            throw new Exception('Node structure properties unpack error');
+        }
+
+        return new Node($identity, $labels, $properties);
+    }
+
+    /**
+     * @param int $marker
+     * @param string $msg
+     * @param bool $result
+     * @return Relationship|null
+     * @throws Exception
+     */
+    private function unpackRelationship(int $marker, string &$msg, bool &$result = false): ?Relationship
+    {
+        if ($marker != 0x52) {
+            return null;
+        }
+
+        $identityMarker = ord($msg[0]);
+        $msg = mb_strcut($msg, 1, null, '8bit');
+        $identity = $this->unpackInteger($identityMarker, $msg, $result);
+        if (!$result) {
+            throw new Exception('Relationship structure identifier unpack error');
+        }
+
+        $startNodeIdentityMarker = ord($msg[0]);
+        $msg = mb_strcut($msg, 1, null, '8bit');
+        $startNodeIdentity = $this->unpackInteger($startNodeIdentityMarker, $msg, $result);
+        if (!$result) {
+            throw new Exception('Relationship structure start node identifier unpack error');
+        }
+
+        $endNodeIdentityMarker = ord($msg[0]);
+        $msg = mb_strcut($msg, 1, null, '8bit');
+        $endNodeIdentity = $this->unpackInteger($endNodeIdentityMarker, $msg, $result);
+        if (!$result) {
+            throw new Exception('Relationship structure end node identifier unpack error');
+        }
+
+        $typeMarker = ord($msg[0]);
+        $msg = mb_strcut($msg, 1, null, '8bit');
+        $type = $this->unpackString($typeMarker, $msg, $result);
+        if (!$result) {
+            throw new Exception('Relationship structure type unpack error');
+        }
+
+        $propertiesMarker = ord($msg[0]);
+        $msg = mb_strcut($msg, 1, null, '8bit');
+        $properties = $this->unpackMap($propertiesMarker, $msg, $result);
+        if (!$result) {
+            throw new Exception('Node structure properties unpack error');
+        }
+
+        return new Relationship($identity, $startNodeIdentity, $endNodeIdentity, $type, $properties);
+    }
+
+    /**
+     * @param int $marker
+     * @param string $msg
+     * @param bool $result
+     * @return Path|null
+     * @throws Exception
+     */
+    private function unpackPath(int $marker, string &$msg, bool &$result = false): ?Path
+    {
+        if ($marker != 0x50) {
+            return null;
+        }
+
+        $nodesMarker = ord($msg[0]);
+        $msg = mb_strcut($msg, 1, null, '8bit');
+        $nodes = $this->unpackList($nodesMarker, $msg, $result);
+        if (!$result) {
+            throw new Exception('Path structure nodes unpack error');
+        }
+
+        $relationshipsMarker = ord($msg[0]);
+        $msg = mb_strcut($msg, 1, null, '8bit');
+        $relationships = $this->unpackList($relationshipsMarker, $msg, $result);
+        if (!$result) {
+            throw new Exception('Path structure relationships unpack error');
+        }
+
+        $sequenceMarker = ord($msg[0]);
+        $msg = mb_strcut($msg, 1, null, '8bit');
+        $sequence = $this->unpackList($sequenceMarker, $msg, $result);
+        if (!$result) {
+            throw new Exception('Path structure sequence unpack error');
+        }
+
+        return new Path($nodes, $relationships, $sequence);
+    }
+
+    /**
+     * @param int $marker
+     * @param string $msg
+     * @param bool $result
      * @return array
+     * @throws Exception
      */
     private function unpackMap(int $marker, string &$msg, bool &$result = false): array
     {
@@ -394,6 +575,7 @@ class Packer
      * @param string $msg
      * @param bool $result
      * @return array
+     * @throws Exception
      */
     private function unpackList(int $marker, string &$msg, bool &$result = false): array
     {

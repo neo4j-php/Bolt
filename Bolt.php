@@ -10,6 +10,11 @@ require_once 'Packer.php';
  */
 class Bolt
 {
+    const SUCCESS = 0x70;
+    const FAILURE = 0x7F;
+    const IGNORED = 0x7E;
+    const RECORD = 0x71;
+
     /**
      * @var Packer
      */
@@ -70,10 +75,10 @@ class Bolt
      * @param string $name
      * @param string $user
      * @param string $password
-     * @return mixed
+     * @return bool
      * @throws Exception
      */
-    public function init(string $name, string $user, string $password)
+    public function init(string $name, string $user, string $password): bool
     {
         $this->write($this->packer->pack(0x01, $name, [
             'scheme' => 'basic',
@@ -81,7 +86,8 @@ class Bolt
             'credentials' => $password
         ]));
 
-        return $this->read();
+        list($signature, $output) = $this->read();
+        return $signature == self::SUCCESS;
     }
 
     /**
@@ -94,7 +100,8 @@ class Bolt
     public function run(string $statement, array $parameters = [])
     {
         $this->write($this->packer->pack(0x10, $statement, $parameters));
-        return $this->read();
+        list($signature, $output) = $this->read();
+        return $signature == self::SUCCESS ? $output : null;
     }
 
     private function debug(string $str)
@@ -117,13 +124,18 @@ class Bolt
 
     /**
      * Send PULL_ALL message
-     * @return mixed
+     * @return array
      * @throws Exception
      */
     public function pullAll()
     {
         $this->write($this->packer->pack(0x3F));
-        return $this->read();
+        $output = [];
+        do {
+            list($signature, $ret) = $this->read();
+            $output[] = $ret;
+        } while ($signature == self::RECORD);
+        return $output;
     }
 
     /**
@@ -146,8 +158,8 @@ class Bolt
     }
 
     /**
-     * Socket read wrapper with message chunk support to process types of received message
-     * @return mixed
+     * Socket read wrapper with message chunk support to process received message
+     * @return array [signature, output]
      * @throws Exception
      */
     private function read()
@@ -163,24 +175,17 @@ class Bolt
         }
 
         $output = null;
+        $signature = 0;
         if (!empty($msg)) {
-            $signature = 0;
+            $this->debug($msg);
             $output = $this->packer->unpack($msg, $signature);
-            switch ($signature) {
-                case 0x70: //SUCCESS
-                    break;
-                case 0x7F: //FAILURE
-                    $this->ackFailure();
-                    throw new Exception($output['message'] . ' (' . $output['code'] . ')');
-                    break;
-                case 0x7E: //IGNORED
-                    break;
-                case 0x71: //RECORD
-                    break;
+            if ($signature == self::FAILURE) {
+                $this->ackFailure();
+                throw new Exception($output['message'] . ' (' . $output['code'] . ')');
             }
         }
 
-        return $output;
+        return [$signature, $output];
     }
 
     /**
