@@ -3,6 +3,7 @@
 require_once 'Node.php';
 require_once 'Relationship.php';
 require_once 'Path.php';
+require_once 'UnboundRelationship.php';
 
 /**
  * Class Packer
@@ -263,6 +264,10 @@ class Packer
         if ($result) {
             return $output;
         }
+        $output = $this->unpackUnboundRelationship($marker, $msg, $result);
+        if ($result) {
+            return $output;
+        }
 
         $output = $this->unpackFloat($marker, $msg, $result);
         if ($result) {
@@ -402,10 +407,47 @@ class Packer
         $msg = mb_strcut($msg, 1, null, '8bit');
         $properties = $this->unpackMap($propertiesMarker, $msg, $result);
         if (!$result) {
-            throw new Exception('Node structure properties unpack error');
+            throw new Exception('Relationship structure properties unpack error');
         }
 
         return new Relationship($identity, $startNodeIdentity, $endNodeIdentity, $type, $properties);
+    }
+
+    /**
+     * @param int $marker
+     * @param string $msg
+     * @param bool $result
+     * @return UnboundRelationship|null
+     * @throws Exception
+     */
+    private function unpackUnboundRelationship(int $marker, string &$msg, bool &$result = false): ?UnboundRelationship
+    {
+        if ($marker != 0x72) {
+            return null;
+        }
+
+        $identityMarker = ord($msg[0]);
+        $msg = mb_strcut($msg, 1, null, '8bit');
+        $identity = $this->unpackInteger($identityMarker, $msg, $result);
+        if (!$result) {
+            throw new Exception('UnboundRelationship structure identifier unpack error');
+        }
+
+        $typeMarker = ord($msg[0]);
+        $msg = mb_strcut($msg, 1, null, '8bit');
+        $type = $this->unpackString($typeMarker, $msg, $result);
+        if (!$result) {
+            throw new Exception('UnboundRelationship structure type unpack error');
+        }
+
+        $propertiesMarker = ord($msg[0]);
+        $msg = mb_strcut($msg, 1, null, '8bit');
+        $properties = $this->unpackMap($propertiesMarker, $msg, $result);
+        if (!$result) {
+            throw new Exception('UnboundRelationship structure properties unpack error');
+        }
+
+        return new UnboundRelationship($identity, $type, $properties);
     }
 
     /**

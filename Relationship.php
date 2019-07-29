@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Class Relationship
+ * Immutable
+ */
 class Relationship
 {
     /**
@@ -23,6 +27,14 @@ class Relationship
      */
     private $properties;
 
+    /**
+     * Relationship constructor.
+     * @param int $identity
+     * @param int $startNodeIdentity
+     * @param int $endNodeIdentity
+     * @param string $type
+     * @param array $properties
+     */
     public function __construct(int $identity, int $startNodeIdentity, int $endNodeIdentity, string $type, array $properties)
     {
         $this->identity = $identity;
@@ -30,5 +42,45 @@ class Relationship
         $this->endNodeIdentity = $endNodeIdentity;
         $this->type = $type;
         $this->properties = $properties;
+    }
+
+    /**
+     * @return int
+     */
+    public function identity(): int
+    {
+        return $this->identity;
+    }
+
+    /**
+     * @return int
+     */
+    public function startNodeIdentity(): int
+    {
+        return $this->startNodeIdentity;
+    }
+
+    /**
+     * @return int
+     */
+    public function endNodeIdentity(): int
+    {
+        return $this->endNodeIdentity;
+    }
+
+    /**
+     * @return string
+     */
+    public function type(): string
+    {
+        return $this->type;
+    }
+
+    /**
+     * @return array
+     */
+    public function properties(): array
+    {
+        return $this->properties;
     }
 }
