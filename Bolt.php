@@ -7,6 +7,7 @@ require_once 'Packer.php';
  * Bolt protocol library using TCP socket connection
  *
  * @author Michal Stefanak
+ * @link https://github.com/stefanak-michal/Bolt
  */
 class Bolt
 {
@@ -24,6 +25,12 @@ class Bolt
      * @var resource
      */
     private $socket;
+    
+    /**
+     * Throwing Exceptions if not set
+     * @var callable (string message, string code)
+     */
+    public static $errorHandler;
 
     /**
      * Bolt constructor
@@ -36,38 +43,43 @@ class Bolt
     {
         $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (!is_resource($this->socket)) {
-            throw new Exception('Cannot create socket');
+            $this->error('Cannot create socket');
+            return;
         }
 
         socket_set_block($this->socket);
         socket_set_option($this->socket, SOL_TCP, TCP_NODELAY, 1);
         socket_set_option($this->socket, SOL_SOCKET, SO_KEEPALIVE, 1);
-        socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, array('sec' => $timeout, 'usec' => 0));
-        socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $timeout, 'usec' => 0));
+        socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $timeout, 'usec' => 0]);
+        socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $timeout, 'usec' => 0]);
 
         $conn = socket_connect($this->socket, $ip, $port);
         if (!$conn) {
             $code = socket_last_error($this->socket);
-            throw new Exception(socket_strerror($code), $code);
+            $this->error(socket_strerror($code), $code);
+            return;
         }
-
-        $this->handshake();
 
         $this->packer = new Packer();
     }
 
     /**
+     * @return bool
      * @throws Exception
      */
-    private function handshake()
+    private function handshake(): bool
     {
         $this->write(chr(0x60).chr(0x60).chr(0xb0).chr(0x17));
+        
         //version
-        $this->write(pack('N', 1) . pack('N', 0) . pack('N', 0) . pack('N', 0));
+        $this->write(pack('N', 2) . pack('N', 1) . pack('N', 0) . pack('N', 0));
         $version = unpack('N', $this->readBuffer(4))[1] ?? 0;
         if ($version == 0) {
-            throw new Exception('Wrong version');
+            $this->error('Wrong version');
+            return false;
         }
+        
+        return true;
     }
 
     /**
@@ -80,6 +92,10 @@ class Bolt
      */
     public function init(string $name, string $user, string $password): bool
     {
+        if (!$this->handshake()) {
+            return false;
+        }
+        
         $this->write($this->packer->pack(0x01, $name, [
             'scheme' => 'basic',
             'principal' => $user,
@@ -87,6 +103,11 @@ class Bolt
         ]));
 
         list($signature, $output) = $this->read();
+        if ($signature == self::FAILURE) {
+            $this->ackFailure(false);
+            $this->error($output['message'], $output['code']);
+        }
+        
         return $signature == self::SUCCESS;
     }
 
@@ -101,18 +122,11 @@ class Bolt
     {
         $this->write($this->packer->pack(0x10, $statement, $parameters));
         list($signature, $output) = $this->read();
-        return $signature == self::SUCCESS ? $output : null;
-    }
-
-    private function debug(string $str)
-    {
-        $str = implode(unpack('H*', $str));
-        echo '<pre>';
-        foreach (str_split($str, 8) as $chunk) {
-            echo implode(' ', str_split($chunk, 2));
-            echo '    ';
+        if ($signature == self::FAILURE) {
+            $this->ackFailure();
+            $this->error($output['message'], $output['code']);
         }
-        echo '</pre>';
+        return $signature == self::SUCCESS ? $output : null;
     }
 
     //@todo
@@ -124,7 +138,8 @@ class Bolt
 
     /**
      * Send PULL_ALL message
-     * @return array
+     * Last success message contains key "type" which describe operation: read (r), write (w), read/write (rw) or schema write (s)
+     * @return mixed Array of records or false on error. Last array element is success message.
      * @throws Exception
      */
     public function pullAll()
@@ -135,6 +150,13 @@ class Bolt
             list($signature, $ret) = $this->read();
             $output[] = $ret;
         } while ($signature == self::RECORD);
+        
+        if ($signature == self::FAILURE) {
+            $this->ackFailure();
+            $this->error($ret['message'], $ret['code']);
+            $output = false;
+        }
+        
         return $output;
     }
 
@@ -142,12 +164,20 @@ class Bolt
      * When requests fail on the server, the server will send the client a FAILURE message.
      * The client must acknowledge the FAILURE message by sending an ACK_FAILURE message to the server.
      * Until the server receives the ACK_FAILURE message, it will send an IGNORED message in response to any other message from the client.
+     * @param bool $response
+     * @return bool
      * @throws Exception
      */
-    private function ackFailure()
+    private function ackFailure(bool $response = true): bool
     {
         $this->write($this->packer->pack(0x0E));
-        $this->read();
+        
+        $output = true;
+        if ($response) {
+            list($signature,) = $this->read();
+            $output = $signature == self::SUCCESS;
+        }
+        return $output;
     }
 
     //@todo
@@ -177,29 +207,41 @@ class Bolt
         $output = null;
         $signature = 0;
         if (!empty($msg)) {
-            $this->debug($msg);
+//            self::debug($msg);
             $output = $this->packer->unpack($msg, $signature);
-            if ($signature == self::FAILURE) {
-                $this->ackFailure();
-                throw new Exception($output['message'] . ' (' . $output['code'] . ')');
-            }
         }
 
         return [$signature, $output];
+    }
+    
+    /**
+     * @param int $length
+     * @return string
+     */
+    private function readBuffer(int $length = 2048): string
+    {
+        $output = '';
+        do {
+            $output .= socket_read($this->socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
+        } while (mb_strlen($output, '8bit') < $length);
+        return $output;
     }
 
     /**
      * @param string $buffer
      * @throws Exception
      */
-    public function write(string $buffer)
+    private function write(string $buffer)
     {
         $size = mb_strlen($buffer, '8bit');
         $sent = 0;
+//        self::debug($buffer);
         while ($sent < $size) {
             $sent = socket_write($this->socket, $buffer, $size);
             if ($sent === false) {
-                throw new Exception(socket_last_error($this->socket));
+                $code = socket_last_error($this->socket);
+                $this->error(socket_strerror($code), $code);
+                return;
             }
 
             $buffer = mb_strcut($buffer, $sent, null, '8bit');
@@ -208,16 +250,34 @@ class Bolt
     }
 
     /**
-     * @param int $length
-     * @return string
+     * Process error
+     * @param string $msg
+     * @param int $code
+     * @throws Exception
      */
-    public function readBuffer(int $length = 2048): string
+    private function error(string $msg, string $code = '')
     {
-        $output = '';
-        do {
-            $output .= socket_read($this->socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
-        } while (mb_strlen($output, '8bit') < $length);
-        return $output;
+        if (is_callable(self::$errorHandler)) {
+            call_user_func(self::$errorHandler, $msg, $code);
+        } else {
+            $msg .= ' (' . $code . ')';
+            throw new Exception($msg);
+        }
+    }
+    
+    /**
+     * Print buffer as HEX
+     * @param string $str
+     */
+    public static function debug(string $str)
+    {
+        $str = implode(unpack('H*', $str));
+        echo '<pre>';
+        foreach (str_split($str, 8) as $chunk) {
+            echo implode(' ', str_split($chunk, 2));
+            echo '    ';
+        }
+        echo '</pre>';
     }
 
     public function __destruct()

@@ -243,6 +243,10 @@ class Packer
      */
     private function u(string &$msg)
     {
+        if (empty($msg)) {
+            return false;
+        }
+        
         $marker = ord($msg[0]);
         $msg = mb_strcut($msg, 1, null, '8bit');
         $result = false;
@@ -570,7 +574,7 @@ class Packer
     private function unpackInteger(int $marker, string &$msg, bool &$result = false): int
     {
         $output = null;
-        $length = 1;
+        $offset = 0;
 
         if ($marker >> 7 == 0b0) { //+TINY_INT
             $output = $marker;
@@ -578,22 +582,38 @@ class Packer
             $output = 0b11110000 ^ $marker;
         } elseif ($marker == 0xC8) { //INT_8
             $output = unpack('c', $msg[0])[1] ?? 0;
+            $offset = 1;
         } elseif ($marker == 0xC9) { //INT_16
-            $output = unpack('s', $msg[0] . $msg[1])[1] ?? 0;
-            $length = 2;
+            $output = unpack('s', $this->bigEndian($msg[0] . $msg[1]))[1] ?? 0;
+            $offset = 2;
         } elseif ($marker == 0xCA) { //INT_32
-            $output = unpack('l', mb_strcut($msg, 0, 4, '8bit'))[1] ?? 0;
-            $length = 4;
+            $output = unpack('l', $this->bigEndian(mb_strcut($msg, 0, 4, '8bit')))[1] ?? 0;
+            $offset = 4;
         } elseif ($marker == 0xCB) { //INT_64
             $output = unpack('q', mb_strcut($msg, 0, 8, '8bit'))[1] ?? 0;
-            $length = 8;
+            $offset = 8;
         }
 
         if ($output !== null) {
-            $msg = mb_strcut($msg, $length, null, '8bit');
+            if ($offset > 0) {
+                $msg = mb_strcut($msg, $offset, null, '8bit');
+            }
             $result = true;
         }
         return (int)$output;
+    }
+    
+    /**
+     * Fix little endian
+     * @param string $str
+     * @return string
+     */
+    private function bigEndian($str)
+    {
+        $tmp = unpack('S', "\x01\x00");
+        $little = $tmp[1] == 1;
+
+        return $little ? strrev($str) : $str;
     }
 
     /**
