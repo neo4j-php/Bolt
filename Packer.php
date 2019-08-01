@@ -2,6 +2,8 @@
 
 namespace Bolt;
 
+use Exception;
+
 /**
  * Class Packer
  * Pack bolt messages

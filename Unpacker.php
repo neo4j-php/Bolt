@@ -3,6 +3,7 @@
 namespace Bolt;
 
 use Bolt\structures\{Node, Path, Relationship, UnboundRelationship};
+use Exception;
 
 /**
  * Class Unpacker
@@ -46,10 +47,11 @@ class Unpacker
 
     /**
      * @param string $msg
+     * @param bool $structures
      * @return mixed
      * @throws Exception
      */
-    private function u(string &$msg)
+    private function u(string &$msg, bool $structures = true)
     {
         if (empty($msg)) {
             return false;
@@ -59,26 +61,29 @@ class Unpacker
         $msg = mb_strcut($msg, 1, null, '8bit');
         $result = false;
 
-        $output = $this->unpackStruct($marker, $msg, $result);
-        if ($result) {
-            return $output;
+        if ($structures) {
+            $output = $this->unpackStruct($marker, $msg, $result);
+            if ($result) {
+                return $output;
+            }
+            $output = $this->unpackNode($marker, $msg, $result);
+            if ($result) {
+                return $output;
+            }
+            $output = $this->unpackRelationship($marker, $msg, $result);
+            if ($result) {
+                return $output;
+            }
+            $output = $this->unpackPath($marker, $msg, $result);
+            if ($result) {
+                return $output;
+            }
+            $output = $this->unpackUnboundRelationship($marker, $msg, $result);
+            if ($result) {
+                return $output;
+            }
         }
-        $output = $this->unpackNode($marker, $msg, $result);
-        if ($result) {
-            return $output;
-        }
-        $output = $this->unpackRelationship($marker, $msg, $result);
-        if ($result) {
-            return $output;
-        }
-        $output = $this->unpackPath($marker, $msg, $result);
-        if ($result) {
-            return $output;
-        }
-        $output = $this->unpackUnboundRelationship($marker, $msg, $result);
-        if ($result) {
-            return $output;
-        }
+        
         $output = $this->unpackFloat($marker, $msg, $result);
         if ($result) {
             return $output;
@@ -327,9 +332,9 @@ class Unpacker
             $key = null;
             for ($i = 0; $i < $size * 2; $i++) {
                 if ($i % 2 == 0) {
-                    $key = $this->u($msg);
+                    $key = $this->u($msg, false);
                 } else {
-                    $output[$key] = $this->u($msg);
+                    $output[$key] = $this->u($msg, false);
                 }
             }
             $result = true;

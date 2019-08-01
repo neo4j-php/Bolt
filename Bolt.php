@@ -13,10 +13,10 @@ use Exception;
  */
 class Bolt
 {
-    const SUCCESS = 0x70;
-    const FAILURE = 0x7F;
-    const IGNORED = 0x7E;
-    const RECORD = 0x71;
+    private const SUCCESS = 0x70;
+    private const FAILURE = 0x7F;
+    private const IGNORED = 0x7E;
+    private const RECORD = 0x71;
 
     /**
      * @var Packer
@@ -284,7 +284,7 @@ class Bolt
         $signature = 0;
         if (!empty($msg)) {
             if (self::$debug) {
-                self::printHex($msg);
+                self::printHex($msg, false);
             }
             
             try {
@@ -347,7 +347,9 @@ class Bolt
         if (is_callable(self::$errorHandler)) {
             call_user_func(self::$errorHandler, $msg, $code);
         } else {
-            $msg .= ' (' . $code . ')';
+            if (!empty($code)) {
+                $msg .= ' (' . $code . ')';
+            }
             throw new Exception($msg);
         }
     }
@@ -356,10 +358,11 @@ class Bolt
      * Print buffer as HEX
      * @param string $str
      */
-    public static function printHex(string $str)
+    public static function printHex(string $str, bool $write = true)
     {
         $str = implode(unpack('H*', $str));
         echo '<pre>';
+        echo $write ? '> ' : '< ';
         foreach (str_split($str, 8) as $chunk) {
             echo implode(' ', str_split($chunk, 2));
             echo '    ';
