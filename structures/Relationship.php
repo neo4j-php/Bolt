@@ -1,5 +1,7 @@
 <?php
 
+namespace Bolt\structures;
+
 /**
  * Class Relationship
  * Immutable
