@@ -1,4 +1,4 @@
-# [WIP] Bolt
+# Bolt
 Bolt protocol library over TCP socket. Bolt protocol is primary used for communication with [Neo4j](https://neo4j.com/) Graph database. The documentation is available at https://boltprotocol.org/v1/
 
 ## Requirements
