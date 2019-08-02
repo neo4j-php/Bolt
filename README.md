@@ -7,6 +7,9 @@ extensions:
 - sockets https://www.php.net/manual/en/book.sockets.php
 - mbstring https://www.php.net/manual/en/book.mbstring.php
 
+## Usage
+See ``index.php`` file. It contains few examples how you can use this library. All files are loaded with require_once at the beginning of file, because this example doesn't contain autoloader. Of course you need to set up your username and password.
+
 ## Exceptions
 Throwing exceptions is default behaviour. If you want, you can assign own callable error handler to ``\Bolt\Bolt::$errorHandler``. It's called on error and methods (init, run, pullAll, ...) will return false.
 
