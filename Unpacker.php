@@ -2,7 +2,12 @@
 
 namespace Bolt;
 
-use Bolt\structures\{Node, Path, Relationship, UnboundRelationship};
+use Bolt\structures\{
+    Node,
+    Path,
+    Relationship,
+    UnboundRelationship
+};
 use Exception;
 
 /**
@@ -13,6 +18,11 @@ use Exception;
  */
 class Unpacker
 {
+    /**
+     * @var string
+     */
+    private $message;
+
     /**
      * Unpack message
      * @param string $msg
@@ -26,81 +36,84 @@ class Unpacker
             return null;
         }
 
+        $this->message = $msg;
+
         $size = 0;
-        $offset = 0;
-        $marker = ord($msg[0]);
+        $marker = ord($this->next(1));
         if ($marker == 0xDC) { //STRUCT_8
-            $size = unpack('C', $msg[1]);
-            $offset = 2;
+            $size = unpack('C', $this->next(1));
         } elseif ($marker == 0xDD) { //STRUCT_16
-            $size = unpack('n', $msg[1] . $msg[2]);
-            $offset = 3;
+            $size = unpack('n', $this->next(2));
         } elseif ($marker >> 4 == 0b1011) { //TINY_STRUCT
             $size = 0b10110000 ^ $marker;
-            $offset = 1;
         }
 
-        $signature = ord($msg[$offset]);
-        $msg = mb_strcut($msg, $offset + 1, null, '8bit');
-        return $this->u($msg);
+        $signature = ord($this->next(1));
+        return $this->u();
     }
 
     /**
-     * @param string $msg
+     * Get next bytes from message
+     * @param int $length
+     * @return string
+     */
+    private function next(int $length): string
+    {
+        $output = mb_strcut($this->message, 0, $length, '8bit');
+        $this->message = mb_strcut($this->message, $length, null, '8bit');
+        return $output;
+    }
+
+    /**
      * @param bool $structures
      * @return mixed
      * @throws Exception
      */
-    private function u(string &$msg, bool $structures = true)
+    private function u(bool $structures = true)
     {
-        if (empty($msg)) {
-            return false;
-        }
-        
-        $marker = ord($msg[0]);
-        $msg = mb_strcut($msg, 1, null, '8bit');
+        $marker = ord($this->next(1));
         $result = false;
 
         if ($structures) {
-            $output = $this->unpackStruct($marker, $msg, $result);
+            $output = $this->unpackStruct($marker, $result);
             if ($result) {
                 return $output;
             }
-            $output = $this->unpackNode($marker, $msg, $result);
+            $output = $this->unpackNode($marker, $result);
             if ($result) {
                 return $output;
             }
-            $output = $this->unpackRelationship($marker, $msg, $result);
+            $output = $this->unpackRelationship($marker, $result);
             if ($result) {
                 return $output;
             }
-            $output = $this->unpackPath($marker, $msg, $result);
+            $output = $this->unpackPath($marker, $result);
             if ($result) {
                 return $output;
             }
-            $output = $this->unpackUnboundRelationship($marker, $msg, $result);
+            $output = $this->unpackUnboundRelationship($marker, $result);
             if ($result) {
                 return $output;
             }
         }
-        
-        $output = $this->unpackFloat($marker, $msg, $result);
+
+        $output = $this->unpackFloat($marker, $result);
         if ($result) {
             return $output;
         }
-        $output = $this->unpackString($marker, $msg, $result);
+        $output = $this->unpackString($marker, $result);
         if ($result) {
             return $output;
         }
-        $output = $this->unpackList($marker, $msg, $result);
+        $output = $this->unpackList($marker, $result);
         if ($result) {
             return $output;
         }
-        $output = $this->unpackMap($marker, $msg, $result);
+        $output = $this->unpackMap($marker, $result);
         if ($result) {
             return $output;
         }
-        $output = $this->unpackInteger($marker, $msg, $result);
+        $output = $this->unpackInteger($marker, $result);
         if ($result) {
             return $output;
         }
@@ -110,66 +123,53 @@ class Unpacker
 
     /**
      * @param int $marker
-     * @param string $msg
      * @param bool $result
      * @return mixed|null
      * @throws Exception
      */
-    private function unpackStruct(int $marker, string &$msg, bool &$result = false)
+    private function unpackStruct(int $marker, bool &$result = false)
     {
         $size = 0;
-        $offset = 0;
         if ($marker == 0xDC) { //STRUCT_8
-            $size = unpack('C', $msg[1]);
-            $offset = 1;
+            $size = unpack('C', $this->next(1));
             $result = true;
         } elseif ($marker == 0xDD) { //STRUCT_16
-            $size = unpack('n', $msg[1] . $msg[2]);
-            $offset = 2;
+            $size = unpack('n', $this->next(2));
             $result = true;
         } elseif ($marker >> 4 == 0b1011) { //TINY_STRUCT
             $size = 0b10110000 ^ $marker;
             $result = true;
         }
 
-        if ($result) {
-            $msg = mb_strcut($msg, $offset, null, '8bit');
-            return $this->u($msg);
-        }
-
-        return null;
+        return $result ? $this->u() : null;
     }
 
     /**
      * @param int $marker
-     * @param string $msg
      * @param bool $result
      * @return Node|null
      * @throws Exception
      */
-    private function unpackNode(int $marker, string &$msg, bool &$result = false): ?Node
+    private function unpackNode(int $marker, bool &$result = false): ?Node
     {
         if ($marker != 0x4E) {
             return null;
         }
 
-        $identityMarker = ord($msg[0]);
-        $msg = mb_strcut($msg, 1, null, '8bit');
-        $identity = $this->unpackInteger($identityMarker, $msg, $result);
+        $identityMarker = ord($this->next(1));
+        $identity = $this->unpackInteger($identityMarker, $result);
         if (!$result) {
             throw new Exception('Node structure identifier unpack error');
         }
 
-        $labelsMarker = ord($msg[0]);
-        $msg = mb_strcut($msg, 1, null, '8bit');
-        $labels = $this->unpackList($labelsMarker, $msg, $result);
+        $labelsMarker = ord($this->next(1));
+        $labels = $this->unpackList($labelsMarker, $result);
         if (!$result) {
             throw new Exception('Node structure labels unpack error');
         }
 
-        $propertiesMarker = ord($msg[0]);
-        $msg = mb_strcut($msg, 1, null, '8bit');
-        $properties = $this->unpackMap($propertiesMarker, $msg, $result);
+        $propertiesMarker = ord($this->next(1));
+        $properties = $this->unpackMap($propertiesMarker, $result);
         if (!$result) {
             throw new Exception('Node structure properties unpack error');
         }
@@ -179,48 +179,42 @@ class Unpacker
 
     /**
      * @param int $marker
-     * @param string $msg
      * @param bool $result
      * @return Relationship|null
      * @throws Exception
      */
-    private function unpackRelationship(int $marker, string &$msg, bool &$result = false): ?Relationship
+    private function unpackRelationship(int $marker, bool &$result = false): ?Relationship
     {
         if ($marker != 0x52) {
             return null;
         }
 
-        $identityMarker = ord($msg[0]);
-        $msg = mb_strcut($msg, 1, null, '8bit');
-        $identity = $this->unpackInteger($identityMarker, $msg, $result);
+        $identityMarker = ord($this->next(1));
+        $identity = $this->unpackInteger($identityMarker, $result);
         if (!$result) {
             throw new Exception('Relationship structure identifier unpack error');
         }
 
-        $startNodeIdentityMarker = ord($msg[0]);
-        $msg = mb_strcut($msg, 1, null, '8bit');
-        $startNodeIdentity = $this->unpackInteger($startNodeIdentityMarker, $msg, $result);
+        $startNodeIdentityMarker = ord($this->next(1));
+        $startNodeIdentity = $this->unpackInteger($startNodeIdentityMarker, $result);
         if (!$result) {
             throw new Exception('Relationship structure start node identifier unpack error');
         }
 
-        $endNodeIdentityMarker = ord($msg[0]);
-        $msg = mb_strcut($msg, 1, null, '8bit');
-        $endNodeIdentity = $this->unpackInteger($endNodeIdentityMarker, $msg, $result);
+        $endNodeIdentityMarker = ord($this->next(1));
+        $endNodeIdentity = $this->unpackInteger($endNodeIdentityMarker, $result);
         if (!$result) {
             throw new Exception('Relationship structure end node identifier unpack error');
         }
 
-        $typeMarker = ord($msg[0]);
-        $msg = mb_strcut($msg, 1, null, '8bit');
-        $type = $this->unpackString($typeMarker, $msg, $result);
+        $typeMarker = ord($this->next(1));
+        $type = $this->unpackString($typeMarker, $result);
         if (!$result) {
             throw new Exception('Relationship structure type unpack error');
         }
 
-        $propertiesMarker = ord($msg[0]);
-        $msg = mb_strcut($msg, 1, null, '8bit');
-        $properties = $this->unpackMap($propertiesMarker, $msg, $result);
+        $propertiesMarker = ord($this->next(1));
+        $properties = $this->unpackMap($propertiesMarker, $result);
         if (!$result) {
             throw new Exception('Relationship structure properties unpack error');
         }
@@ -230,34 +224,30 @@ class Unpacker
 
     /**
      * @param int $marker
-     * @param string $msg
      * @param bool $result
      * @return UnboundRelationship|null
      * @throws Exception
      */
-    private function unpackUnboundRelationship(int $marker, string &$msg, bool &$result = false): ?UnboundRelationship
+    private function unpackUnboundRelationship(int $marker, bool &$result = false): ?UnboundRelationship
     {
         if ($marker != 0x72) {
             return null;
         }
 
-        $identityMarker = ord($msg[0]);
-        $msg = mb_strcut($msg, 1, null, '8bit');
-        $identity = $this->unpackInteger($identityMarker, $msg, $result);
+        $identityMarker = ord($this->next(1));
+        $identity = $this->unpackInteger($identityMarker, $result);
         if (!$result) {
             throw new Exception('UnboundRelationship structure identifier unpack error');
         }
 
-        $typeMarker = ord($msg[0]);
-        $msg = mb_strcut($msg, 1, null, '8bit');
-        $type = $this->unpackString($typeMarker, $msg, $result);
+        $typeMarker = ord($this->next(1));
+        $type = $this->unpackString($typeMarker, $result);
         if (!$result) {
             throw new Exception('UnboundRelationship structure type unpack error');
         }
 
-        $propertiesMarker = ord($msg[0]);
-        $msg = mb_strcut($msg, 1, null, '8bit');
-        $properties = $this->unpackMap($propertiesMarker, $msg, $result);
+        $propertiesMarker = ord($this->next(1));
+        $properties = $this->unpackMap($propertiesMarker, $result);
         if (!$result) {
             throw new Exception('UnboundRelationship structure properties unpack error');
         }
@@ -267,34 +257,30 @@ class Unpacker
 
     /**
      * @param int $marker
-     * @param string $msg
      * @param bool $result
      * @return Path|null
      * @throws Exception
      */
-    private function unpackPath(int $marker, string &$msg, bool &$result = false): ?Path
+    private function unpackPath(int $marker, bool &$result = false): ?Path
     {
         if ($marker != 0x50) {
             return null;
         }
 
-        $nodesMarker = ord($msg[0]);
-        $msg = mb_strcut($msg, 1, null, '8bit');
-        $nodes = $this->unpackList($nodesMarker, $msg, $result);
+        $nodesMarker = ord($this->next(1));
+        $nodes = $this->unpackList($nodesMarker, $result);
         if (!$result) {
             throw new Exception('Path structure nodes unpack error');
         }
 
-        $relationshipsMarker = ord($msg[0]);
-        $msg = mb_strcut($msg, 1, null, '8bit');
-        $relationships = $this->unpackList($relationshipsMarker, $msg, $result);
+        $relationshipsMarker = ord($this->next(1));
+        $relationships = $this->unpackList($relationshipsMarker, $result);
         if (!$result) {
             throw new Exception('Path structure relationships unpack error');
         }
 
-        $sequenceMarker = ord($msg[0]);
-        $msg = mb_strcut($msg, 1, null, '8bit');
-        $sequence = $this->unpackList($sequenceMarker, $msg, $result);
+        $sequenceMarker = ord($this->next(1));
+        $sequence = $this->unpackList($sequenceMarker, $result);
         if (!$result) {
             throw new Exception('Path structure sequence unpack error');
         }
@@ -304,38 +290,27 @@ class Unpacker
 
     /**
      * @param int $marker
-     * @param string $msg
      * @param bool $result
      * @return array
      * @throws Exception
      */
-    private function unpackMap(int $marker, string &$msg, bool &$result = false): array
+    private function unpackMap(int $marker, bool &$result = false): array
     {
         $size = -1;
-        $offset = 0;
         if ($marker >> 4 == 0b1010) { //TINY_MAP
             $size = 0b10100000 ^ $marker;
         } elseif ($marker == 0xD8) { //MAP_8
-            $size = unpack('C', $msg[0])[1] ?? $size;
-            $offset = 1;
+            $size = unpack('C', $this->next(1))[1] ?? $size;
         } elseif ($marker == 0xD9) { //MAP_16
-            $size = unpack('n', $msg[0] . $msg[1])[1] ?? $size;
-            $offset = 2;
+            $size = unpack('n', $this->next(2))[1] ?? $size;
         } elseif ($marker == 0xDA) { //MAP_32
-            $size = unpack('N', mb_strcut($msg, 0, 4, '8bit'))[1] ?? $size;
-            $offset = 4;
+            $size = unpack('N', $this->next(4))[1] ?? $size;
         }
 
         $output = [];
         if ($size != -1) {
-            $msg = mb_strcut($msg, $offset, null, '8bit');
-            $key = null;
-            for ($i = 0; $i < $size * 2; $i++) {
-                if ($i % 2 == 0) {
-                    $key = $this->u($msg, false);
-                } else {
-                    $output[$key] = $this->u($msg, false);
-                }
+            for ($i = 0; $i < $size; $i++) {
+                $output[$this->u(false)] = $this->u();
             }
             $result = true;
         }
@@ -345,31 +320,25 @@ class Unpacker
 
     /**
      * @param int $marker
-     * @param string $msg
      * @param bool $result
      * @return string
      */
-    private function unpackString(int $marker, string &$msg, bool &$result = false): string
+    private function unpackString(int $marker, bool &$result = false): string
     {
         $length = -1;
-        $offset = 0;
         if ($marker >> 4 == 0b1000) { //TINY_STRING
             $length = 0b10000000 ^ $marker;
         } elseif ($marker == 0xD0) { //STRING_8
-            $length = unpack('C', $msg[0])[1] ?? $length;
-            $offset = 1;
+            $length = unpack('C', $this->next(1))[1] ?? $length;
         } elseif ($marker == 0xD1) { //STRING_16
-            $length = unpack('n', $msg[0] . $msg[1])[1] ?? $length;
-            $offset = 2;
+            $length = unpack('n', $this->next(2))[1] ?? $length;
         } elseif ($marker == 0xD2) { //STRING_32
-            $length = unpack('N', mb_strcut($msg, 0, 4, '8bit'))[1] ?? $length;
-            $offset = 4;
+            $length = unpack('N', $this->next(4))[1] ?? $length;
         }
 
         $output = '';
         if ($length != -1) {
-            $output = mb_strcut($msg, $offset, $length, '8bit');
-            $msg = mb_strcut($msg, $offset + $length, null, '8bit');
+            $output = $this->next($length);
             $result = true;
         }
 
@@ -378,66 +347,49 @@ class Unpacker
 
     /**
      * @param int $marker
-     * @param string $msg
      * @param bool $result
      * @return int
      */
-    private function unpackInteger(int $marker, string &$msg, bool &$result = false): int
+    private function unpackInteger(int $marker, bool &$result = false): int
     {
         $output = null;
-        $offset = 0;
+        $tmp = unpack('S', "\x01\x00");
+        $little = $tmp[1] == 1;
 
         if ($marker >> 7 == 0b0) { //+TINY_INT
             $output = $marker;
         } elseif ($marker >> 4 == 0b1111) { //-TINY_INT
             $output = 0b11110000 ^ $marker;
         } elseif ($marker == 0xC8) { //INT_8
-            $output = unpack('c', $msg[0])[1] ?? 0;
-            $offset = 1;
+            $output = unpack('c', $this->next(1))[1] ?? 0;
         } elseif ($marker == 0xC9) { //INT_16
-            $output = unpack('s', $this->bigEndian($msg[0] . $msg[1]))[1] ?? 0;
-            $offset = 2;
+            $value = $this->next(2);
+            $value = $little ? strrev($value) : $value;
+            $output = unpack('s', $value)[1] ?? 0;
         } elseif ($marker == 0xCA) { //INT_32
-            $output = unpack('l', $this->bigEndian(mb_strcut($msg, 0, 4, '8bit')))[1] ?? 0;
-            $offset = 4;
+            $value = $this->next(4);
+            $value = $little ? strrev($value) : $value;
+            $output = unpack('l', $value)[1] ?? 0;
         } elseif ($marker == 0xCB) { //INT_64
-            $output = unpack('q', mb_strcut($msg, 0, 8, '8bit'))[1] ?? 0;
-            $offset = 8;
+            $output = unpack('q', $this->next(8))[1] ?? 0;
         }
 
         if ($output !== null) {
-            if ($offset > 0) {
-                $msg = mb_strcut($msg, $offset, null, '8bit');
-            }
             $result = true;
         }
-        return (int)$output;
-    }
-    
-    /**
-     * Fix little endian
-     * @param string $str
-     * @return string
-     */
-    private function bigEndian($str)
-    {
-        $tmp = unpack('S', "\x01\x00");
-        $little = $tmp[1] == 1;
-
-        return $little ? strrev($str) : $str;
+        return (int) $output;
     }
 
     /**
      * @param int $marker
-     * @param string $msg
      * @param bool $result
      * @return float
      */
-    private function unpackFloat(int $marker, string &$msg, bool &$result = false): float
+    private function unpackFloat(int $marker, bool &$result = false): float
     {
         $output = 0;
         if ($marker == 0xC1) {
-            $output = unpack('d', strrev(mb_strcut($msg, 0, 8, '8bit')))[1] ?? 0;
+            $output = unpack('d', strrev($this->next(8)))[1] ?? 0;
             $result = true;
         }
         return $output;
@@ -445,38 +397,32 @@ class Unpacker
 
     /**
      * @param int $marker
-     * @param string $msg
      * @param bool $result
      * @return array
      * @throws Exception
      */
-    private function unpackList(int $marker, string &$msg, bool &$result = false): array
+    private function unpackList(int $marker, bool &$result = false): array
     {
         $size = -1;
-        $offset = 0;
         if ($marker >> 4 == 0b1001) { //TINY_LIST
             $size = 0b10010000 ^ $marker;
         } elseif ($marker == 0xD4) { //LIST_8
-            $size = unpack('C', $msg[0])[1] ?? $size;
-            $offset = 1;
+            $size = unpack('C', $this->next(1))[1] ?? $size;
         } elseif ($marker == 0xD5) { //LIST_16
-            $size = unpack('n', $msg[0] . $msg[1])[1] ?? $size;
-            $offset = 2;
+            $size = unpack('n', $this->next(2))[1] ?? $size;
         } elseif ($marker == 0xD6) { //LIST_32
-            $size = unpack('N', mb_strcut($msg, 0, 4, '8bit'))[1] ?? $size;
-            $offset = 4;
+            $size = unpack('N', $this->next(4))[1] ?? $size;
         }
 
         $output = [];
         if ($size != -1) {
-            $msg = mb_strcut($msg, $offset, null, '8bit');
             for ($i = 0; $i < $size; $i++) {
-                $output[] = $this->u($msg);
+                $output[] = $this->u();
             }
             $result = true;
         }
 
         return $output;
     }
-    
+
 }
