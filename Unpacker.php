@@ -65,38 +65,18 @@ class Unpacker
     }
 
     /**
-     * @param bool $structures
      * @return mixed
      * @throws Exception
      */
-    private function u(bool $structures = true)
+    private function u()
     {
         $marker = ord($this->next(1));
         $result = false;
 
-        if ($structures) {
-            $output = $this->unpackStruct($marker, $result);
-            if ($result) {
-                return $output;
-            }
-            $output = $this->unpackNode($marker, $result);
-            if ($result) {
-                return $output;
-            }
-            $output = $this->unpackRelationship($marker, $result);
-            if ($result) {
-                return $output;
-            }
-            $output = $this->unpackPath($marker, $result);
-            if ($result) {
-                return $output;
-            }
-            $output = $this->unpackUnboundRelationship($marker, $result);
-            if ($result) {
-                return $output;
-            }
+        $output = $this->unpackStruct($marker, $result);
+        if ($result) {
+            return $output;
         }
-
         $output = $this->unpackFloat($marker, $result);
         if ($result) {
             return $output;
@@ -140,8 +120,31 @@ class Unpacker
             $size = 0b10110000 ^ $marker;
             $result = true;
         }
+        
+        if (!$result) {
+            return null;
+        }
+        
+        $marker = ord($this->next(1));
+        
+        $output = $this->unpackNode($marker, $result);
+        if ($result) {
+            return $output;
+        }
+        $output = $this->unpackRelationship($marker, $result);
+        if ($result) {
+            return $output;
+        }
+        $output = $this->unpackPath($marker, $result);
+        if ($result) {
+            return $output;
+        }
+        $output = $this->unpackUnboundRelationship($marker, $result);
+        if ($result) {
+            return $output;
+        }
 
-        return $result ? $this->u() : null;
+        return null;
     }
 
     /**
@@ -310,7 +313,7 @@ class Unpacker
         $output = [];
         if ($size != -1) {
             for ($i = 0; $i < $size; $i++) {
-                $output[$this->u(false)] = $this->u();
+                $output[$this->u()] = $this->u();
             }
             $result = true;
         }
