@@ -127,22 +127,22 @@ class Packer
         $tmp = unpack('S', "\x01\x00");
         $little = $tmp[1] == 1;
 
-        if ($value > -1 && $value < 127) { //+TINY_INT
+        if ($value >= 0 && $value <= 127) { //+TINY_INT
             $packed = pack('C', 0b00000000 | $value);
             $output .= $little ? strrev($packed) : $packed;
-        } elseif ($value > -16 && $value < 0) { //-TINY_INT
+        } elseif ($value >= -16 && $value < 0) { //-TINY_INT
             $packed = pack('c', 0b11110000 | $value);
             $output .= $little ? strrev($packed) : $packed;
-        } elseif ($value > -128 && $value < -17) { //INT_8
+        } elseif ($value >= -128 && $value <= -17) { //INT_8
             $packed = pack('c', $value);
             $output .= chr(0xC8) . ($little ? strrev($packed) : $packed);
-        } elseif (($value > 128 && $value < 32767) || ($value > -32768 && $value < -129)) { //INT_16
+        } elseif (($value >= 128 && $value <= 32767) || ($value >= -32768 && $value <= -129)) { //INT_16
             $packed = pack('s', $value);
             $output .= chr(0xC9) . ($little ? strrev($packed) : $packed);
-        } elseif (($value > 32768 && $value < 2147483647) || ($value > -2147483648 && $value < -32769)) { //INT_32
+        } elseif (($value >= 32768 && $value <= 2147483647) || ($value >= -2147483648 && $value <= -32769)) { //INT_32
             $packed = pack('l', $value);
             $output .= chr(0xCA) . ($little ? strrev($packed) : $packed);
-        } elseif (($value > 2147483648 && $value < 9223372036854775807) || ($value > -9223372036854775808 && $value < -2147483649)) { //INT_64
+        } elseif (($value >= 2147483648 && $value <= 9223372036854775807) || ($value >= -9223372036854775808 && $value <= -2147483649)) { //INT_64
             $packed = pack('q', $value);
             $output .= chr(0xCB) . ($little ? strrev($packed) : $packed);
         } else {
