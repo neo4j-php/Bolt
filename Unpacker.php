@@ -130,6 +130,7 @@ class Unpacker
         }
         
         $marker = ord($this->next(1));
+        $result = false;
         
         $output = $this->unpackNode($marker, $result);
         if ($result) {
