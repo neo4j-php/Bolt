@@ -77,6 +77,10 @@ class Unpacker
         if ($result) {
             return $output;
         }
+        $output = $this->unpackBoolean($marker, $result);
+        if ($result) {
+            return $output;
+        }
         $output = $this->unpackFloat($marker, $result);
         if ($result) {
             return $output;
@@ -319,6 +323,23 @@ class Unpacker
         }
 
         return $output;
+    }
+    
+    /**
+     * @param int $marker
+     * @param bool $result
+     * @return bool
+     */
+    private function unpackBoolean(int $marker, bool &$result = false): bool
+    {
+        if ($marker == 0xC3) {
+            $result = true;
+            return true;
+        } elseif ($marker == 0xC2) {
+            $result = true;
+            return false;
+        }
+        return false;
     }
 
     /**
