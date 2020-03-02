@@ -1,6 +1,11 @@
 # Bolt
 Bolt protocol library over TCP socket. Bolt protocol is primary used for communication with [Neo4j](https://neo4j.com/) Graph database. The documentation is available at https://boltprotocol.org/v1/
 
+## Supported version
+Bolt < 4.0
+
+Neo4j version 4.0 is out for some time and I'm sorry to tell you, but this software won't work with it. Reason is outdated documentation for Bolt protocol handled by Neo4j team, which is still available only for version 1.0. Suddenly Neo4j 4.0 drops support for Bolt V1.
+
 ## Requirements
 PHP >= 7.1  
 extensions:
