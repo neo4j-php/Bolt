@@ -379,14 +379,13 @@ class Unpacker
             $output = unpack('c', $this->next(1))[1] ?? 0;
         } elseif ($marker == 0xC9) { //INT_16
             $value = $this->next(2);
-            $value = $little ? strrev($value) : $value;
-            $output = unpack('s', $value)[1] ?? 0;
+            $output = unpack('s', $little ? strrev($value) : $value)[1] ?? 0;
         } elseif ($marker == 0xCA) { //INT_32
             $value = $this->next(4);
-            $value = $little ? strrev($value) : $value;
-            $output = unpack('l', $value)[1] ?? 0;
+            $output = unpack('l', $little ? strrev($value) : $value)[1] ?? 0;
         } elseif ($marker == 0xCB) { //INT_64
-            $output = unpack('q', $this->next(8))[1] ?? 0;
+            $value = $this->next(8);
+            $output = unpack("q", $little ? strrev($value) : $value)[1] ?? 0;
         }
 
         if ($output !== null) {
