@@ -1,0 +1,36 @@
+{
+    "name": "stefanak-michal/bolt",
+    "description": "Bolt protocol library over TCP socket",
+    "keywords": ["neo4j", "bolt", "socket", "database"],
+    "homepage": "https://github.com/stefanak-michal/Bolt",
+    "type": "library",
+    "readme": "README.md",
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=7.1.0",
+        "ext-sockets": "*",
+        "ext-mbstring": "*"
+    },
+    "support": {
+        "issues": "https://github.com/stefanak-michal/Bolt/issues",
+        "source": "https://github.com/stefanak-michal/Bolt"
+    },
+    "funding": [
+        {
+            "type": "paypal",
+            "url": "https://www.paypal.me/MichalStefanak"
+        }
+    ],
+    "authors": [
+        {
+            "name": "Michal Stefanak",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Bolt\\": "/"
+        }
+    }
+}
