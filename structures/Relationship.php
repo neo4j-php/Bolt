@@ -15,15 +15,15 @@ class Relationship
     /**
      * @var int
      */
-    private $identity;
+    private $id;
     /**
      * @var int
      */
-    private $startNodeIdentity;
+    private $startNodeId;
     /**
      * @var int
      */
-    private $endNodeIdentity;
+    private $endNodeId;
     /**
      * @var string
      */
@@ -35,17 +35,17 @@ class Relationship
 
     /**
      * Relationship constructor.
-     * @param int $identity
-     * @param int $startNodeIdentity
-     * @param int $endNodeIdentity
+     * @param int $id
+     * @param int $startNodeId
+     * @param int $endNodeId
      * @param string $type
      * @param array $properties
      */
-    public function __construct(int $identity, int $startNodeIdentity, int $endNodeIdentity, string $type, array $properties)
+    public function __construct(int $id, int $startNodeId, int $endNodeId, string $type, array $properties)
     {
-        $this->identity = $identity;
-        $this->startNodeIdentity = $startNodeIdentity;
-        $this->endNodeIdentity = $endNodeIdentity;
+        $this->id = $id;
+        $this->startNodeId = $startNodeId;
+        $this->endNodeId = $endNodeId;
         $this->type = $type;
         $this->properties = $properties;
     }
@@ -53,25 +53,25 @@ class Relationship
     /**
      * @return int
      */
-    public function identity(): int
+    public function id(): int
     {
-        return $this->identity;
+        return $this->id;
     }
 
     /**
      * @return int
      */
-    public function startNodeIdentity(): int
+    public function startNodeId(): int
     {
-        return $this->startNodeIdentity;
+        return $this->startNodeId;
     }
 
     /**
      * @return int
      */
-    public function endNodeIdentity(): int
+    public function endNodeId(): int
     {
-        return $this->endNodeIdentity;
+        return $this->endNodeId;
     }
 
     /**
