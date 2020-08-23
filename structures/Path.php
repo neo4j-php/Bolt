@@ -19,23 +19,23 @@ class Path
     /**
      * @var array
      */
-    private $relationships;
+    private $rels;
     /**
      * @var array
      */
-    private $sequence;
+    private $ids;
 
     /**
      * Path constructor.
      * @param array $nodes
-     * @param array $relationships
-     * @param array $sequence
+     * @param array $rels
+     * @param array $ids
      */
-    public function __construct(array $nodes, array $relationships, array $sequence)
+    public function __construct(array $nodes, array $rels, array $ids)
     {
         $this->nodes = $nodes;
-        $this->relationships = $relationships;
-        $this->sequence = $sequence;
+        $this->rels = $rels;
+        $this->ids = $ids;
     }
 
     /**
@@ -47,18 +47,20 @@ class Path
     }
 
     /**
+     * list of unbound relationships
      * @return array
      */
-    public function relationships(): array
+    public function rels(): array
     {
-        return $this->relationships;
+        return $this->rels;
     }
 
     /**
+     * relationship id and node id to represent the path
      * @return array
      */
-    public function sequence(): array
+    public function ids(): array
     {
-        return $this->sequence;
+        return $this->ids;
     }
 }

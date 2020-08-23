@@ -15,7 +15,7 @@ class Node
     /**
      * @var int
      */
-    private $identity;
+    private $id;
     /**
      * @var array
      */
@@ -27,13 +27,13 @@ class Node
 
     /**
      * Node constructor.
-     * @param int $identity
+     * @param int $id
      * @param array $labels
      * @param array $properties
      */
-    public function __construct(int $identity, array $labels, array $properties)
+    public function __construct(int $id, array $labels, array $properties)
     {
-        $this->identity = $identity;
+        $this->id = $id;
         $this->labels = $labels;
         $this->properties = $properties;
     }
@@ -41,9 +41,9 @@ class Node
     /**
      * @return int
      */
-    public function identity(): int
+    public function id(): int
     {
-        return $this->identity;
+        return $this->id;
     }
 
     /**

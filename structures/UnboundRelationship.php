@@ -15,7 +15,7 @@ class UnboundRelationship
     /**
      * @var int
      */
-    private $relIdentity;
+    private $id;
     /**
      * @var string
      */
@@ -27,13 +27,13 @@ class UnboundRelationship
 
     /**
      * UnboundRelationship constructor.
-     * @param int $relIdentity
+     * @param int $id
      * @param string $type
      * @param array $properties
      */
-    public function __construct(int $relIdentity, string $type, array $properties)
+    public function __construct(int $id, string $type, array $properties)
     {
-        $this->relIdentity = $relIdentity;
+        $this->id = $id;
         $this->type = $type;
         $this->properties = $properties;
     }
@@ -41,9 +41,9 @@ class UnboundRelationship
     /**
      * @return int
      */
-    public function relIdentity(): int
+    public function id(): int
     {
-        return $this->relIdentity;
+        return $this->id;
     }
 
     /**
