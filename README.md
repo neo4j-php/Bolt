@@ -1,10 +1,21 @@
 # Bolt
-Bolt protocol library over TCP socket. Bolt protocol is primary used for communication with [Neo4j](https://neo4j.com/) Graph database. The documentation is available at https://boltprotocol.org/v1/
+Bolt protocol library over TCP socket. Bolt protocol is primary used for communication with [Neo4j](https://neo4j.com/) Graph database. The documentation is available at [https://7687.org/](https://7687.org/).
 
 ## Supported version
-Bolt < 4.0
+Bolt <= 4.1
 
-Neo4j version 4.0 is out for some time and I'm sorry to tell you, but this software won't work with it. Reason is outdated documentation for Bolt protocol handled by Neo4j team, which is still available only for version 1.0. Suddenly Neo4j 4.0 drops support for Bolt V1.
+| Neo4j Version | Bolt 1 | Bolt 2 | Bolt 3 | Bolt 4.0 | Bolt 4.1 |
+|:-------------:|:------:|:------:|:------:|:--------:|:--------:|
+| 3.0           | x      |        |        |          |          |
+| 3.1           | x      |        |        |          |          |
+| 3.2           | x      |        |        |          |          |
+| 3.3           | x      |        |        |          |          |
+| 3.4           | (x)    | x      |        |          |          |
+| 3.5           |        | (x)    | x      |          |          |
+| 4.0           |        |        | (x)    | x        |          |
+| 4.1           |        |        | (x)    | (x)      | x        |
+
+<sup>The (x) denotes that support could be removed in next version of Neo4j.</sup>
 
 ## Requirements
 PHP >= 7.1  
@@ -13,10 +24,10 @@ extensions:
 - mbstring https://www.php.net/manual/en/book.mbstring.php
 
 ## Usage
-See ``index.php`` file. It contains few examples how you can use this library. All files are loaded with require_once at the beginning of file, because this example doesn't contain autoloader. Of course you need to set up your username and password.
+See ``index.php`` file. It contains few examples how you can use this library. Of course you need to set up your username and password. This repository contains simple `autoload.php` file.
 
 ## Exceptions
-Throwing exceptions is default behaviour. If you want, you can assign own callable error handler to ``\Bolt\Bolt::$errorHandler``. It's called on error and methods (init, run, pullAll, ...) will return false.
+Throwing exceptions is default behaviour. If you want, you can assign own callable error handler to ``\Bolt\Bolt::$errorHandler``. It's called on error and methods (init, run, pullAll, ...) will therefore return false.
 
 ## Author note
 I really like Neo4j and I wanted to use it with PHP. But after I looked on official php library, I was really disappointed. Too much dependencies. I don't like if I need to install 10 things because of one. First I decided to use HTTP API for communication, but it wasn't fast enough. I went through bolt protocol documentation and I said to myself, why not to create own simpler library?

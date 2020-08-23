@@ -5,6 +5,10 @@ namespace Bolt\structures;
 /**
  * Class Path
  * Immutable
+ *
+ * @author Michal Stefanak
+ * @link https://github.com/stefanak-michal/Bolt
+ * @package Bolt\structures
  */
 class Path
 {

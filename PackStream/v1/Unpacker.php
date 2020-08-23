@@ -1,6 +1,6 @@
 <?php
 
-namespace Bolt;
+namespace Bolt\PackStream\v1;
 
 use Bolt\structures\{
     Node,
@@ -8,15 +8,17 @@ use Bolt\structures\{
     Relationship,
     UnboundRelationship
 };
+use Bolt\PackStream\IUnpacker;
 use Exception;
 
 /**
- * Class Unpacker
- * Unpack bolt messages
+ * Class Unpacker of PackStream version 1
  *
  * @author Michal Stefanak
+ * @link https://github.com/stefanak-michal/Bolt
+ * @package Bolt\PackStream\v1
  */
-class Unpacker
+class Unpacker implements IUnpacker
 {
     /**
      * @var string
