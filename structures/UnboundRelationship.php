@@ -5,6 +5,10 @@ namespace Bolt\structures;
 /**
  * Class UnboundRelationship
  * Immutable
+ *
+ * @author Michal Stefanak
+ * @link https://github.com/stefanak-michal/Bolt
+ * @package Bolt\structures
  */
 class UnboundRelationship
 {

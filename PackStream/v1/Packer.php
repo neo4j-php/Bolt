@@ -1,16 +1,18 @@
 <?php
 
-namespace Bolt;
+namespace Bolt\PackStream\v1;
 
 use Exception;
+use Bolt\PackStream\IPacker;
 
 /**
- * Class Packer
- * Pack bolt messages
+ * Class Packer of PackStream version 1
  *
  * @author Michal Stefanak
+ * @link https://github.com/stefanak-michal/Bolt
+ * @package Bolt\PackStream\v1
  */
-class Packer
+class Packer implements IPacker
 {
     private const SMALL = 16;
     private const MEDIUM = 256;
@@ -24,7 +26,7 @@ class Packer
      * @return string
      * @throws Exception
      */
-    public function pack($signature, ...$params)
+    public function pack($signature, ...$params): string
     {
         $output = '';
 

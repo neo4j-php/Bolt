@@ -3,38 +3,56 @@
 namespace Bolt;
 
 use Exception;
+use Bolt\PackStream\{IPacker, IUnpacker};
+use Bolt\protocol\AProtocol;
 
 /**
- * Class Bolt
+ * Main class Bolt
  * Bolt protocol library using TCP socket connection
  *
  * @author Michal Stefanak
  * @link https://github.com/stefanak-michal/Bolt
  */
-class Bolt
+final class Bolt
 {
-    private const SUCCESS = 0x70;
-    private const FAILURE = 0x7F;
-    private const IGNORED = 0x7E;
-    private const RECORD = 0x71;
 
     /**
-     * @var Packer
+     * @var IPacker
      */
     private $packer;
     
     /**
-     * @var Unpacker
+     * @var IUnpacker
      */
     private $unpacker;
 
     /**
-     * @var resource
+     * @var AProtocol
      */
-    private $socket;
-    
+    private $protocol;
+
     /**
-     * Throwing Exceptions if not set
+     * @var array
+     */
+    private $versions = [4.1, 4, 3];
+
+    /**
+     * @var float
+     */
+    private $version;
+
+    /**
+     * @var int
+     */
+    private $packStreamVersion = 1;
+
+    /**
+     * @var string
+     */
+    public static $scheme = 'basic';
+
+    /**
+     * Custom error handler instead of throwing Exceptions
      * @var callable (string message, string code)
      */
     public static $errorHandler;
@@ -54,31 +72,47 @@ class Bolt
      */
     public function __construct(string $ip = '127.0.0.1', int $port = 7687, int $timeout = 15)
     {
-        if (!extension_loaded('sockets')) {
-            die('PHP Extension sockets not enabled');
-        }
-        
-        $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        if (!is_resource($this->socket)) {
-            $this->error('Cannot create socket');
-            return;
-        }
+        Socket::initialize($ip, $port, $timeout);
 
-        socket_set_block($this->socket);
-        socket_set_option($this->socket, SOL_TCP, TCP_NODELAY, 1);
-        socket_set_option($this->socket, SOL_SOCKET, SO_KEEPALIVE, 1);
-        socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $timeout, 'usec' => 0]);
-        socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $timeout, 'usec' => 0]);
-
-        $conn = socket_connect($this->socket, $ip, $port);
-        if (!$conn) {
-            $code = socket_last_error($this->socket);
-            $this->error(socket_strerror($code), $code);
-            return;
+        $packerClass = "\\Bolt\\PackStream\\v" . $this->packStreamVersion . "\\Packer";
+        if (!class_exists($packerClass)) {
+            Bolt::error('Requested PackStream version (' . $this->packStreamVersion . ') not yet implemented');
+        } else {
+            $this->packer = new $packerClass();
         }
 
-        $this->packer = new Packer();
-        $this->unpacker = new Unpacker();
+        $unpackerClass = "\\Bolt\\PackStream\\v" . $this->packStreamVersion . "\\Unpacker";
+        if (!class_exists($unpackerClass)) {
+            Bolt::error('Requested PackStream version (' . $this->packStreamVersion . ') not yet implemented');
+        } else {
+            $this->unpacker = new $unpackerClass();
+        }
+    }
+
+    /**
+     * @param int|float|string ...$v
+     * @return Bolt
+     */
+    public function setProtocolVersions(...$v): Bolt
+    {
+        $this->versions = $v;
+        return $this;
+    }
+
+    /**
+     * @param int $version
+     */
+    public function setPackStreamVersion(int $version = 1)
+    {
+        $this->packStreamVersion = $version;
+    }
+
+    /**
+     * @return float
+     */
+    public function getProtocolVersion(): float
+    {
+        return $this->version;
     }
 
     /**
@@ -87,17 +121,68 @@ class Bolt
      */
     private function handshake(): bool
     {
-        $this->write(chr(0x60).chr(0x60).chr(0xb0).chr(0x17));
-        
-        //version
-        $this->write(pack('N', 2) . pack('N', 1) . pack('N', 0) . pack('N', 0));
-        $version = unpack('N', $this->readBuffer(4))[1] ?? 0;
-        if ($version == 0) {
+        if (self::$debug)
+            echo 'HANDSHAKE';
+
+        Socket::write(chr(0x60) . chr(0x60) . chr(0xb0) . chr(0x17));
+        Socket::write($this->packProtocolVersions());
+
+        $this->unpackProtocolVersion();
+        if (empty($this->version)) {
             $this->error('Wrong version');
             return false;
         }
-        
-        return true;
+
+        $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $this->version);
+        if (!class_exists($protocolClass)) {
+            Bolt::error('Requested Protocol version (' . $this->version . ') not yet implemented');
+        } else {
+            $this->protocol = new $protocolClass($this->packer, $this->unpacker);
+        }
+
+        return $this->protocol instanceof AProtocol;
+    }
+
+    /**
+     * Read and compose selected protocol version
+     */
+    private function unpackProtocolVersion()
+    {
+        $result = [];
+
+        foreach (str_split(Socket::readBuffer(4)) as $ch)
+            $result[] = unpack('C', $ch)[1] ?? 0;
+
+        $result = array_filter($result);
+        $result = array_reverse($result);
+        $this->version = implode('.', $result);
+    }
+
+    /**
+     * Pack requested protocol versions
+     * @return string
+     */
+    private function packProtocolVersions(): string
+    {
+        $versions = [];
+
+        while (count($this->versions) < 4)
+            $this->versions[] = '0';
+
+        foreach ($this->versions as $v) {
+            if (is_int($v))
+                $versions[] = pack('N', $v);
+            else {
+                $splitted = explode('.', (string)$v);
+                $splitted = array_reverse($splitted);
+                while (count($splitted) < 4)
+                    array_unshift($splitted, 0);
+                foreach ($splitted as $s)
+                    $versions[] = pack('C', $s);
+            }
+        }
+
+        return implode('', $versions);
     }
 
     /**
@@ -110,239 +195,124 @@ class Bolt
      */
     public function init(string $name, string $user, string $password): bool
     {
-        if (!$this->handshake()) {
+        if (!$this->handshake())
             return false;
-        }
-        
-        try {
-            $msg = $this->packer->pack(0x01, $name, [
-                'scheme' => 'basic',
-                'principal' => $user,
-                'credentials' => $password
-            ]);
-        } catch (Exception $ex) {
-            $this->error($ex->getMessage());
-            return false;
-        }
-        
-        $this->write($msg);
 
-        list($signature, $output) = $this->read();
-        if ($signature == self::FAILURE) {
-            try {
-                $msg = $this->packer->pack(0x0E);
-            } catch (Exception $ex) {
-                $this->error($msg);
-                return false;
-            }
-            
-            //AckFailure after init do not respond with any message
-            $this->write($msg);
-            $this->error($output['message'], $output['code']);
-        }
-        
-        return $signature == self::SUCCESS;
+        if (self::$debug)
+            echo 'INIT/HELLO';
+
+        return $this->protocol->init($name, Bolt::$scheme, $user, $password);
     }
 
     /**
      * Send RUN message
      * @param string $statement
      * @param array $parameters
+     * @param array $extra
      * @return mixed Return false on error
-     * @throws Exception
      */
-    public function run(string $statement, array $parameters = [])
+    public function run(string $statement, array $parameters = [], array $extra = [])
     {
-        try {
-            $msg = $this->packer->pack(0x10, $statement, $parameters);
-        } catch (Exception $ex) {
-            $this->error($ex->getMessage());
-            return false;
-        }
-        
-        $this->write($msg);
-        
-        list($signature, $output) = $this->read();
-        if ($signature == self::FAILURE) {
-            $this->ackFailure();
-            $this->error($output['message'], $output['code']);
-        }
-        return $signature == self::SUCCESS ? $output : false;
-    }
-
-    /**
-     * Send DISCARD_ALL message
-     * @return bool
-     */
-    public function discardAll(): bool
-    {
-        try {
-            $msg = $this->packer->pack(0x2F);
-        } catch (Exception $ex) {
-            $this->error($ex->getMessage());
-            return false;
-        }
-        
-        $this->write($msg);
-        
-        list($signature,) = $this->read();
-        return $signature == self::SUCCESS;
+        if (self::$debug)
+            echo 'RUN: ' . $statement;
+        return $this->protocol->run($statement, $parameters, $extra);
     }
 
     /**
      * Send PULL_ALL message
-     * Last success message contains key "type" which describe operation: read (r), write (w), read/write (rw) or schema write (s)
-     * @return mixed Array of records or false on error. Last array element is success message.
-     * @throws Exception
+     * @internal PULL alias
+     * @return mixed
      */
     public function pullAll()
     {
-        try {
-            $msg = $this->packer->pack(0x3F);
-        } catch (Exception $ex) {
-            $this->error($ex->getMessage());
-            return false;
-        }
-        
-        $this->write($msg);
-        
-        $output = [];
-        do {
-            list($signature, $ret) = $this->read();
-            $output[] = $ret;
-        } while ($signature == self::RECORD);
-        
-        if ($signature == self::FAILURE) {
-            $this->ackFailure();
-            $this->error($ret['message'], $ret['code']);
-            $output = false;
-        }
-        
-        return $output;
+        return $this->pull();
     }
 
     /**
-     * When requests fail on the server, the server will send the client a FAILURE message.
-     * The client must acknowledge the FAILURE message by sending an ACK_FAILURE message to the server.
-     * Until the server receives the ACK_FAILURE message, it will send an IGNORED message in response to any other message from the client.
-     * @return bool
-     * @throws Exception
+     * Send PULL / PULL_ALL message
+     * Last success message contains key "type" which describe operation: read (r), write (w), read/write (rw) or schema write (s)
+     * @return mixed Array of records or false on error. Last array element is success message.
      */
-    private function ackFailure(): bool
+    public function pull()
     {
-        try {
-            $msg = $this->packer->pack(0x0E);
-        } catch (Exception $ex) {
-            $this->error($ex->getMessage());
-            return false;
-        }
-        
-        $this->write($msg);
-        
-        list($signature,) = $this->read();
-        return $signature == self::SUCCESS;
+        if (self::$debug)
+            echo 'PULL';
+        return $this->protocol->pullAll();
+    }
+
+    /**
+     * Send DISCARD_ALL message
+     * @internal DISCARD alias
+     * @return bool
+     */
+    public function discardAll()
+    {
+        return $this->discard();
+    }
+
+    /**
+     * Send DISCARD / DISCARD_ALL message
+     * @return bool
+     */
+    public function discard(): bool
+    {
+        if (self::$debug)
+            echo 'DISCARD';
+        return $this->protocol->discardAll();
+    }
+
+    /**
+     * Send BEGIN message
+     * @param array $extra
+     * @return bool
+     */
+    public function begin(array $extra = []): bool
+    {
+        if (self::$debug)
+            echo 'BEGIN';
+        return $this->protocol->begin($extra);
+    }
+
+    /**
+     * Send COMMIT message
+     * @return bool
+     */
+    public function commit(): bool
+    {
+        if (self::$debug)
+            echo 'COMMIT';
+        return $this->protocol->commit();
+    }
+
+    /**
+     * Send ROLLBACK message
+     * @return bool
+     */
+    public function rollback(): bool
+    {
+        if (self::$debug)
+            echo 'ROLLBACK';
+        return $this->protocol->rollback();
     }
 
     /**
      * Send RESET message
      * @return bool
-     * @throws Exception
      */
     public function reset(): bool
     {
-        try {
-            $msg = $this->packer->pack(0x0F);
-        } catch (Exception $ex) {
-            $this->error($ex->getMessage());
-            return false;
-        }
-        
-        $this->write($msg);
-        
-        list($signature,) = $this->read();
-        return $signature == self::SUCCESS;
-    }
-
-    /**
-     * Socket read wrapper with message chunk support to process received message
-     * @return array [signature, output]
-     * @throws Exception
-     */
-    private function read()
-    {
-        $msg = '';
-        while (true) {
-            $header = $this->readBuffer(2);
-            if (ord($header[0]) == 0x00 && ord($header[1]) == 0x00) {
-                break;
-            }
-            $length = unpack('n', $header)[1] ?? 0;
-            $msg .= $this->readBuffer($length);
-        }
-
-        $output = null;
-        $signature = 0;
-        if (!empty($msg)) {
-            if (self::$debug) {
-                self::printHex($msg, false);
-            }
-            
-            try {
-                $output = $this->unpacker->unpack($msg, $signature);
-            } catch (Exception $ex) {
-                $this->error($ex->getMessage());
-            }
-        }
-
-        return [$signature, $output];
-    }
-    
-    /**
-     * @param int $length
-     * @return string
-     */
-    private function readBuffer(int $length = 2048): string
-    {
-        $output = '';
-        do {
-            $output .= socket_read($this->socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
-        } while (mb_strlen($output, '8bit') < $length);
-        return $output;
-    }
-
-    /**
-     * @param string $buffer
-     * @throws Exception
-     */
-    private function write(string $buffer)
-    {
-        $size = mb_strlen($buffer, '8bit');
-        $sent = 0;
-        
-        if (self::$debug) {
-            self::printHex($buffer);
-        }
-        
-        while ($sent < $size) {
-            $sent = socket_write($this->socket, $buffer, $size);
-            if ($sent === false) {
-                $code = socket_last_error($this->socket);
-                $this->error(socket_strerror($code), $code);
-                return;
-            }
-
-            $buffer = mb_strcut($buffer, $sent, null, '8bit');
-            $size -= $sent;
-        }
+        if (self::$debug)
+            echo 'RESET';
+        return $this->protocol->reset();
     }
 
     /**
      * Process error
      * @param string $msg
-     * @param int $code
+     * @param string $code
      * @throws Exception
      */
-    private function error(string $msg, string $code = '')
+    public static function error(string $msg, string $code = '')
     {
         if (is_callable(self::$errorHandler)) {
             call_user_func(self::$errorHandler, $msg, $code);
@@ -357,6 +327,7 @@ class Bolt
     /**
      * Print buffer as HEX
      * @param string $str
+     * @param bool $write
      */
     public static function printHex(string $str, bool $write = true)
     {
@@ -375,7 +346,13 @@ class Bolt
      */
     public function __destruct()
     {
-        @socket_close($this->socket);
+        if ($this->protocol instanceof AProtocol) {
+            if (self::$debug)
+                echo 'GOODBYE';
+            $this->protocol->goodbye();
+        }
+
+        @socket_close(Socket::$socket);
     }
 
 }
