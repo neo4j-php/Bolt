@@ -187,6 +187,7 @@ final class Bolt
 
     /**
      * Send INIT message
+     * @version <3
      * @param string $name
      * @param string $user
      * @param string $password
@@ -199,9 +200,24 @@ final class Bolt
             return false;
 
         if (self::$debug)
-            echo 'INIT/HELLO';
+            echo 'INIT';
 
         return $this->protocol->init($name, Bolt::$scheme, $user, $password);
+    }
+
+    /**
+     * Send HELLO message
+     * @internal INIT alias
+     * @version >=3
+     * @param string $name
+     * @param string $user
+     * @param string $password
+     * @return bool
+     * @throws Exception
+     */
+    public function hello(string $name, string $user, string $password): bool
+    {
+        return $this->init($name, $user, $password);
     }
 
     /**
@@ -220,20 +236,10 @@ final class Bolt
 
     /**
      * Send PULL_ALL message
-     * @internal PULL alias
-     * @return mixed
-     */
-    public function pullAll()
-    {
-        return $this->pull();
-    }
-
-    /**
-     * Send PULL / PULL_ALL message
-     * Last success message contains key "type" which describe operation: read (r), write (w), read/write (rw) or schema write (s)
+     * @version <4
      * @return mixed Array of records or false on error. Last array element is success message.
      */
-    public function pull()
+    public function pullAll()
     {
         if (self::$debug)
             echo 'PULL';
@@ -241,24 +247,37 @@ final class Bolt
     }
 
     /**
+     * Send PULL message
+     * @version >=4
+     * @internal PULL_ALL alias
+     * @return mixed Array of records or false on error. Last array element is success message.
+     */
+    public function pull()
+    {
+        return $this->pullAll();
+    }
+
+    /**
      * Send DISCARD_ALL message
-     * @internal DISCARD alias
+     * @version <4
      * @return bool
      */
     public function discardAll()
     {
-        return $this->discard();
+        if (self::$debug)
+            echo 'DISCARD';
+        return $this->protocol->discardAll();
     }
 
     /**
-     * Send DISCARD / DISCARD_ALL message
+     * Send DISCARD message
+     * @version >=4
+     * @internal DISCARD_ALL alias
      * @return bool
      */
     public function discard(): bool
     {
-        if (self::$debug)
-            echo 'DISCARD';
-        return $this->protocol->discardAll();
+        return $this->discardAll();
     }
 
     /**
