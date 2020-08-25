@@ -26,6 +26,21 @@ extensions:
 ## Usage
 See ``index.php`` file. It contains few examples how you can use this library. Of course you need to set up your username and password. This repository contains simple `autoload.php` file.
 
+### Main code example
+```php
+<?php
+//Create new Bolt instance
+$neo4j = new \Bolt\Bolt();
+//Set Bolt protocol version (default is newest 4.1)
+$neo4j->setProtocolVersions(4.1);
+//Connect to database
+$neo4j->init('MyClient/1.0', 'username', 'password);
+//Execute query
+$neo4j->run('RETURN 1 AS num, 2 AS cnt');
+//Pull records from last query
+$rows = $neo4j->pull();
+```
+
 ## Exceptions
 Throwing exceptions is default behaviour. If you want, you can assign own callable error handler to ``\Bolt\Bolt::$errorHandler``. It's called on error and methods (init, run, pullAll, ...) will therefore return false.
 
