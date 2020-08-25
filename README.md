@@ -41,6 +41,19 @@ $neo4j->run('RETURN 1 AS num, 2 AS cnt');
 $rows = $neo4j->pull();
 ```
 
+| Method    | Description                                                        |
+|--------------------------|---------------------------------------------------------------------------------------|
+| setProtocolVersions    | set requested protocol versions                                                        |
+| getProtocolVersion     | get used protocol version (you have to establish connection with init() method first) |
+| init                   | connect to database                                                                   |
+| run                    | execute query                                                                         |
+| pull / pullAll       | fetch records from last query                                                         |
+| discard / discardAll | discard records from last query                                                       |
+| begin                  | start transaction                                                                     |
+| commit                 | commit transaction                                                                    |
+| rollback               | rollback transaction                                                                  |
+| reset                  | reset connection                                                                      |
+
 ## Exceptions
 Throwing exceptions is default behaviour. If you want, you can assign own callable error handler to ``\Bolt\Bolt::$errorHandler``. It's called on error and methods (init, run, pullAll, ...) will therefore return false.
 
