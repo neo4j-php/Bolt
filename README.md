@@ -30,15 +30,15 @@ See ``index.php`` file. It contains few examples how you can use this library. O
 ```php
 <?php
 //Create new Bolt instance
-$neo4j = new \Bolt\Bolt();
+$bolt = new \Bolt\Bolt();
 //Set Bolt protocol version (default is newest 4.1)
-$neo4j->setProtocolVersions(4.1);
+$bolt->setProtocolVersions(4.1);
 //Connect to database
-$neo4j->init('MyClient/1.0', 'username', 'password);
+$bolt->init('MyClient/1.0', 'username', 'password);
 //Execute query
-$neo4j->run('RETURN 1 AS num, 2 AS cnt');
+$bolt->run('RETURN 1 AS num, 2 AS cnt');
 //Pull records from last query
-$rows = $neo4j->pull();
+$rows = $bolt->pull();
 ```
 
 | Method    | Description                                                        |
