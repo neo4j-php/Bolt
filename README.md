@@ -60,6 +60,9 @@ Throwing exceptions is default behaviour. If you want, you can assign own callab
 ## Author note
 I really like Neo4j and I wanted to use it with PHP. But after I looked on official php library, I was really disappointed. Too much dependencies. I don't like if I need to install 10 things because of one. First I decided to use HTTP API for communication, but it wasn't fast enough. I went through bolt protocol documentation and I said to myself, why not to create own simpler library?
 
+## Another solutions
+https://neo4j.com/developer/php/
+
 ## Support
 If you like this project and you want to support me, buy me a tea :)
 
