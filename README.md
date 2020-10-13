@@ -25,6 +25,7 @@ extensions:
 
 ## Installation via composer
 Run the following command to install the latest applicable version of the package:
+
 ``composer require stefanak-michal/bolt``
 
 ## Usage
