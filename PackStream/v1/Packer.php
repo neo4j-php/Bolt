@@ -72,11 +72,13 @@ class Packer implements IPacker
             $output .= $this->packString($param);
         } elseif (is_array($param)) {
             $keys = array_keys($param);
-            if (count($keys) > 0 && count(array_filter($keys, 'is_int')) == count($keys)) {
+            if (count($param) == 0 || count(array_filter($keys, 'is_int')) == count($keys)) {
                 $output .= $this->packList($param);
             } else {
                 $output .= $this->packMap($param);
             }
+        } elseif (is_object($param)) {
+            $output .= $this->packMap((array)$param);
         } else {
             throw new Exception('Not recognized type of parameter');
         }
