@@ -66,7 +66,7 @@ class V3 extends V2
         }
 
         try {
-            $msg = $this->packer->pack(0x10, $args[0], $args[1] ?? [], $args[2] ?? []);
+            $msg = $this->packer->pack(0x10, $args[0], (object)($args[1] ?? []), (object)($args[2] ?? []));
         } catch (Exception $ex) {
             Bolt::error($ex->getMessage());
             return false;
@@ -97,7 +97,7 @@ class V3 extends V2
     public function begin(...$args): bool
     {
         try {
-            $msg = $this->packer->pack(0x11, $args[0] ?? []);
+            $msg = $this->packer->pack(0x11, (object)($args[0] ?? []));
         } catch (Exception $ex) {
             Bolt::error($ex->getMessage());
             return false;

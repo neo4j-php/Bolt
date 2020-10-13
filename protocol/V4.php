@@ -28,7 +28,7 @@ class V4 extends V3
         }
 
         try {
-            $msg = $this->packer->pack(0x3F, $args[0] ?? []);
+            $msg = $this->packer->pack(0x3F, (object)($args[0] ?? []));
         } catch (Exception $ex) {
             Bolt::error($ex->getMessage());
             return false;
