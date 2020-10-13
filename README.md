@@ -23,6 +23,10 @@ extensions:
 - sockets https://www.php.net/manual/en/book.sockets.php
 - mbstring https://www.php.net/manual/en/book.mbstring.php
 
+## Installation via composer
+Run the following command to install the latest applicable version of the package:
+``composer require stefanak-michal/bolt``
+
 ## Usage
 See ``index.php`` file. It contains few examples how you can use this library. Of course you need to set up your username and password. This repository contains simple `autoload.php` file.
 
