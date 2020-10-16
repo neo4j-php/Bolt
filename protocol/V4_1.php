@@ -29,7 +29,7 @@ class V4_1 extends V4
                 'scheme' => $args[1],
                 'principal' => $args[2],
                 'credentials' => $args[3],
-                'routing' => (object)($args[4] ?? [])
+                'routing' => !empty($args[4]) ? (object)$args[4] : null
             ]);
         } catch (Exception $ex) {
             Bolt::error($ex->getMessage());
