@@ -18,7 +18,7 @@ class V4_1 extends V4
 
     public function hello(...$args): bool
     {
-        if (count($args) < 4) {
+        if (count($args) != 5) {
             Bolt::error('Wrong arguments count');
             return false;
         }
@@ -29,7 +29,7 @@ class V4_1 extends V4
                 'scheme' => $args[1],
                 'principal' => $args[2],
                 'credentials' => $args[3],
-                'routing' => !empty($args[4]) ? (object)$args[4] : null
+                'routing' => is_array($args[4]) ? (object)$args[4] : null
             ]);
         } catch (Exception $ex) {
             Bolt::error($ex->getMessage());
