@@ -57,6 +57,9 @@ class V4 extends V3
 
     public function discard(...$args): bool
     {
+        // The n specifies how many records to fetch. n=-1 will fetch all records.
+        $args[0]['n'] = $args[0]['n'] ?? -1;
+
         try {
             $msg = $this->packer->pack(0x2F, (object)($args[0] ?? []));
         } catch (Exception $ex) {
