@@ -67,8 +67,3 @@ I really like Neo4j and I wanted to use it with PHP. But after I looked on offic
 
 ## Another solutions
 https://neo4j.com/developer/php/
-
-## Support
-If you like this project and you want to support me, buy me a tea :)
-
-[![Donate paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.me/MichalStefanak)
