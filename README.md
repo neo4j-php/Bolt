@@ -39,7 +39,7 @@ $bolt = new \Bolt\Bolt();
 //Set Bolt protocol version (default is newest 4.1)
 $bolt->setProtocolVersions(4.1);
 //Connect to database
-$bolt->init('MyClient/1.0', 'username', 'password);
+$bolt->init('MyClient/1.0', 'username', 'password');
 //Execute query
 $bolt->run('RETURN 1 AS num, 2 AS cnt');
 //Pull records from last query
