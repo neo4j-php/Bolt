@@ -35,21 +35,25 @@ final class Socket
             return;
         }
 
-        self::$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        self::$socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (!is_resource(self::$socket)) {
             Bolt::error('Cannot create socket');
             return;
         }
 
-        socket_set_block(Socket::$socket);
-        socket_set_option(Socket::$socket, SOL_TCP, TCP_NODELAY, 1);
-        socket_set_option(Socket::$socket, SOL_SOCKET, SO_KEEPALIVE, 1);
-        socket_set_option(Socket::$socket, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $timeout, 'usec' => 0]);
-        socket_set_option(Socket::$socket, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $timeout, 'usec' => 0]);
+        if (socket_set_block(self::$socket) === false) {
+            Bolt::error('Cannot set socket into blocking mode');
+            return;
+        }
+
+        socket_set_option(self::$socket, SOL_TCP, TCP_NODELAY, 1);
+        socket_set_option(self::$socket, SOL_SOCKET, SO_KEEPALIVE, 1);
+        socket_set_option(self::$socket, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $timeout, 'usec' => 0]);
+        socket_set_option(self::$socket, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $timeout, 'usec' => 0]);
 
         $conn = socket_connect(self::$socket, $ip, $port);
         if (!$conn) {
-            $code = socket_last_error(Socket::$socket);
+            $code = socket_last_error(self::$socket);
             Bolt::error(socket_strerror($code), $code);
             return;
         }
@@ -128,12 +132,19 @@ final class Socket
      * Read buffer from socket
      * @param int $length
      * @return string
+     * @throws Exception
      */
     public static function readBuffer(int $length = 2048): string
     {
         $output = '';
         do {
-            $output .= socket_read(self::$socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
+            $readed = socket_read(self::$socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
+            if ($readed === false) {
+                $code = socket_last_error(self::$socket);
+                Bolt::error(socket_strerror($code), $code);
+            } else {
+                $output .= $readed;
+            }
         } while (mb_strlen($output, '8bit') < $length);
         return $output;
     }
