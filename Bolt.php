@@ -191,10 +191,11 @@ final class Bolt
      * @param string $name
      * @param string $user
      * @param string $password
+     * @param array $extra
      * @return bool
      * @throws Exception
      */
-    public function init(string $name, string $user, string $password): bool
+    public function init(string $name, string $user, string $password, array $extra = []): bool
     {
         if (!$this->handshake())
             return false;
@@ -202,7 +203,7 @@ final class Bolt
         if (self::$debug)
             echo 'INIT';
 
-        return $this->protocol->init($name, Bolt::$scheme, $user, $password);
+        return $this->protocol->init($name, Bolt::$scheme, $user, $password, $extra);
     }
 
     /**
@@ -212,12 +213,13 @@ final class Bolt
      * @param string $name
      * @param string $user
      * @param string $password
+     * @param array $extra
      * @return bool
      * @throws Exception
      */
-    public function hello(string $name, string $user, string $password): bool
+    public function hello(string $name, string $user, string $password, array $extra = []): bool
     {
-        return $this->init($name, $user, $password);
+        return $this->init($name, $user, $password, $extra);
     }
 
     /**
@@ -237,47 +239,51 @@ final class Bolt
     /**
      * Send PULL_ALL message
      * @version <4
+     * @param array $extra
      * @return mixed Array of records or false on error. Last array element is success message.
      */
-    public function pullAll()
+    public function pullAll(array $extra = [])
     {
         if (self::$debug)
             echo 'PULL';
-        return $this->protocol->pullAll();
+        return $this->protocol->pullAll($extra);
     }
 
     /**
      * Send PULL message
      * @version >=4
      * @internal PULL_ALL alias
+     * @param array $extra
      * @return mixed Array of records or false on error. Last array element is success message.
      */
-    public function pull()
+    public function pull(array $extra = [])
     {
-        return $this->pullAll();
+        return $this->pullAll($extra);
     }
 
     /**
      * Send DISCARD_ALL message
      * @version <4
+     * @param array $extra
      * @return bool
      */
-    public function discardAll()
+    public function discardAll(array $extra = [])
     {
         if (self::$debug)
             echo 'DISCARD';
-        return $this->protocol->discardAll();
+        return $this->protocol->discardAll($extra);
     }
 
     /**
      * Send DISCARD message
      * @version >=4
      * @internal DISCARD_ALL alias
+     * @param array $extra
      * @return bool
      */
-    public function discard(): bool
+    public function discard(array $extra = []): bool
     {
-        return $this->discardAll();
+        return $this->discardAll($extra);
     }
 
     /**
