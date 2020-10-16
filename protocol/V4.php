@@ -27,7 +27,7 @@ class V4 extends V3
         $args[0]['n'] = $args[0]['n'] ?? -1;
 
         try {
-            $msg = $this->packer->pack(0x3F, (object)($args[0] ?? []));
+            $msg = $this->packer->pack(0x3F, (object)$args[0]);
         } catch (Exception $ex) {
             Bolt::error($ex->getMessage());
             return false;
@@ -61,7 +61,7 @@ class V4 extends V3
         $args[0]['n'] = $args[0]['n'] ?? -1;
 
         try {
-            $msg = $this->packer->pack(0x2F, (object)($args[0] ?? []));
+            $msg = $this->packer->pack(0x2F, (object)$args[0]);
         } catch (Exception $ex) {
             Bolt::error($ex->getMessage());
             return false;
