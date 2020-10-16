@@ -3,7 +3,6 @@
 namespace Bolt\protocol;
 
 use Bolt\Bolt;
-use Bolt\Socket;
 use Exception;
 
 /**
@@ -40,9 +39,9 @@ class V3 extends V2
             return false;
         }
 
-        Socket::write($msg);
+        $this->socket->write($msg);
 
-        list($signature, $output) = Socket::read($this->unpacker);
+        list($signature, $output) = $this->socket->read($this->unpacker);
         if ($signature == self::FAILURE) {
             try {
                 $msg = $this->packer->pack(0x0E);
@@ -51,7 +50,7 @@ class V3 extends V2
                 return false;
             }
 
-            Socket::write($msg);
+            $this->socket->write($msg);
             Bolt::error($output['message'], $output['code']);
         }
 
@@ -72,9 +71,9 @@ class V3 extends V2
             return false;
         }
 
-        Socket::write($msg);
+        $this->socket->write($msg);
 
-        list($signature, $output) = Socket::read($this->unpacker);
+        list($signature, $output) = $this->socket->read($this->unpacker);
         if ($signature == self::FAILURE) {
             $this->reset();
             Bolt::error($output['message'], $output['code']);
@@ -91,7 +90,7 @@ class V3 extends V2
             return false;
         }
 
-        Socket::write($msg);
+        $this->socket->write($msg);
     }
 
     public function begin(...$args): bool
@@ -103,9 +102,9 @@ class V3 extends V2
             return false;
         }
 
-        Socket::write($msg);
+        $this->socket->write($msg);
 
-        list($signature, $output) = Socket::read($this->unpacker);
+        list($signature, $output) = $this->socket->read($this->unpacker);
         if ($signature == self::FAILURE) {
             $this->reset();
             Bolt::error($output['message'], $output['code']);
@@ -122,9 +121,9 @@ class V3 extends V2
             return false;
         }
 
-        Socket::write($msg);
+        $this->socket->write($msg);
 
-        list($signature, $output) = Socket::read($this->unpacker);
+        list($signature, $output) = $this->socket->read($this->unpacker);
         if ($signature == self::FAILURE) {
             $this->reset();
             Bolt::error($output['message'], $output['code']);
@@ -141,9 +140,9 @@ class V3 extends V2
             return false;
         }
 
-        Socket::write($msg);
+        $this->socket->write($msg);
 
-        list($signature, $output) = Socket::read($this->unpacker);
+        list($signature, $output) = $this->socket->read($this->unpacker);
         if ($signature == self::FAILURE) {
             $this->reset();
             Bolt::error($output['message'], $output['code']);
@@ -160,7 +159,7 @@ class V3 extends V2
             return false;
         }
 
-        Socket::write($msg);
+        $this->socket->write($msg);
     }
 
 }

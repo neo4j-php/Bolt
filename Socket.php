@@ -17,7 +17,7 @@ final class Socket
     /**
      * @var resource
      */
-    public static $socket;
+    private $socket;
 
     /**
      * @param string $ip
@@ -25,37 +25,33 @@ final class Socket
      * @param int $timeout
      * @throws Exception
      */
-    public static function initialize(string $ip, int $port, int $timeout)
+    public function __construct(string $ip, int $port, int $timeout)
     {
-        if (is_resource(self::$socket))
-            return;
-
         if (!extension_loaded('sockets')) {
             Bolt::error('PHP Extension sockets not enabled');
             return;
         }
 
-        self::$socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        if (!is_resource(self::$socket)) {
+        $this->socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        if (!is_resource($this->socket)) {
             Bolt::error('Cannot create socket');
             return;
         }
 
-        if (socket_set_block(self::$socket) === false) {
+        if (socket_set_block($this->socket) === false) {
             Bolt::error('Cannot set socket into blocking mode');
             return;
         }
 
-        socket_set_option(self::$socket, SOL_TCP, TCP_NODELAY, 1);
-        socket_set_option(self::$socket, SOL_SOCKET, SO_KEEPALIVE, 1);
-        socket_set_option(self::$socket, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $timeout, 'usec' => 0]);
-        socket_set_option(self::$socket, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $timeout, 'usec' => 0]);
+        socket_set_option($this->socket, SOL_TCP, TCP_NODELAY, 1);
+        socket_set_option($this->socket, SOL_SOCKET, SO_KEEPALIVE, 1);
+        socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $timeout, 'usec' => 0]);
+        socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $timeout, 'usec' => 0]);
 
-        $conn = socket_connect(self::$socket, $ip, $port);
+        $conn = socket_connect($this->socket, $ip, $port);
         if (!$conn) {
-            $code = socket_last_error(self::$socket);
+            $code = socket_last_error($this->socket);
             Bolt::error(socket_strerror($code), $code);
-            return;
         }
     }
 
@@ -64,9 +60,9 @@ final class Socket
      * @param string $buffer
      * @throws Exception
      */
-    public static function write(string $buffer)
+    public function write(string $buffer)
     {
-        if (!is_resource(self::$socket)) {
+        if (!is_resource($this->socket)) {
             Bolt::error('Not initialized socket');
             return;
         }
@@ -78,9 +74,9 @@ final class Socket
             Bolt::printHex($buffer);
 
         while ($sent < $size) {
-            $sent = socket_write(self::$socket, $buffer, $size);
+            $sent = socket_write($this->socket, $buffer, $size);
             if ($sent === false) {
-                $code = socket_last_error(self::$socket);
+                $code = socket_last_error($this->socket);
                 Bolt::error(socket_strerror($code), $code);
                 return;
             }
@@ -96,20 +92,20 @@ final class Socket
      * @return mixed
      * @throws Exception
      */
-    public static function read(IUnpacker $unpacker)
+    public function read(IUnpacker $unpacker)
     {
-        if (!is_resource(self::$socket)) {
+        if (!is_resource($this->socket)) {
             Bolt::error('Not initialized socket');
             return;
         }
 
         $msg = '';
         while (true) {
-            $header = self::readBuffer(2);
+            $header = $this->readBuffer(2);
             if (ord($header[0]) == 0x00 && ord($header[1]) == 0x00)
                 break;
             $length = unpack('n', $header)[1] ?? 0;
-            $msg .= self::readBuffer($length);
+            $msg .= $this->readBuffer($length);
         }
 
         $output = null;
@@ -134,18 +130,26 @@ final class Socket
      * @return string
      * @throws Exception
      */
-    public static function readBuffer(int $length = 2048): string
+    public function readBuffer(int $length = 2048): string
     {
         $output = '';
         do {
-            $readed = socket_read(self::$socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
+            $readed = socket_read($this->socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
             if ($readed === false) {
-                $code = socket_last_error(self::$socket);
+                $code = socket_last_error($this->socket);
                 Bolt::error(socket_strerror($code), $code);
             } else {
                 $output .= $readed;
             }
         } while (mb_strlen($output, '8bit') < $length);
         return $output;
+    }
+
+    /**
+     * Close socket
+     */
+    public function __destruct()
+    {
+        @socket_close($this->socket);
     }
 }

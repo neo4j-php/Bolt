@@ -32,6 +32,11 @@ final class Bolt
     private $protocol;
 
     /**
+     * @var Socket
+     */
+    private $socket;
+
+    /**
      * @var array
      */
     private $versions = [4.1, 4, 3];
@@ -72,7 +77,7 @@ final class Bolt
      */
     public function __construct(string $ip = '127.0.0.1', int $port = 7687, int $timeout = 15)
     {
-        Socket::initialize($ip, $port, $timeout);
+        $this->socket = new Socket($ip, $port, $timeout);
 
         $packerClass = "\\Bolt\\PackStream\\v" . $this->packStreamVersion . "\\Packer";
         if (!class_exists($packerClass)) {
@@ -124,8 +129,8 @@ final class Bolt
         if (self::$debug)
             echo 'HANDSHAKE';
 
-        Socket::write(chr(0x60) . chr(0x60) . chr(0xb0) . chr(0x17));
-        Socket::write($this->packProtocolVersions());
+        $this->socket->write(chr(0x60) . chr(0x60) . chr(0xb0) . chr(0x17));
+        $this->socket->write($this->packProtocolVersions());
 
         $this->unpackProtocolVersion();
         if (empty($this->version)) {
@@ -137,7 +142,7 @@ final class Bolt
         if (!class_exists($protocolClass)) {
             Bolt::error('Requested Protocol version (' . $this->version . ') not yet implemented');
         } else {
-            $this->protocol = new $protocolClass($this->packer, $this->unpacker);
+            $this->protocol = new $protocolClass($this->packer, $this->unpacker, $this->socket);
         }
 
         return $this->protocol instanceof AProtocol;
@@ -150,7 +155,7 @@ final class Bolt
     {
         $result = [];
 
-        foreach (str_split(Socket::readBuffer(4)) as $ch)
+        foreach (str_split($this->socket->readBuffer(4)) as $ch)
             $result[] = unpack('C', $ch)[1] ?? 0;
 
         $result = array_filter($result);
@@ -361,7 +366,7 @@ final class Bolt
     }
 
     /**
-     * Close socket
+     * Say goodbye
      */
     public function __destruct()
     {
@@ -370,8 +375,6 @@ final class Bolt
                 echo 'GOODBYE';
             $this->protocol->goodbye();
         }
-
-        @socket_close(Socket::$socket);
     }
 
 }
