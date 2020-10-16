@@ -51,6 +51,12 @@ try {
     $neo4jVersion = $bolt->pull()[0][0] ?? '';
     $t = version_compare($neo4jVersion, '4') == -1;
 
+    //test discard
+    $bolt->run('MATCH (a:Test) RETURN *');
+    if (!$bolt->discard()) {
+        throw new Exception('Discard failed');
+    }
+
     //test delete created node
     $bolt->run('MATCH (a:Test) WHERE ID(a) = ' . ($t ? '{a}' : '$a') . ' DELETE a', [
         'a' => $created[0][1]

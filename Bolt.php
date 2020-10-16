@@ -191,11 +191,14 @@ final class Bolt
      * @param string $name
      * @param string $user
      * @param string $password
-     * @param array $extra
+     * @param array $routing routing::Dictionary(address::String)
+     <pre>null - the server should not carry out routing
+     [] - the server should carry out routing
+     ['address' => 'ip:port'] - the server should carry out routing according to the given routing context</pre>
      * @return bool
      * @throws Exception
      */
-    public function init(string $name, string $user, string $password, array $extra = []): bool
+    public function init(string $name, string $user, string $password, array $routing = null): bool
     {
         if (!$this->handshake())
             return false;
@@ -203,7 +206,7 @@ final class Bolt
         if (self::$debug)
             echo 'INIT';
 
-        return $this->protocol->init($name, Bolt::$scheme, $user, $password, $extra);
+        return $this->protocol->init($name, Bolt::$scheme, $user, $password, $routing);
     }
 
     /**
@@ -213,20 +216,28 @@ final class Bolt
      * @param string $name
      * @param string $user
      * @param string $password
-     * @param array $extra
+     * @param array $routing routing::Dictionary(address::String)
+    <pre>null - the server should not carry out routing
+    [] - the server should carry out routing
+    ['address' => 'ip:port'] - the server should carry out routing according to the given routing context</pre>
      * @return bool
      * @throws Exception
      */
-    public function hello(string $name, string $user, string $password, array $extra = []): bool
+    public function hello(string $name, string $user, string $password, array $routing = null): bool
     {
-        return $this->init($name, $user, $password, $extra);
+        return $this->init($name, $user, $password, $routing);
     }
 
     /**
      * Send RUN message
      * @param string $statement
      * @param array $parameters
-     * @param array $extra
+     * @param array $extra extra::Dictionary(bookmarks::List<String>, tx_timeout::Integer, tx_metadata::Dictionary, mode::String, db:String)
+    <pre>The bookmarks is a list of strings containg some kind of bookmark identification e.g [“neo4j-bookmark-transaction:1”, “neo4j-bookmark-transaction:2”]
+    The tx_timeout is an integer in that specifies a transaction timeout in ms.
+    The tx_metadata is a dictionary that can contain some metadata information, mainly used for logging.
+    The mode specifies what kind of server the RUN message is targeting. For write access use "w" and for read access use "r". Defaults to write access if no mode is sent.
+    The db specifies the database name for multi-database to select where the transaction takes place. If no db is sent or empty string it implies that it is the default database.</pre>
      * @return mixed Return false on error
      */
     public function run(string $statement, array $parameters = [], array $extra = [])
@@ -239,56 +250,65 @@ final class Bolt
     /**
      * Send PULL_ALL message
      * @version <4
-     * @param array $extra
+     * @param int $n The n specifies how many records to fetch. n=-1 will fetch all records.
+     * @param int $qid The qid (query identification) specifies the result of which statement the operation should be carried out. (Explicit Transaction only). qid=-1 can be used to denote the last executed statement and if no ``.
      * @return mixed Array of records or false on error. Last array element is success message.
      */
-    public function pullAll(array $extra = [])
+    public function pullAll(int $n = -1, int $qid = -1)
     {
         if (self::$debug)
             echo 'PULL';
-        return $this->protocol->pullAll($extra);
+        return $this->protocol->pullAll(['n' => $n, 'qid' => $qid]);
     }
 
     /**
      * Send PULL message
      * @version >=4
      * @internal PULL_ALL alias
-     * @param array $extra
+     * @param int $n The n specifies how many records to fetch. n=-1 will fetch all records.
+     * @param int $qid The qid (query identification) specifies the result of which statement the operation should be carried out. (Explicit Transaction only). qid=-1 can be used to denote the last executed statement and if no ``.
      * @return mixed Array of records or false on error. Last array element is success message.
      */
-    public function pull(array $extra = [])
+    public function pull(int $n = -1, int $qid = -1)
     {
-        return $this->pullAll($extra);
+        return $this->pullAll($n, $qid);
     }
 
     /**
      * Send DISCARD_ALL message
      * @version <4
-     * @param array $extra
+     * @param int $n The n specifies how many records to throw away. n=-1 will throw away all records.
+     * @param int $qid The qid (query identification) specifies the result of which statement the operation should be carried out. (Explicit Transaction only). qid=-1 can be used to denote the last executed statement and if no ``.
      * @return bool
      */
-    public function discardAll(array $extra = [])
+    public function discardAll(int $n = -1, int $qid = -1)
     {
         if (self::$debug)
             echo 'DISCARD';
-        return $this->protocol->discardAll($extra);
+        return $this->protocol->discardAll(['n' => $n, 'qid' => $qid]);
     }
 
     /**
      * Send DISCARD message
      * @version >=4
      * @internal DISCARD_ALL alias
-     * @param array $extra
+     * @param int $n The n specifies how many records to throw away. n=-1 will throw away all records.
+     * @param int $qid The qid (query identification) specifies the result of which statement the operation should be carried out. (Explicit Transaction only). qid=-1 can be used to denote the last executed statement and if no ``.
      * @return bool
      */
-    public function discard(array $extra = []): bool
+    public function discard(int $n = -1, int $qid = -1): bool
     {
-        return $this->discardAll($extra);
+        return $this->discardAll($n, $qid);
     }
 
     /**
      * Send BEGIN message
-     * @param array $extra
+     * @param array $extra extra::Dictionary(bookmarks::List<String>, tx_timeout::Integer, tx_metadata::Dictionary, mode::String, db:String)
+    <pre>The bookmarks is a list of strings containg some kind of bookmark identification e.g [“neo4j-bookmark-transaction:1”, “neo4j-bookmark-transaction:2”]
+    The tx_timeout is an integer in that specifies a transaction timeout in ms.
+    The tx_metadata is a dictionary that can contain some metadata information, mainly used for logging.
+    The mode specifies what kind of server the RUN message is targeting. For write access use "w" and for read access use "r". Defaults to write access if no mode is sent.
+    The db specifies the database name for multi-database to select where the transaction takes place. If no db is sent or empty string it implies that it is the default database.</pre>
      * @return bool
      */
     public function begin(array $extra = []): bool
