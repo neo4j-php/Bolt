@@ -3,7 +3,6 @@
 namespace Bolt\protocol;
 
 use Bolt\Bolt;
-use Bolt\Socket;
 use Exception;
 
 /**
@@ -36,9 +35,9 @@ class V4_1 extends V4
             return false;
         }
 
-        Socket::write($msg);
+        $this->socket->write($msg);
 
-        list($signature, $output) = Socket::read($this->unpacker);
+        list($signature, $output) = $this->socket->read($this->unpacker);
         if ($signature == self::FAILURE) {
             try {
                 $msg = $this->packer->pack(0x0E);
@@ -47,7 +46,7 @@ class V4_1 extends V4
                 return false;
             }
 
-            Socket::write($msg);
+            $this->socket->write($msg);
             Bolt::error($output['message'], $output['code']);
         }
 

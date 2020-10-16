@@ -3,7 +3,6 @@
 namespace Bolt\protocol;
 
 use Bolt\Bolt;
-use Bolt\Socket;
 use Exception;
 
 /**
@@ -30,11 +29,11 @@ class V4 extends V3
             return false;
         }
 
-        Socket::write($msg);
+        $this->socket->write($msg);
 
         $output = [];
         do {
-            list($signature, $ret) = Socket::read($this->unpacker);
+            list($signature, $ret) = $this->socket->read($this->unpacker);
             $output[] = $ret;
         } while ($signature == self::RECORD);
 
@@ -61,9 +60,9 @@ class V4 extends V3
             return false;
         }
 
-        Socket::write($msg);
+        $this->socket->write($msg);
 
-        list($signature,) = Socket::read($this->unpacker);
+        list($signature,) = $this->socket->read($this->unpacker);
         return $signature == self::SUCCESS;
     }
 

@@ -3,6 +3,7 @@
 namespace Bolt\protocol;
 
 use Bolt\PackStream\{IPacker, IUnpacker};
+use Bolt\Socket;
 
 /**
  * Abstract class AProtocol
@@ -30,14 +31,21 @@ abstract class AProtocol implements IProtocol
     protected $unpacker;
 
     /**
+     * @var Socket
+     */
+    protected $socket;
+
+    /**
      * AProtocol constructor.
      * @param IPacker $packer
      * @param IUnpacker $unpacker
+     * @param Socket $socket
      */
-    public function __construct(IPacker $packer, IUnpacker $unpacker)
+    public function __construct(IPacker $packer, IUnpacker $unpacker, Socket $socket)
     {
         $this->packer = $packer;
         $this->unpacker = $unpacker;
+        $this->socket = $socket;
     }
 
     public function begin(...$args): bool
