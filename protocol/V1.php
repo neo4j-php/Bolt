@@ -33,9 +33,9 @@ class V1 extends AProtocol
             return false;
         }
 
-        $this->socket->write($msg);
+        $this->write($msg);
+        $output = $this->read($signature);
 
-        list($signature, $output) = $this->socket->read($this->unpacker);
         if ($signature == self::FAILURE) {
             try {
                 $msg = $this->packer->pack(0x0E);
@@ -45,7 +45,7 @@ class V1 extends AProtocol
             }
 
             //AckFailure after init do not respond with any message
-            $this->socket->write($msg);
+            $this->write($msg);
             Bolt::error($output['message'], $output['code']);
         }
 
@@ -66,13 +66,14 @@ class V1 extends AProtocol
             return false;
         }
 
-        $this->socket->write($msg);
+        $this->write($msg);
+        $output = $this->read($signature);
 
-        list($signature, $output) = $this->socket->read($this->unpacker);
         if ($signature == self::FAILURE) {
             $this->ackFailure();
             Bolt::error($output['message'], $output['code']);
         }
+
         return $signature == self::SUCCESS ? $output : false;
     }
 
@@ -85,21 +86,20 @@ class V1 extends AProtocol
             return false;
         }
 
-        $this->socket->write($msg);
+        $this->write($msg);
 
         $output = [];
         do {
-            list($signature, $ret) = $this->socket->read($this->unpacker);
+            $ret = $this->read($signature);
             $output[] = $ret;
         } while ($signature == self::RECORD);
 
         if ($signature == self::FAILURE) {
             $this->ackFailure();
             Bolt::error($ret['message'], $ret['code']);
-            $output = false;
         }
 
-        return $output;
+        return $signature == self::SUCCESS ? $output : false;
     }
 
     public function discardAll(...$args): bool
@@ -111,9 +111,9 @@ class V1 extends AProtocol
             return false;
         }
 
-        $this->socket->write($msg);
+        $this->write($msg);
+        $this->read($signature);
 
-        list($signature,) = $this->socket->read($this->unpacker);
         return $signature == self::SUCCESS;
     }
 
@@ -131,9 +131,9 @@ class V1 extends AProtocol
             return false;
         }
 
-        $this->socket->write($msg);
+        $this->write($msg);
+        $this->read($signature);
 
-        list($signature,) = $this->socket->read($this->unpacker);
         return $signature == self::SUCCESS;
     }
 
@@ -146,9 +146,9 @@ class V1 extends AProtocol
             return false;
         }
 
-        $this->socket->write($msg);
+        $this->write($msg);
+        $this->read($signature);
 
-        list($signature,) = $this->socket->read($this->unpacker);
         return $signature == self::SUCCESS;
     }
 

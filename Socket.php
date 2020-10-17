@@ -2,9 +2,6 @@
 
 namespace Bolt;
 
-use Bolt\PackStream\IUnpacker;
-use Exception;
-
 /**
  * Static class Socket
  *
@@ -23,7 +20,7 @@ final class Socket
      * @param string $ip
      * @param int $port
      * @param int $timeout
-     * @throws Exception
+     * @throws \Exception
      */
     public function __construct(string $ip, int $port, int $timeout)
     {
@@ -56,9 +53,9 @@ final class Socket
     }
 
     /**
-     * Write to socket
+     * Write buffer to socket
      * @param string $buffer
-     * @throws Exception
+     * @throws \Exception
      */
     public function write(string $buffer)
     {
@@ -71,7 +68,7 @@ final class Socket
         $sent = 0;
 
         if (Bolt::$debug)
-            Bolt::printHex($buffer);
+            $this->printHex($buffer);
 
         while ($sent < $size) {
             $sent = socket_write($this->socket, $buffer, $size);
@@ -87,57 +84,20 @@ final class Socket
     }
 
     /**
-     * Read unpacked from socket
-     * @param IUnpacker $unpacker
-     * @return mixed
-     * @throws Exception
-     */
-    public function read(IUnpacker $unpacker)
-    {
-        if (!is_resource($this->socket)) {
-            Bolt::error('Not initialized socket');
-            return;
-        }
-
-        $msg = '';
-        while (true) {
-            $header = $this->readBuffer(2);
-            if (ord($header[0]) == 0x00 && ord($header[1]) == 0x00)
-                break;
-            $length = unpack('n', $header)[1] ?? 0;
-            $msg .= $this->readBuffer($length);
-        }
-
-        $output = null;
-        $signature = 0;
-        if (!empty($msg)) {
-            if (Bolt::$debug)
-                Bolt::printHex($msg, false);
-
-            try {
-                $output = $unpacker->unpack($msg, $signature);
-            } catch (Exception $ex) {
-                Bolt::error($ex->getMessage());
-            }
-        }
-
-        return [$signature, $output];
-    }
-
-    /**
      * Read buffer from socket
      * @param int $length
      * @return string
-     * @throws Exception
+     * @throws \Exception
      */
-    public function readBuffer(int $length = 2048): string
+    public function read(int $length = 2048): string
     {
+        $output = '';
+
         if (!is_resource($this->socket)) {
             Bolt::error('Not initialized socket');
-            return;
+            return $output;
         }
 
-        $output = '';
         do {
             $readed = socket_read($this->socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
             if ($readed === false) {
@@ -147,7 +107,28 @@ final class Socket
                 $output .= $readed;
             }
         } while (mb_strlen($output, '8bit') < $length);
+
+        if (Bolt::$debug)
+            $this->printHex($output, false);
+
         return $output;
+    }
+
+    /**
+     * Print buffer as HEX
+     * @param string $str
+     * @param bool $write
+     */
+    private function printHex(string $str, bool $write = true)
+    {
+        $str = implode(unpack('H*', $str));
+        echo '<pre>';
+        echo $write ? '> ' : '< ';
+        foreach (str_split($str, 8) as $chunk) {
+            echo implode(' ', str_split($chunk, 2));
+            echo '    ';
+        }
+        echo '</pre>';
     }
 
     /**
