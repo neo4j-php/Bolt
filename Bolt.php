@@ -134,7 +134,7 @@ final class Bolt
 
         $this->unpackProtocolVersion();
         if (empty($this->version)) {
-            $this->error('Wrong version');
+            static::error('Wrong version');
             return false;
         }
 
