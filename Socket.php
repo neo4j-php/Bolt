@@ -132,6 +132,11 @@ final class Socket
      */
     public function readBuffer(int $length = 2048): string
     {
+        if (!is_resource($this->socket)) {
+            Bolt::error('Not initialized socket');
+            return;
+        }
+
         $output = '';
         do {
             $readed = socket_read($this->socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
