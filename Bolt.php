@@ -54,7 +54,7 @@ final class Bolt
     /**
      * @var string
      */
-    public static $scheme = 'basic';
+    private $scheme = 'basic';
 
     /**
      * Custom error handler instead of throwing Exceptions
@@ -106,10 +106,23 @@ final class Bolt
 
     /**
      * @param int $version
+     * @return Bolt
      */
     public function setPackStreamVersion(int $version = 1)
     {
         $this->packStreamVersion = $version;
+        return $this;
+    }
+
+    /**
+     * @param string $scheme
+     * @return Bolt
+     */
+    public function setScheme(string $scheme = 'basic')
+    {
+        if (in_array($scheme, ['none', 'basic', 'kerberos']))
+            $this->scheme = $scheme;
+        return $this;
     }
 
     /**
@@ -155,7 +168,7 @@ final class Bolt
     {
         $result = [];
 
-        foreach (str_split($this->socket->readBuffer(4)) as $ch)
+        foreach (str_split($this->socket->read(4)) as $ch)
             $result[] = unpack('C', $ch)[1] ?? 0;
 
         $result = array_filter($result);
@@ -193,7 +206,7 @@ final class Bolt
     /**
      * Send INIT message
      * @version <3
-     * @param string $name
+     * @param string $name should conform to "Name/Version" https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent
      * @param string $user
      * @param string $password
      * @param array $routing routing::Dictionary(address::String)
@@ -211,7 +224,7 @@ final class Bolt
         if (self::$debug)
             echo 'INIT';
 
-        return $this->protocol->init($name, Bolt::$scheme, $user, $password, $routing);
+        return $this->protocol->init($name, $this->scheme, $user, $password, $routing);
     }
 
     /**
@@ -372,23 +385,6 @@ final class Bolt
             }
             throw new Exception($msg);
         }
-    }
-    
-    /**
-     * Print buffer as HEX
-     * @param string $str
-     * @param bool $write
-     */
-    public static function printHex(string $str, bool $write = true)
-    {
-        $str = implode(unpack('H*', $str));
-        echo '<pre>';
-        echo $write ? '> ' : '< ';
-        foreach (str_split($str, 8) as $chunk) {
-            echo implode(' ', str_split($chunk, 2));
-            echo '    ';
-        }
-        echo '</pre>';
     }
 
     /**

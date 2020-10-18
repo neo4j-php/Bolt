@@ -29,11 +29,11 @@ class V4 extends V3
             return false;
         }
 
-        $this->socket->write($msg);
+        $this->write($msg);
 
         $output = [];
         do {
-            list($signature, $ret) = $this->socket->read($this->unpacker);
+            $ret = $this->read($signature);
             $output[] = $ret;
         } while ($signature == self::RECORD);
 
@@ -60,9 +60,9 @@ class V4 extends V3
             return false;
         }
 
-        $this->socket->write($msg);
+        $this->write($msg);
+        $this->read($signature);
 
-        list($signature,) = $this->socket->read($this->unpacker);
         return $signature == self::SUCCESS;
     }
 
