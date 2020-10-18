@@ -17,7 +17,7 @@ class V4_1 extends V4
 
     public function hello(...$args): bool
     {
-        if (count($args) != 5) {
+        if (count($args) < 5) {
             Bolt::error('Wrong arguments count');
             return false;
         }
