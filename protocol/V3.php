@@ -22,7 +22,7 @@ class V3 extends V2
 
     public function hello(...$args): bool
     {
-        if (count($args) != 4) {
+        if (count($args) < 4) {
             Bolt::error('Wrong arguments count');
             return false;
         }

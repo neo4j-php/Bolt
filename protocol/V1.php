@@ -17,7 +17,7 @@ class V1 extends AProtocol
 
     public function init(...$args): bool
     {
-        if (count($args) != 4) {
+        if (count($args) < 4) {
             Bolt::error('Wrong arguments count');
             return false;
         }
