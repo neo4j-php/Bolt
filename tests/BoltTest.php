@@ -7,9 +7,13 @@ use Bolt\Bolt;
 
 /**
  * Class BoltTest
+ *
  * @author Michal Stefanak
  * @link https://github.com/stefanak-michal/Bolt
+ *
  * @covers \Bolt\Bolt
+ * @covers \Bolt\Socket
+ *
  * @package Bolt\tests
  * @requires PHP >= 7.1
  * @requires extension sockets
@@ -18,109 +22,68 @@ use Bolt\Bolt;
 class BoltTest extends TestCase
 {
 
-    public static function setUpBeforeClass(): void
-    {
-        Bolt::$errorHandler = function ($msg, $code) {
-            echo $msg . ' (' . $code . ')' . PHP_EOL;
-        };
-
-        //Todo pridat ked bude debugHandler aby sa dal naformatovat output
-        //Bolt::$debug = true;
-    }
-
     /**
-     * @return Bolt
-     * @throws \Exception
+     * @return Bolt|null
      */
-    public function test__construct()
+    public function testHello(): Bolt
     {
-        $bolt = new Bolt($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
-        $this->assertInstanceOf(Bolt::class, $bolt);
-        return $bolt;
+        try {
+            $bolt = new Bolt($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
+            $this->assertInstanceOf(Bolt::class, $bolt);
+            $this->assertTrue($bolt->hello('Test/1.0', $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+            return $bolt;
+        } catch (\Exception $e) {
+            $this->markTestSkipped($e->getMessage());
+        }
+
+        return null;
     }
 
     /**
-     * @depends test__construct
+     * @depends testHello
      * @param Bolt $bolt
-     * @return Bolt
-     * @throws \Exception
      */
-    public function testInit(Bolt $bolt)
-    {
-        $this->assertTrue($bolt->init('Test/1.0', $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
-        return $bolt;
-    }
-
-    /**
-     * @depends testInit
-     * @param Bolt $bolt
-     * @return Bolt
-     */
-    public function testRun(Bolt $bolt)
+    public function testPull(Bolt $bolt)
     {
         $res = $bolt->run('RETURN 1 AS num, 2 AS cnt');
         $this->assertIsArray($res);
         $this->assertArrayHasKey('fields', $res);
-        return $bolt;
-    }
 
-    /**
-     * @depends testRun
-     * @param Bolt $bolt
-     * @return Bolt
-     */
-    public function testPull(Bolt $bolt)
-    {
         $res = $bolt->pull();
         $this->assertEquals(1, $res[0][0] ?? 0);
         $this->assertEquals(2, $res[0][1] ?? 0);
-        return $bolt;
     }
 
     /**
-     * @depends testInit
+     * @depends testHello
      * @param Bolt $bolt
      */
     public function testDiscard(Bolt $bolt)
     {
-        //test discard
         $this->assertNotFalse($bolt->run('MATCH (a:Test) RETURN *'));
         $this->assertTrue($bolt->discard());
     }
 
     /**
-     * @depends testInit
-     * @depends testPull
+     * @depends testHello
      * @param Bolt $bolt
-     * @return int
      */
-    public function testNodeCreate(Bolt $bolt)
+    public function testNode(Bolt $bolt)
     {
         $this->assertNotFalse($bolt->run('CREATE (a:Test) RETURN a, ID(a)'));
 
         $created = $bolt->pull();
         $this->assertIsArray($created);
         $this->assertInstanceOf(\Bolt\structures\Node::class, $created[0][0]);
-        return $created[0][1];
-    }
 
-    /**
-     * @depends testInit
-     * @depends testNodeCreate
-     * @param Bolt $bolt
-     * @param int $id
-     */
-    public function testNodeDelete(Bolt $bolt, int $id)
-    {
-        //test delete created node
-        $this->assertNotFalse($bolt->run('MATCH (a:Test) WHERE ID(a) = ' . ($this->getParameterType($bolt) ? '{a}' : '$a') . ' DELETE a', [
-            'a' => $id
+        $this->assertNotFalse($bolt->run('MATCH (a:Test) WHERE ID(a) = ' . $this->formatParameter($bolt, 'a') . ' DELETE a', [
+            'a' => $created[0][1]
         ]));
         $this->assertEquals(1, $bolt->pull()[0]['stats']['nodes-deleted'] ?? 0);
     }
 
     /**
-     * @depends testInit
+     * @depends testHello
      * @param Bolt $bolt
      */
     public function testTransaction(Bolt $bolt)
@@ -136,12 +99,29 @@ class BoltTest extends TestCase
         $this->assertIsArray($created);
         $this->assertTrue($bolt->rollback());
 
-        $this->assertNotFalse($bolt->run('MATCH (a:Test) WHERE ID(a) = ' . ($this->getParameterType($bolt) ? '{a}' : '$a') . ' RETURN COUNT(a)', [
+        $this->assertNotFalse($bolt->run('MATCH (a:Test) WHERE ID(a) = ' . $this->formatParameter($bolt, 'a') . ' RETURN COUNT(a)', [
             'a' => $created[0][1]
         ]));
         $res = $bolt->pull();
         $this->assertIsArray($res);
         $this->assertEquals(0, $res[0][0]);
+    }
+
+    public function testError()
+    {
+        $this->expectException(\Exception::class);
+        Bolt::error('test');
+    }
+
+    public function testErrorHandler()
+    {
+        $tmp = '';
+        Bolt::$errorHandler = function ($msg, $code) use (&$tmp) {
+            $tmp = $msg;
+        };
+        Bolt::error('test');
+        $this->assertEquals('test', $tmp);
+        Bolt::$errorHandler = null;
     }
 
     /**
@@ -152,9 +132,10 @@ class BoltTest extends TestCase
     /**
      * Because from Neo4j >= 4.0 is different placeholder for parameters
      * @param Bolt $bolt
-     * @return bool
+     * @param string $name
+     * @return string
      */
-    private function getParameterType(Bolt $bolt): bool
+    private function formatParameter(Bolt $bolt, string $name): string
     {
         if (self::$parameterType == null) {
             $this->assertNotFalse($bolt->run('call dbms.components() yield versions unwind versions as version return version'));
@@ -163,7 +144,7 @@ class BoltTest extends TestCase
             self::$parameterType = version_compare($neo4jVersion, '4') == -1;
         }
 
-        return self::$parameterType;
+        return self::$parameterType ? ('{' . $name . '}') : ('$' . $name);
     }
 
 }

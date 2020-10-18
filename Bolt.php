@@ -218,6 +218,9 @@ final class Bolt
      */
     public function init(string $name, string $user, string $password, array $routing = null): bool
     {
+        if (!$this->socket->connect())
+            return false;
+
         if (!$this->handshake())
             return false;
 
@@ -397,6 +400,8 @@ final class Bolt
                 echo 'GOODBYE';
             $this->protocol->goodbye();
         }
+
+        $this->socket->disconnect();
     }
 
 }
