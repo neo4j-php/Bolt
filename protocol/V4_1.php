@@ -35,9 +35,11 @@ class V4_1 extends V4
             return false;
         }
 
-        $this->socket->write($msg);
+        $this->write($msg);
 
-        list($signature, $output) = $this->socket->read($this->unpacker);
+        $signature = 0;
+        $output = $this->read($signature);
+
         if ($signature == self::FAILURE) {
             try {
                 $msg = $this->packer->pack(0x0E);
@@ -46,7 +48,7 @@ class V4_1 extends V4
                 return false;
             }
 
-            $this->socket->write($msg);
+            $this->write($msg);
             Bolt::error($output['message'], $output['code']);
         }
 

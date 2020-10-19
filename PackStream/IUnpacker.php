@@ -16,5 +16,5 @@ interface IUnpacker
      * @param int $signature
      * @return mixed
      */
-    public function unpack(string $msg, int &$signature = 0);
+    public function unpack(string $msg, int &$signature);
 }

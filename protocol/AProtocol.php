@@ -2,8 +2,10 @@
 
 namespace Bolt\protocol;
 
+use Bolt\Bolt;
 use Bolt\PackStream\{IPacker, IUnpacker};
 use Bolt\Socket;
+use Exception;
 
 /**
  * Abstract class AProtocol
@@ -33,7 +35,7 @@ abstract class AProtocol implements IProtocol
     /**
      * @var Socket
      */
-    protected $socket;
+    private $socket;
 
     /**
      * AProtocol constructor.
@@ -66,6 +68,46 @@ abstract class AProtocol implements IProtocol
     public function goodbye(...$args)
     {
 
+    }
+
+    /**
+     * Write to socket
+     * @param string $buffer
+     * @throws Exception
+     */
+    protected function write(string $buffer)
+    {
+        $this->socket->write($buffer);
+    }
+
+    /**
+     * Read from socket
+     * @param int|null $signature
+     * @return mixed|null
+     * @throws Exception
+     */
+    protected function read(?int &$signature)
+    {
+        $msg = '';
+        while (true) {
+            $header = $this->socket->read(2);
+            if (ord($header[0]) == 0x00 && ord($header[1]) == 0x00)
+                break;
+            $length = unpack('n', $header)[1] ?? 0;
+            $msg .= $this->socket->read($length);
+        }
+
+        $output = null;
+        $signature = 0;
+        if (!empty($msg)) {
+            try {
+                $output = $this->unpacker->unpack($msg, $signature);
+            } catch (Exception $ex) {
+                Bolt::error($ex->getMessage());
+            }
+        }
+
+        return $output;
     }
 
 }

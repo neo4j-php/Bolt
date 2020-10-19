@@ -57,7 +57,7 @@ class Unpacker implements IUnpacker
      * @return mixed
      * @throws Exception
      */
-    public function unpack(string $msg, int &$signature = 0)
+    public function unpack(string $msg, int &$signature)
     {
         if (empty($msg)) {
             return null;
