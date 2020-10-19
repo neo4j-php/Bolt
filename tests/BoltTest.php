@@ -2,7 +2,6 @@
 
 namespace Bolt\tests;
 
-use PHPUnit\Framework\TestCase;
 use Bolt\Bolt;
 
 /**
@@ -19,13 +18,13 @@ use Bolt\Bolt;
  * @requires extension sockets
  * @requires extension mbstring
  */
-class BoltTest extends TestCase
+class BoltTest extends \Bolt\tests\ATest
 {
 
     /**
      * @return Bolt|null
      */
-    public function testHello(): Bolt
+    public function testHello(): ?Bolt
     {
         try {
             $bolt = new Bolt($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);

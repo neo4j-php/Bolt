@@ -166,8 +166,10 @@ final class Socket
      */
     public function disconnect()
     {
-        socket_shutdown($this->socket);
-        @socket_close($this->socket);
+        if (is_resource($this->socket)) {
+            @socket_shutdown($this->socket);
+            @socket_close($this->socket);
+        }
     }
 
 }

@@ -3,7 +3,7 @@
 namespace Bolt\tests\PackStream\v1;
 
 use Bolt\PackStream\v1\Packer;
-use PHPUnit\Framework\TestCase;
+use Exception;
 
 /**
  * Class PackerTest
@@ -18,7 +18,7 @@ use PHPUnit\Framework\TestCase;
  * @requires extension mbstring
  * @requires extension json
  */
-class PackerTest extends TestCase
+class PackerTest extends \Bolt\tests\ATest
 {
 
     /**
@@ -37,7 +37,7 @@ class PackerTest extends TestCase
      * @param string $bin
      * @param array $args
      * @param Packer $packer
-     * @throws \Exception
+     * @throws Exception
      */
     public function testPack(string $bin, array $args, Packer $packer)
     {
@@ -62,7 +62,7 @@ class PackerTest extends TestCase
      * @param string $bin
      * @param int $number
      * @param Packer $packer
-     * @throws \Exception
+     * @throws Exception
      */
     public function testPackInteger(string $bin, int $number, Packer $packer)
     {
@@ -83,7 +83,7 @@ class PackerTest extends TestCase
     /**
      * @depends test__construct
      * @param Packer $packer
-     * @throws \Exception
+     * @throws Exception
      */
     public function testPackFloat(Packer $packer)
     {
@@ -93,7 +93,7 @@ class PackerTest extends TestCase
     /**
      * @depends test__construct
      * @param Packer $packer
-     * @throws \Exception
+     * @throws Exception
      */
     public function testPackNull(Packer $packer)
     {
@@ -103,7 +103,7 @@ class PackerTest extends TestCase
     /**
      * @depends test__construct
      * @param Packer $packer
-     * @throws \Exception
+     * @throws Exception
      */
     public function testPackBool(Packer $packer)
     {
@@ -117,7 +117,7 @@ class PackerTest extends TestCase
      * @param string $bin
      * @param string $str
      * @param Packer $packer
-     * @throws \Exception
+     * @throws Exception
      */
     public function testPackString(string $bin, string $str, Packer $packer)
     {
@@ -138,7 +138,7 @@ class PackerTest extends TestCase
      * @param string $bin
      * @param array $arr
      * @param Packer $packer
-     * @throws \Exception
+     * @throws Exception
      */
     public function testPackArray(string $bin, array $arr, Packer $packer)
     {
@@ -162,9 +162,9 @@ class PackerTest extends TestCase
      * @param string $bin
      * @param object $obj
      * @param Packer $packer
-     * @throws \Exception
+     * @throws Exception
      */
-    public function testPackMap(string $bin, object $obj, Packer $packer)
+    public function testPackMap(string $bin, $obj, Packer $packer)
     {
         $this->assertEquals($bin, $this->getMethod($packer)->invoke($packer, $obj));
     }
@@ -184,12 +184,12 @@ class PackerTest extends TestCase
      * Test it on data type resource, which is not implemented
      * @depends test__construct
      * @param Packer $packer
-     * @throws \Exception
+     * @throws Exception
      */
     public function testException(Packer $packer)
     {
         $f = fopen(__FILE__, 'r');
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception::class);
         $this->getMethod($packer)->invoke($packer, $f);
         fclose($f);
     }
