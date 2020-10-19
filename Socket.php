@@ -3,7 +3,7 @@
 namespace Bolt;
 
 /**
- * Static class Socket
+ * Socket class
  *
  * @author Michal Stefanak
  * @link https://github.com/stefanak-michal/Bolt
