@@ -1,0 +1,3 @@
+{
+    "phpunit.colors": "--colors=always --configuration ./phpunit.xml"
+}
