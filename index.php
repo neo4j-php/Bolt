@@ -8,7 +8,7 @@
  * @link https://github.com/stefanak-michal/Bolt
  */
 
-require_once 'autoload.php';
+require_once 'src' . DIRECTORY_SEPARATOR . 'autoload.php';
 
 set_time_limit(3);
 
