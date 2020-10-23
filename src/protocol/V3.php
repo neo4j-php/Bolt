@@ -160,7 +160,7 @@ class V3 extends V2
             $msg = $this->packer->pack(0x02);
         } catch (Exception $ex) {
             Bolt::error($ex->getMessage());
-            return false;
+            return;
         }
 
         $this->write($msg);

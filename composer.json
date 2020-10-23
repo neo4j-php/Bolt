@@ -12,6 +12,9 @@
         "ext-sockets": "*",
         "ext-mbstring": "*"
     },
+    "require-dev": {
+        "phpunit/phpunit": ">=7.5.0"
+    },
     "support": {
         "issues": "https://github.com/stefanak-michal/Bolt/issues",
         "source": "https://github.com/stefanak-michal/Bolt"
@@ -30,7 +33,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "Bolt\\": "/"
+            "Bolt\\": "src/"
         }
     }
 }

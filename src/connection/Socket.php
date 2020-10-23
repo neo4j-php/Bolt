@@ -1,16 +1,34 @@
 <?php
 
-namespace Bolt;
+namespace Bolt\connection;
+
+use Bolt\Bolt;
 
 /**
- * Static class Socket
+ * Socket class
  *
  * @author Michal Stefanak
  * @link https://github.com/stefanak-michal/Bolt
- * @package Bolt
+ * @package Bolt\connection
  */
-final class Socket
+class Socket implements IConnection
 {
+
+    /**
+     * @var string
+     */
+    private $ip;
+
+    /**
+     * @var int
+     */
+    private $port;
+
+    /**
+     * @var int
+     */
+    private $timeout;
+
     /**
      * @var resource
      */
@@ -26,30 +44,44 @@ final class Socket
     {
         if (!extension_loaded('sockets')) {
             Bolt::error('PHP Extension sockets not enabled');
-            return;
         }
 
+        $this->ip = $ip;
+        $this->port = $port;
+        $this->timeout = $timeout;
+    }
+
+    /**
+     * Create socket connection
+     * @return bool
+     * @throws \Exception
+     */
+    public function connect(): bool
+    {
         $this->socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (!is_resource($this->socket)) {
             Bolt::error('Cannot create socket');
-            return;
+            return false;
         }
 
         if (socket_set_block($this->socket) === false) {
             Bolt::error('Cannot set socket into blocking mode');
-            return;
+            return false;
         }
 
         socket_set_option($this->socket, SOL_TCP, TCP_NODELAY, 1);
         socket_set_option($this->socket, SOL_SOCKET, SO_KEEPALIVE, 1);
-        socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $timeout, 'usec' => 0]);
-        socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $timeout, 'usec' => 0]);
+        socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
+        socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
 
-        $conn = socket_connect($this->socket, $ip, $port);
+        $conn = @socket_connect($this->socket, $this->ip, $this->port);
         if (!$conn) {
             $code = socket_last_error($this->socket);
             Bolt::error(socket_strerror($code), $code);
+            return false;
         }
+
+        return true;
     }
 
     /**
@@ -132,10 +164,14 @@ final class Socket
     }
 
     /**
-     * Close socket
+     * Close socket connection
      */
-    public function __destruct()
+    public function disconnect()
     {
-        @socket_close($this->socket);
+        if (is_resource($this->socket)) {
+            @socket_shutdown($this->socket);
+            @socket_close($this->socket);
+        }
     }
+
 }
