@@ -1,15 +1,17 @@
 <?php
 
-namespace Bolt;
+namespace Bolt\connection;
+
+use Bolt\Bolt;
 
 /**
  * Socket class
  *
  * @author Michal Stefanak
  * @link https://github.com/stefanak-michal/Bolt
- * @package Bolt
+ * @package Bolt\connection
  */
-final class Socket
+class Socket implements IConnection
 {
 
     /**

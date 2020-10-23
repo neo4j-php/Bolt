@@ -4,7 +4,7 @@ namespace Bolt\protocol;
 
 use Bolt\Bolt;
 use Bolt\PackStream\{IPacker, IUnpacker};
-use Bolt\Socket;
+use Bolt\connection\IConnection;
 use Exception;
 
 /**
@@ -33,21 +33,21 @@ abstract class AProtocol implements IProtocol
     protected $unpacker;
 
     /**
-     * @var Socket
+     * @var IConnection
      */
-    private $socket;
+    private $connection;
 
     /**
      * AProtocol constructor.
      * @param IPacker $packer
      * @param IUnpacker $unpacker
-     * @param Socket $socket
+     * @param IConnection $connection
      */
-    public function __construct(IPacker $packer, IUnpacker $unpacker, Socket $socket)
+    public function __construct(IPacker $packer, IUnpacker $unpacker, IConnection $connection)
     {
         $this->packer = $packer;
         $this->unpacker = $unpacker;
-        $this->socket = $socket;
+        $this->connection = $connection;
     }
 
     public function begin(...$args): bool
@@ -71,17 +71,17 @@ abstract class AProtocol implements IProtocol
     }
 
     /**
-     * Write to socket
+     * Write to connection
      * @param string $buffer
      * @throws Exception
      */
     protected function write(string $buffer)
     {
-        $this->socket->write($buffer);
+        $this->connection->write($buffer);
     }
 
     /**
-     * Read from socket
+     * Read from connection
      * @param int|null $signature
      * @return mixed|null
      * @throws Exception
@@ -90,11 +90,11 @@ abstract class AProtocol implements IProtocol
     {
         $msg = '';
         while (true) {
-            $header = $this->socket->read(2);
+            $header = $this->connection->read(2);
             if (ord($header[0]) == 0x00 && ord($header[1]) == 0x00)
                 break;
             $length = unpack('n', $header)[1] ?? 0;
-            $msg .= $this->socket->read($length);
+            $msg .= $this->connection->read($length);
         }
 
         $output = null;

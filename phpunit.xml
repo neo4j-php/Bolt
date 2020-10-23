@@ -10,10 +10,10 @@
     </php>
     <filter>
         <whitelist>
-            <directory suffix=".php">protocol</directory>
+            <directory suffix=".php">connection</directory>
             <directory suffix=".php">PackStream</directory>
+            <directory suffix=".php">protocol</directory>
             <file>Bolt.php</file>
-            <file>Socket.php</file>
         </whitelist>
     </filter>
 </phpunit>

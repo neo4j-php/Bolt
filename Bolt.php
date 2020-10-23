@@ -5,6 +5,7 @@ namespace Bolt;
 use Exception;
 use Bolt\PackStream\{IPacker, IUnpacker};
 use Bolt\protocol\AProtocol;
+use Bolt\connection\IConnection;
 
 /**
  * Main class Bolt
@@ -32,9 +33,9 @@ final class Bolt
     private $protocol;
 
     /**
-     * @var Socket
+     * @var IConnection
      */
-    private $socket;
+    private $connection;
 
     /**
      * @var array
@@ -77,7 +78,7 @@ final class Bolt
      */
     public function __construct(string $ip = '127.0.0.1', int $port = 7687, int $timeout = 15)
     {
-        $this->socket = new Socket($ip, $port, $timeout);
+        $this->connection = new \Bolt\connection\Socket($ip, $port, $timeout);
 
         $packerClass = "\\Bolt\\PackStream\\v" . $this->packStreamVersion . "\\Packer";
         if (!class_exists($packerClass)) {
@@ -142,8 +143,8 @@ final class Bolt
         if (self::$debug)
             echo 'HANDSHAKE';
 
-        $this->socket->write(chr(0x60) . chr(0x60) . chr(0xb0) . chr(0x17));
-        $this->socket->write($this->packProtocolVersions());
+        $this->connection->write(chr(0x60) . chr(0x60) . chr(0xb0) . chr(0x17));
+        $this->connection->write($this->packProtocolVersions());
 
         $this->unpackProtocolVersion();
         if (empty($this->version)) {
@@ -155,7 +156,7 @@ final class Bolt
         if (!class_exists($protocolClass)) {
             Bolt::error('Requested Protocol version (' . $this->version . ') not yet implemented');
         } else {
-            $this->protocol = new $protocolClass($this->packer, $this->unpacker, $this->socket);
+            $this->protocol = new $protocolClass($this->packer, $this->unpacker, $this->connection);
         }
 
         return $this->protocol instanceof AProtocol;
@@ -168,7 +169,7 @@ final class Bolt
     {
         $result = [];
 
-        foreach (str_split($this->socket->read(4)) as $ch)
+        foreach (str_split($this->connection->read(4)) as $ch)
             $result[] = unpack('C', $ch)[1] ?? 0;
 
         $result = array_filter($result);
@@ -218,7 +219,7 @@ final class Bolt
      */
     public function init(string $name, string $user, string $password, array $routing = null): bool
     {
-        if (!$this->socket->connect())
+        if (!$this->connection->connect())
             return false;
 
         if (!$this->handshake())
@@ -401,7 +402,7 @@ final class Bolt
             $this->protocol->goodbye();
         }
 
-        $this->socket->disconnect();
+        $this->connection->disconnect();
     }
 
 }

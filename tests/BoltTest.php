@@ -11,7 +11,7 @@ use Bolt\Bolt;
  * @link https://github.com/stefanak-michal/Bolt
  *
  * @covers \Bolt\Bolt
- * @covers \Bolt\Socket
+ * @covers \Bolt\connection\Socket
  *
  * @package Bolt\tests
  * @requires PHP >= 7.1
