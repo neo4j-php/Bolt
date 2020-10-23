@@ -12,6 +12,8 @@ use Bolt\Bolt;
  *
  * @covers \Bolt\Bolt
  * @covers \Bolt\connection\Socket
+ * @covers \Bolt\PackStream\v1\Packer
+ * @covers \Bolt\PackStream\v1\Unpacker
  *
  * @package Bolt\tests
  * @requires PHP >= 7.1
