@@ -1,0 +1,19 @@
+<phpunit bootstrap="src/autoload.php">
+    <testsuites>
+        <testsuite name="Bolt">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <var name="NEO_USER" value="neo4j"/>
+        <var name="NEO_PASS" value="nothing"/>
+    </php>
+    <filter>
+        <whitelist>
+            <directory suffix=".php">src/connection</directory>
+            <directory suffix=".php">src/PackStream</directory>
+            <directory suffix=".php">src/protocol</directory>
+            <file>src/Bolt.php</file>
+        </whitelist>
+    </filter>
+</phpunit>
