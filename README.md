@@ -1,6 +1,8 @@
 # Bolt
 Bolt protocol library over TCP socket. Bolt protocol is primary used for communication with [Neo4j](https://neo4j.com/) Graph database. The documentation is available at [https://7687.org/](https://7687.org/).
 
+![](https://img.shields.io/badge/phpunit-passed-success) ![](https://img.shields.io/badge/coverage-70%25-yellowgreen) ![](https://img.shields.io/github/stars/stefanak-michal/Bolt) ![](https://img.shields.io/packagist/dt/stefanak-michal/bolt) ![](https://img.shields.io/github/v/release/stefanak-michal/bolt) ![](https://img.shields.io/github/commits-since/stefanak-michal/bolt/latest)
+
 ## Supported version
 Bolt <= 4.1
 
@@ -17,53 +19,15 @@ Bolt <= 4.1
 
 <sup>The (x) denotes that support could be removed in next version of Neo4j.</sup>
 
-## Requirements
-PHP >= 7.1  
-extensions:
-- sockets https://www.php.net/manual/en/book.sockets.php
-- mbstring https://www.php.net/manual/en/book.mbstring.php
-
-## Installation via composer
-Run the following command to install the latest applicable version of the package:
-
-``composer require stefanak-michal/bolt``
-
-## Usage
-See ``index.php`` file. It contains few examples how you can use this library. Of course you need to set up your username and password. This repository contains simple `autoload.php` file.
-
-### Main code example
-```php
-<?php
-//Create new Bolt instance
-$bolt = new \Bolt\Bolt();
-//Set Bolt protocol version (default is newest 4.1)
-$bolt->setProtocolVersions(4.1);
-//Connect to database
-$bolt->init('MyClient/1.0', 'username', 'password');
-//Execute query
-$bolt->run('RETURN 1 AS num, 2 AS cnt');
-//Pull records from last query
-$rows = $bolt->pull();
-```
-
-| Method    | Description                                                        |
-|--------------------------|---------------------------------------------------------------------------------------|
-| setProtocolVersions    | set requested protocol versions                                                        |
-| getProtocolVersion     | get used protocol version (you have to establish connection with init() method first) |
-| init                   | connect to database                                                                   |
-| run                    | execute query                                                                         |
-| pull / pullAll       | fetch records from last query                                                         |
-| discard / discardAll | discard records from last query                                                       |
-| begin                  | start transaction                                                                     |
-| commit                 | commit transaction                                                                    |
-| rollback               | rollback transaction                                                                  |
-| reset                  | reset connection                                                                      |
-
-## Exceptions
-Throwing exceptions is default behaviour. If you want, you can assign own callable error handler to ``\Bolt\Bolt::$errorHandler``. It's called on error and methods (init, run, pullAll, ...) will therefore return false.
+## [Requirements](https://github.com/stefanak-michal/Bolt/wiki/Requirements)
+## [Installation](https://github.com/stefanak-michal/Bolt/wiki/Installation)
+## [Usage](https://github.com/stefanak-michal/Bolt/wiki/Usage)
+## [Errors](https://github.com/stefanak-michal/Bolt/wiki/Errors)
 
 ## Author note
 I really like Neo4j and I wanted to use it with PHP. But after I looked on official php library, I was really disappointed. Too much dependencies. I don't like if I need to install 10 things because of one. First I decided to use HTTP API for communication, but it wasn't fast enough. I went through bolt protocol documentation and I said to myself, why not to create own simpler library?
+
+[Speed comparison](https://github.com/stefanak-michal/Bolt/wiki/Speed-comparison)
 
 ## Another solutions
 https://neo4j.com/developer/php/
