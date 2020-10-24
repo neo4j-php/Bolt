@@ -27,14 +27,14 @@ try {
     }
 
     //test fields
-    $res = $bolt->run('RETURN 1 AS num, 2 AS cnt');
+    $res = $bolt->run('RETURN -1 AS num, 2 AS cnt');
     if (($res['fields'][0] ?? '') != 'num' || ($res['fields'][1] ?? '') != 'cnt') {
         throw new Exception('Wrong fields');
     }
 
     //test record
     $res = $bolt->pull();
-    if (($res[0][0] ?? 0) != 1 || ($res[0][1] ?? 0) != 2) {
+    if (($res[0][0] ?? 0) != -1 || ($res[0][1] ?? 0) != 2) {
         throw new Exception('Wrong record');
     }
 

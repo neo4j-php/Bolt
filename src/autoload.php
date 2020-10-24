@@ -9,9 +9,8 @@ spl_autoload_register(function ($name) {
         return;
     array_shift($parts);
 
-    /*
-     * namespace calls
-     */
+    if ($parts[0] == 'tests')
+        array_unshift($parts,'..');
 
     //compose standart namespaced path to file
     $path = __DIR__ . DS . implode(DS, $parts) . '.php';

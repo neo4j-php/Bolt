@@ -3,7 +3,7 @@ Bolt protocol library over TCP socket. Bolt protocol is primary used for communi
 
 ![](https://img.shields.io/badge/phpunit-passed-success) ![](https://img.shields.io/badge/coverage-70%25-yellowgreen) ![](https://img.shields.io/github/stars/stefanak-michal/Bolt) ![](https://img.shields.io/packagist/dt/stefanak-michal/bolt) ![](https://img.shields.io/github/v/release/stefanak-michal/bolt) ![](https://img.shields.io/github/commits-since/stefanak-michal/bolt/latest)
 
-## Supported version
+## Version support
 Bolt <= 4.1
 
 | Neo4j Version | Bolt 1 | Bolt 2 | Bolt 3 | Bolt 4.0 | Bolt 4.1 |
@@ -25,7 +25,7 @@ Bolt <= 4.1
 ## [Errors](https://github.com/stefanak-michal/Bolt/wiki/Errors)
 
 ## Author note
-I really like Neo4j and I wanted to use it with PHP. But after I looked on official php library, I was really disappointed. Too much dependencies. I don't like if I need to install 10 things because of one. First I decided to use HTTP API for communication, but it wasn't fast enough. I went through bolt protocol documentation and I said to myself, why not to create own simpler library?
+I really like Neo4j and I wanted to use it with PHP. But after I looked on official php library, I was really disappointed. Too much dependencies. I don't like if I have to install 10 things because of one. First I decided to use HTTP API for communication, but it wasn't fast enough. I went through bolt protocol documentation and I said to myself, why not to create own simpler library?
 
 [Speed comparison](https://github.com/stefanak-michal/Bolt/wiki/Speed-comparison)
 

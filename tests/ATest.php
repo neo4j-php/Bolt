@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Bolt\connection\IConnection;
 
 /**
- * Class TestBase
+ * Class ATest
  * @author Michal Stefanak
  * @link https://github.com/stefanak-michal/Bolt
  * @package Bolt\tests
