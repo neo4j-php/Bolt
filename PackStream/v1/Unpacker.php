@@ -268,7 +268,7 @@ class Unpacker implements IUnpacker
         if ($marker >> 7 == 0b0) { //+TINY_INT
             $output = $marker;
         } elseif ($marker >> 4 == 0b1111) { //-TINY_INT
-            $output = 0b11110000 ^ $marker;
+            $output = -16 + (0b11110000 ^ $marker);
         } elseif ($marker == 0xC8) { //INT_8
             $output = unpack('c', $this->next(1))[1] ?? 0;
         } elseif ($marker == 0xC9) { //INT_16
