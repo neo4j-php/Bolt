@@ -2,46 +2,48 @@
 
 namespace Bolt\tests\PackStream\v1;
 
-use Bolt\PackStream\v1\Packer;
+use Bolt\PackStream\v1\Unpacker;
 use Exception;
 
 /**
- * Class PackerTest
+ * Class UnpackerTest
  *
  * @author Michal Stefanak
  * @link https://github.com/stefanak-michal/Bolt
  *
- * @covers \Bolt\PackStream\v1\Packer
+ * @covers \Bolt\PackStream\v1\Unpacker
  *
  * @package Bolt\tests\PackStream\v1
  * @requires PHP >= 7.1
  * @requires extension mbstring
  * @requires extension json
  */
-class PackerTest extends \Bolt\tests\ATest
+class UnpackerTest extends \Bolt\tests\ATest
 {
 
     /**
-     * @return Packer
+     * @return Unpacker
      */
-    public function test__construct(): Packer
+    public function test__construct(): Unpacker
     {
-        $packer = new Packer();
-        $this->assertInstanceOf(Packer::class, $packer);
-        return $packer;
+        $unpacker = new Unpacker();
+        $this->assertInstanceOf(Unpacker::class, $unpacker);
+        return $unpacker;
     }
 
     /**
      * @depends test__construct
      * @dataProvider packProvider
      * @param string $bin
-     * @param array $args
-     * @param Packer $packer
+     * @param array $arr
+     * @param Unpacker $unpacker
      * @throws Exception
      */
-    public function testPack(string $bin, array $args, Packer $packer)
+    public function testUnpack(string $bin, array $arr, Unpacker $unpacker)
     {
-        $this->assertEquals($bin, $packer->pack(0x88, $args));
+        $signature = 0;
+        $this->assertEquals($arr, $unpacker->unpack(mb_substr($bin, 2), $signature));
+        $this->assertEquals(0x88, $signature);
     }
 
     /**
@@ -60,12 +62,12 @@ class PackerTest extends \Bolt\tests\ATest
      * @dataProvider integerProvider
      * @param string $bin
      * @param int $number
-     * @param Packer $packer
+     * @param Unpacker $unpacker
      * @throws Exception
      */
-    public function testPackInteger(string $bin, int $number, Packer $packer)
+    public function testUnpackInteger(string $bin, int $number, Unpacker $unpacker)
     {
-        $this->assertEquals($bin, $this->getMethod($packer)->invoke($packer, $number));
+        $this->assertEquals($number, $this->invokeMethod($unpacker, $bin));
     }
 
     /**
@@ -81,33 +83,33 @@ class PackerTest extends \Bolt\tests\ATest
 
     /**
      * @depends test__construct
-     * @param Packer $packer
+     * @param Unpacker $unpacker
      * @throws Exception
      */
-    public function testPackFloat(Packer $packer)
+    public function testUnpackFloat(Unpacker $unpacker)
     {
-        $this->assertEquals('c1400921f9f01b866e', bin2hex($this->getMethod($packer)->invoke($packer, 3.14159)));
+        $this->assertEquals(3.14159, $this->invokeMethod($unpacker, hex2bin('c1400921f9f01b866e')));
     }
 
     /**
      * @depends test__construct
-     * @param Packer $packer
+     * @param Unpacker $unpacker
      * @throws Exception
      */
-    public function testPackNull(Packer $packer)
+    public function testUnpackNull(Unpacker $unpacker)
     {
-        $this->assertEquals('c0', bin2hex($this->getMethod($packer)->invoke($packer, null)));
+        $this->assertEquals(null, $this->invokeMethod($unpacker, hex2bin('c0')));
     }
 
     /**
      * @depends test__construct
-     * @param Packer $packer
+     * @param Unpacker $unpacker
      * @throws Exception
      */
-    public function testPackBool(Packer $packer)
+    public function testUnpackBool(Unpacker $unpacker)
     {
-        $this->assertEquals('c2', bin2hex($this->getMethod($packer)->invoke($packer, false)));
-        $this->assertEquals('c3', bin2hex($this->getMethod($packer)->invoke($packer, true)));
+        $this->assertEquals(true, $this->invokeMethod($unpacker, hex2bin('c3')));
+        $this->assertEquals(false, $this->invokeMethod($unpacker, hex2bin('c2')));
     }
 
     /**
@@ -115,12 +117,12 @@ class PackerTest extends \Bolt\tests\ATest
      * @dataProvider stringProvider
      * @param string $bin
      * @param string $str
-     * @param Packer $packer
+     * @param Unpacker $unpacker
      * @throws Exception
      */
-    public function testPackString(string $bin, string $str, Packer $packer)
+    public function testUnpackString(string $bin, string $str, Unpacker $unpacker)
     {
-        $this->assertEquals($bin, $this->getMethod($packer)->invoke($packer, $str));
+        $this->assertEquals($str, $this->invokeMethod($unpacker, $bin));
     }
 
     /**
@@ -136,12 +138,12 @@ class PackerTest extends \Bolt\tests\ATest
      * @dataProvider arrayProvider
      * @param string $bin
      * @param array $arr
-     * @param Packer $packer
+     * @param Unpacker $unpacker
      * @throws Exception
      */
-    public function testPackArray(string $bin, array $arr, Packer $packer)
+    public function testUnpackArray(string $bin, array $arr, Unpacker $unpacker)
     {
-        $this->assertEquals($bin, $this->getMethod($packer)->invoke($packer, $arr));
+        $this->assertEquals($arr, $this->invokeMethod($unpacker, $bin));
     }
 
     /**
@@ -160,12 +162,12 @@ class PackerTest extends \Bolt\tests\ATest
      * @dataProvider mapProvider
      * @param string $bin
      * @param object $obj
-     * @param Packer $packer
+     * @param Unpacker $unpacker
      * @throws Exception
      */
-    public function testPackMap(string $bin, $obj, Packer $packer)
+    public function testUnpackMap(string $bin, $obj, Unpacker $unpacker)
     {
-        $this->assertEquals($bin, $this->getMethod($packer)->invoke($packer, $obj));
+        $this->assertEquals($obj, $this->invokeMethod($unpacker, $bin));
     }
 
     /**
@@ -175,36 +177,25 @@ class PackerTest extends \Bolt\tests\ATest
     {
         $data = $this->provider(__FUNCTION__);
         foreach ($data as &$entry)
-            $entry[1] = json_decode($entry[1]);
+            $entry[1] = json_decode($entry[1], true);
         return $data;
     }
 
     /**
-     * Test it on data type resource, which is not implemented
-     * @depends test__construct
-     * @param Packer $packer
-     * @throws Exception
-     */
-    public function testException(Packer $packer)
-    {
-        $f = fopen(__FILE__, 'r');
-        $this->expectException(Exception::class);
-        $this->getMethod($packer)->invoke($packer, $f);
-        fclose($f);
-    }
-
-
-    /**
      * Get method from Packer as accessible
-     * @param Packer $packer
-     * @return \ReflectionMethod
+     * @param Unpacker $unpacker
+     * @param string $message
+     * @return mixed
      */
-    private function getMethod(Packer $packer): \ReflectionMethod
+    private function invokeMethod(Unpacker $unpacker, string $message)
     {
-        $reflection = new \ReflectionClass(get_class($packer));
-        $method = $reflection->getMethod('p');
+        $reflection = new \ReflectionClass(get_class($unpacker));
+        $method = $reflection->getMethod('u');
         $method->setAccessible(true);
-        return $method;
+        $property = $reflection->getProperty('message');
+        $property->setAccessible(true);
+        $property->setValue($unpacker, $message);
+        return $method->invoke($unpacker);
     }
 
     /**
