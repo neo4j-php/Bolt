@@ -6,6 +6,13 @@ namespace Bolt\connection;
 use Bolt\Bolt;
 use Exception;
 
+/**
+ * Stream socket class
+ *
+ * @author Michal Stefanak
+ * @link https://github.com/stefanak-michal/Bolt
+ * @package Bolt\connection
+ */
 class StreamSocket implements IConnection
 {
 
