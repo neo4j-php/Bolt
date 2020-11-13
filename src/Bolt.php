@@ -71,14 +71,12 @@ final class Bolt
 
     /**
      * Bolt constructor
-     * @param string $ip
-     * @param int $port
-     * @param int $timeout
+     * @param IConnection $connection
      * @throws Exception
      */
-    public function __construct(string $ip = '127.0.0.1', int $port = 7687, int $timeout = 15)
+    public function __construct(IConnection $connection)
     {
-        $this->connection = new \Bolt\connection\Socket($ip, $port, $timeout);
+        $this->connection = $connection;
 
         $packerClass = "\\Bolt\\PackStream\\v" . $this->packStreamVersion . "\\Packer";
         if (!class_exists($packerClass)) {

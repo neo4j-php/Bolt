@@ -3,6 +3,7 @@
 namespace Bolt\connection;
 
 use Bolt\Bolt;
+use Exception;
 
 /**
  * Socket class
@@ -38,9 +39,9 @@ class Socket implements IConnection
      * @param string $ip
      * @param int $port
      * @param int $timeout
-     * @throws \Exception
+     * @throws Exception
      */
-    public function __construct(string $ip, int $port, int $timeout)
+    public function __construct(string $ip = '127.0.0.1', int $port = 7687, int $timeout = 15)
     {
         if (!extension_loaded('sockets')) {
             Bolt::error('PHP Extension sockets not enabled');
@@ -54,7 +55,7 @@ class Socket implements IConnection
     /**
      * Create socket connection
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function connect(): bool
     {
@@ -87,7 +88,7 @@ class Socket implements IConnection
     /**
      * Write buffer to socket
      * @param string $buffer
-     * @throws \Exception
+     * @throws Exception
      */
     public function write(string $buffer)
     {
@@ -119,7 +120,7 @@ class Socket implements IConnection
      * Read buffer from socket
      * @param int $length
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
     public function read(int $length = 2048): string
     {
