@@ -16,6 +16,7 @@ Bolt <= 4.1
 | 3.5           |        | (x)    | x      |          |          |
 | 4.0           |        |        | (x)    | x        |          |
 | 4.1           |        |        | (x)    | (x)      | x        |
+| 4.2           |        |        | (x)    | (x)      | (x)      |
 
 <sup>The (x) denotes that support could be removed in next version of Neo4j.</sup>
 
