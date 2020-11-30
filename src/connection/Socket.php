@@ -3,7 +3,7 @@
 namespace Bolt\connection;
 
 use Bolt\Bolt;
-use Exception;
+use Bolt\error\ConnectException;
 
 /**
  * Socket class
@@ -39,12 +39,12 @@ class Socket implements IConnection
      * @param string $ip
      * @param int $port
      * @param int $timeout
-     * @throws Exception
+     * @throws ConnectException
      */
     public function __construct(string $ip = '127.0.0.1', int $port = 7687, int $timeout = 15)
     {
         if (!extension_loaded('sockets')) {
-            Bolt::error('PHP Extension sockets not enabled');
+            throw new ConnectException('PHP Extension sockets not enabled');
         }
 
         $this->ip = $ip;
@@ -55,19 +55,17 @@ class Socket implements IConnection
     /**
      * Create socket connection
      * @return bool
-     * @throws Exception
+     * @throws ConnectException
      */
     public function connect(): bool
     {
         $this->socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (!is_resource($this->socket)) {
-            Bolt::error('Cannot create socket');
-            return false;
+            throw new ConnectException('Cannot create socket');
         }
 
         if (socket_set_block($this->socket) === false) {
-            Bolt::error('Cannot set socket into blocking mode');
-            return false;
+            throw new ConnectException('Cannot set socket into blocking mode');
         }
 
         socket_set_option($this->socket, SOL_TCP, TCP_NODELAY, 1);
@@ -78,8 +76,7 @@ class Socket implements IConnection
         $conn = @socket_connect($this->socket, $this->ip, $this->port);
         if (!$conn) {
             $code = socket_last_error($this->socket);
-            Bolt::error(socket_strerror($code), $code);
-            return false;
+            throw new ConnectException(socket_strerror($code), $code);
         }
 
         return true;
@@ -88,13 +85,12 @@ class Socket implements IConnection
     /**
      * Write buffer to socket
      * @param string $buffer
-     * @throws Exception
+     * @throws ConnectException
      */
     public function write(string $buffer)
     {
         if (!is_resource($this->socket)) {
-            Bolt::error('Not initialized socket');
-            return;
+            throw new ConnectException('Not initialized socket');
         }
 
         $size = mb_strlen($buffer, '8bit');
@@ -107,8 +103,7 @@ class Socket implements IConnection
             $sent = socket_write($this->socket, $buffer, $size);
             if ($sent === false) {
                 $code = socket_last_error($this->socket);
-                Bolt::error(socket_strerror($code), $code);
-                return;
+                throw new ConnectException(socket_strerror($code), $code);
             }
 
             $buffer = mb_strcut($buffer, $sent, null, '8bit');
@@ -120,22 +115,21 @@ class Socket implements IConnection
      * Read buffer from socket
      * @param int $length
      * @return string
-     * @throws Exception
+     * @throws ConnectException
      */
     public function read(int $length = 2048): string
     {
         $output = '';
 
         if (!is_resource($this->socket)) {
-            Bolt::error('Not initialized socket');
-            return $output;
+            throw new ConnectException('Not initialized socket');
         }
 
         do {
             $readed = socket_read($this->socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
             if ($readed === false) {
                 $code = socket_last_error($this->socket);
-                Bolt::error(socket_strerror($code), $code);
+                throw new ConnectException(socket_strerror($code), $code);
             } else {
                 $output .= $readed;
             }

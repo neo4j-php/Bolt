@@ -121,23 +121,6 @@ class BoltTest extends \Bolt\tests\ATest
         $this->assertEquals(0, $res[0][0]);
     }
 
-    public function testError()
-    {
-        $this->expectException(\Exception::class);
-        Bolt::error('test');
-    }
-
-    public function testErrorHandler()
-    {
-        $tmp = '';
-        Bolt::$errorHandler = function ($msg, $code) use (&$tmp) {
-            $tmp = $msg;
-        };
-        Bolt::error('test');
-        $this->assertEquals('test', $tmp);
-        Bolt::$errorHandler = null;
-    }
-
     /**
      * @var bool
      */

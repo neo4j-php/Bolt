@@ -2,7 +2,8 @@
 
 namespace Bolt\protocol;
 
-use Bolt\Bolt;
+use Bolt\error\MessageException;
+use Bolt\error\PackException;
 use Exception;
 
 /**
@@ -15,155 +16,142 @@ use Exception;
 class V3 extends V2
 {
 
+    /**
+     * @param mixed ...$args
+     * @return bool
+     * @throws Exception
+     */
     public function init(...$args): bool
     {
         return $this->hello(...$args);
     }
 
+    /**
+     * @param mixed ...$args
+     * @return bool
+     * @throws Exception
+     */
     public function hello(...$args): bool
     {
         if (count($args) < 4) {
-            Bolt::error('Wrong arguments count');
-            return false;
+            throw new PackException('Wrong arguments count');
         }
 
-        try {
-            $msg = $this->packer->pack(0x01, [
-                'user_agent' => $args[0],
-                'scheme' => $args[1],
-                'principal' => $args[2],
-                'credentials' => $args[3]
-            ]);
-        } catch (Exception $ex) {
-            Bolt::error($ex->getMessage());
-            return false;
-        }
-
-        $this->write($msg);
+        $this->write($msg = $this->packer->pack(0x01, [
+            'user_agent' => $args[0],
+            'scheme' => $args[1],
+            'principal' => $args[2],
+            'credentials' => $args[3]
+        ]));
         $output = $this->read($signature);
 
         if ($signature == self::FAILURE) {
-            try {
-                $msg = $this->packer->pack(0x0E);
-            } catch (Exception $ex) {
-                Bolt::error($msg);
-                return false;
-            }
-
-            $this->write($msg);
-            Bolt::error($output['message'], $output['code']);
+            $this->write($this->packer->pack(0x0E));
+            throw new MessageException($output['message']);
         }
 
         return $signature == self::SUCCESS;
     }
 
+    /**
+     * @param mixed ...$args
+     * @return array
+     * @throws Exception
+     */
     public function run(...$args)
     {
         if (empty($args)) {
-            Bolt::error('Wrong arguments count');
-            return false;
+            throw new PackException('Wrong arguments count');
         }
 
-        try {
-            $msg = $this->packer->pack(0x10, $args[0], (object)($args[1] ?? []), (object)($args[2] ?? []));
-        } catch (Exception $ex) {
-            Bolt::error($ex->getMessage());
-            return false;
-        }
-
-        $this->write($msg);
+        $this->write($this->packer->pack(
+            0x10,
+            $args[0],
+            (object)($args[1] ?? []),
+            (object)($args[2] ?? [])
+        ));
         $output = $this->read($signature);
 
         if ($signature == self::FAILURE) {
             $this->reset();
-            Bolt::error($output['message'], $output['code']);
+            throw new MessageException($output['message']);
         }
 
-        return $signature == self::SUCCESS ? $output : false;
+        return $signature == self::SUCCESS ? $output : [];
     }
 
-    public function reset(...$args)
+    /**
+     * @param mixed ...$args
+     * @return bool
+     * @throws Exception
+     */
+    public function reset(...$args): bool
     {
-        try {
-            $msg = $this->packer->pack(0x0F);
-        } catch (Exception $ex) {
-            Bolt::error($ex->getMessage());
-            return false;
-        }
-
-        $this->write($msg);
+        $this->write($this->packer->pack(0x0F));
+        return true;
     }
 
+    /**
+     * @param mixed ...$args
+     * @return bool
+     * @throws Exception
+     */
     public function begin(...$args): bool
     {
-        try {
-            $msg = $this->packer->pack(0x11, (object)($args[0] ?? []));
-        } catch (Exception $ex) {
-            Bolt::error($ex->getMessage());
-            return false;
-        }
-
-        $this->write($msg);
+        $this->write($this->packer->pack(0x11, (object)($args[0] ?? [])));
         $output = $this->read($signature);
 
         if ($signature == self::FAILURE) {
             $this->reset();
-            Bolt::error($output['message'], $output['code']);
+            throw new MessageException($output['message']);
         }
 
         return $signature == self::SUCCESS;
     }
 
+    /**
+     * @param mixed ...$args
+     * @return bool
+     * @throws Exception
+     */
     public function commit(...$args): bool
     {
-        try {
-            $msg = $this->packer->pack(0x12);
-        } catch (Exception $ex) {
-            Bolt::error($ex->getMessage());
-            return false;
-        }
-
-        $this->write($msg);
+        $this->write($this->packer->pack(0x12));
         $output = $this->read($signature);
 
         if ($signature == self::FAILURE) {
             $this->reset();
-            Bolt::error($output['message'], $output['code']);
+            throw new MessageException($output['message']);
         }
 
         return $signature == self::SUCCESS;
     }
 
+    /**
+     * @param mixed ...$args
+     * @return bool
+     * @throws Exception
+     */
     public function rollback(...$args): bool
     {
-        try {
-            $msg = $this->packer->pack(0x13);
-        } catch (Exception $ex) {
-            Bolt::error($ex->getMessage());
-            return false;
-        }
-
-        $this->write($msg);
+        $this->write($this->packer->pack(0x13));
         $output = $this->read($signature);
 
         if ($signature == self::FAILURE) {
             $this->reset();
-            Bolt::error($output['message'], $output['code']);
+            throw new MessageException($output['message']);
         }
 
         return $signature == self::SUCCESS;
     }
 
+    /**
+     * @param mixed ...$args
+     * @throws Exception
+     */
     public function goodbye(...$args)
     {
-        try {
-            $msg = $this->packer->pack(0x02);
-        } catch (Exception $ex) {
-            Bolt::error($ex->getMessage());
-            return;
-        }
-
-        $this->write($msg);
+        $this->write($this->packer->pack(0x02));
     }
 
 }

@@ -100,11 +100,7 @@ abstract class AProtocol implements IProtocol
         $output = null;
         $signature = 0;
         if (!empty($msg)) {
-            try {
-                $output = $this->unpacker->unpack($msg, $signature);
-            } catch (Exception $ex) {
-                Bolt::error($ex->getMessage());
-            }
+            $output = $this->unpacker->unpack($msg, $signature);
         }
 
         return $output;
