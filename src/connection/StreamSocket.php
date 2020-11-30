@@ -13,23 +13,8 @@ use Exception;
  * @link https://github.com/stefanak-michal/Bolt
  * @package Bolt\connection
  */
-class StreamSocket implements IConnection
+class StreamSocket extends AConnection
 {
-
-    /**
-     * @var string
-     */
-    private $ip;
-
-    /**
-     * @var int
-     */
-    private $port;
-
-    /**
-     * @var int
-     */
-    private $timeout;
 
     /**
      * @var array
@@ -40,19 +25,6 @@ class StreamSocket implements IConnection
      * @var resource
      */
     private $stream;
-
-    /**
-     * StreamSocket constructor.
-     * @param string $ip
-     * @param int $port
-     * @param int $timeout
-     */
-    public function __construct(string $ip = '127.0.0.1', int $port = 7687, int $timeout = 15)
-    {
-        $this->ip = $ip;
-        $this->port = $port;
-        $this->timeout = $timeout;
-    }
 
     /**
      * Set SSL Context options
@@ -140,23 +112,6 @@ class StreamSocket implements IConnection
     {
         if (is_resource($this->stream))
             stream_socket_shutdown($this->stream, STREAM_SHUT_RDWR);
-    }
-
-    /**
-     * Print buffer as HEX
-     * @param string $str
-     * @param bool $write
-     */
-    private function printHex(string $str, bool $write = true)
-    {
-        $str = implode(unpack('H*', $str));
-        echo '<pre>';
-        echo $write ? '> ' : '< ';
-        foreach (str_split($str, 8) as $chunk) {
-            echo implode(' ', str_split($chunk, 2));
-            echo '    ';
-        }
-        echo '</pre>';
     }
 
 }

@@ -12,45 +12,13 @@ use Exception;
  * @link https://github.com/stefanak-michal/Bolt
  * @package Bolt\connection
  */
-class Socket implements IConnection
+class Socket extends AConnection
 {
-
-    /**
-     * @var string
-     */
-    private $ip;
-
-    /**
-     * @var int
-     */
-    private $port;
-
-    /**
-     * @var int
-     */
-    private $timeout;
 
     /**
      * @var resource
      */
     private $socket;
-
-    /**
-     * @param string $ip
-     * @param int $port
-     * @param int $timeout
-     * @throws Exception
-     */
-    public function __construct(string $ip = '127.0.0.1', int $port = 7687, int $timeout = 15)
-    {
-        if (!extension_loaded('sockets')) {
-            Bolt::error('PHP Extension sockets not enabled');
-        }
-
-        $this->ip = $ip;
-        $this->port = $port;
-        $this->timeout = $timeout;
-    }
 
     /**
      * Create socket connection
@@ -59,6 +27,10 @@ class Socket implements IConnection
      */
     public function connect(): bool
     {
+        if (!extension_loaded('sockets')) {
+            throw new ConnectException('PHP Extension sockets not enabled');
+        }
+
         $this->socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (!is_resource($this->socket)) {
             Bolt::error('Cannot create socket');
@@ -145,23 +117,6 @@ class Socket implements IConnection
             $this->printHex($output, false);
 
         return $output;
-    }
-
-    /**
-     * Print buffer as HEX
-     * @param string $str
-     * @param bool $write
-     */
-    private function printHex(string $str, bool $write = true)
-    {
-        $str = implode(unpack('H*', $str));
-        echo '<pre>';
-        echo $write ? '> ' : '< ';
-        foreach (str_split($str, 8) as $chunk) {
-            echo implode(' ', str_split($chunk, 2));
-            echo '    ';
-        }
-        echo '</pre>';
     }
 
     /**
