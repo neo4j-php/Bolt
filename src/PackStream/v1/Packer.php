@@ -20,7 +20,7 @@ class Packer implements IPacker
     private const HUGE = 4294967295;
 
     /**
-     * PackException message with parameters
+     * Pack message with parameters
      * @param $signature
      * @param mixed ...$params
      * @return string

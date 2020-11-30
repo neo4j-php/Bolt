@@ -171,7 +171,7 @@ final class Bolt
     }
 
     /**
-     * PackException requested protocol versions
+     * Pack requested protocol versions
      * @return string
      */
     private function packProtocolVersions(): string

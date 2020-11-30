@@ -51,7 +51,7 @@ class Unpacker implements IUnpacker
     ];
 
     /**
-     * UnpackException message
+     * Unpack message
      * @param string $msg
      * @param int &$signature
      * @return mixed

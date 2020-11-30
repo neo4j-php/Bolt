@@ -1,7 +1,8 @@
 <?php
 
-
 namespace Bolt\error;
+
+use Exception;
 
 /**
  * Class MessageException
@@ -10,7 +11,7 @@ namespace Bolt\error;
  * @link https://github.com/stefanak-michal/Bolt
  * @package Bolt\error
  */
-class MessageException extends \Exception
+class MessageException extends Exception
 {
 
 }
