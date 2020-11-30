@@ -102,9 +102,8 @@ class Socket extends AConnection
             if ($readed === false) {
                 $code = socket_last_error($this->socket);
                 throw new ConnectException(socket_strerror($code), $code);
-            } else {
-                $output .= $readed;
             }
+            $output .= $readed;
         } while (mb_strlen($output, '8bit') < $length);
 
         if (Bolt::$debug)
