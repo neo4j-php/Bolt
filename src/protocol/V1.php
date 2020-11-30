@@ -37,7 +37,7 @@ class V1 extends AProtocol
         if ($signature == self::FAILURE) {
             //AckFailure after init do not respond with any message
             $this->write($this->packer->pack(0x0E));
-            throw new MessageException($output['message']);
+            throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
         return $signature == self::SUCCESS;
@@ -59,7 +59,7 @@ class V1 extends AProtocol
 
         if ($signature == self::FAILURE) {
             $this->ackFailure();
-            throw new MessageException($output['message']);
+            throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
         return $signature == self::SUCCESS ? $output : [];
@@ -82,7 +82,8 @@ class V1 extends AProtocol
 
         if ($signature == self::FAILURE) {
             $this->ackFailure();
-            throw new MessageException($output['message']);
+            $last = array_pop($output);
+            throw new MessageException($last['message'] . ' (' . $last['code'] . ')');
         }
 
         return $signature == self::SUCCESS ? $output : [];

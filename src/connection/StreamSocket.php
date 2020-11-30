@@ -50,7 +50,7 @@ class StreamSocket extends AConnection
             'ssl' => $this->sslContextOptions
         ]);
 
-        $this->stream = stream_socket_client( 'tcp://' . $this->ip . ':' . $this->port, $errno, $errstr, $this->timeout, STREAM_CLIENT_CONNECT, $context);
+        $this->stream = @stream_socket_client( 'tcp://' . $this->ip . ':' . $this->port, $errno, $errstr, $this->timeout, STREAM_CLIENT_CONNECT, $context);
 
         if ($this->stream === false) {
             throw new ConnectException($errstr, $errno);

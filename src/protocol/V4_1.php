@@ -39,8 +39,7 @@ class V4_1 extends V4
         $output = $this->read($signature);
 
         if ($signature == self::FAILURE) {
-            $this->write($this->packer->pack(0x0E));
-            throw new MessageException($output['message']);
+            throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
         return $signature == self::SUCCESS;

@@ -96,7 +96,7 @@ class V3Test extends \Bolt\tests\ATest
         self::$readArray = [1, 2, 0];
         self::$writeBuffer = [hex2bin('0002b00f0000')];
 
-        $this->assertNull($cls->reset());
+        $this->assertTrue($cls->reset());
     }
 
     /**

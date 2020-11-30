@@ -53,11 +53,6 @@ final class Bolt
     private $version;
 
     /**
-     * @var int
-     */
-    private $packStreamVersion = 1;
-
-    /**
      * @var string
      */
     private $scheme = 'basic';
@@ -76,18 +71,7 @@ final class Bolt
     public function __construct(IConnection $connection)
     {
         $this->connection = $connection;
-
-        $packerClass = "\\Bolt\\PackStream\\v" . $this->packStreamVersion . "\\Packer";
-        if (!class_exists($packerClass)) {
-            throw new PackException('Requested PackStream version (' . $this->packStreamVersion . ') not yet implemented');
-        }
-        $this->packer = new $packerClass();
-
-        $unpackerClass = "\\Bolt\\PackStream\\v" . $this->packStreamVersion . "\\Unpacker";
-        if (!class_exists($unpackerClass)) {
-            throw new UnpackException('Requested PackStream version (' . $this->packStreamVersion . ') not yet implemented');
-        }
-        $this->unpacker = new $unpackerClass();
+        $this->setPackStreamVersion();
     }
 
     /**
@@ -103,10 +87,22 @@ final class Bolt
     /**
      * @param int $version
      * @return Bolt
+     * @throws Exception
      */
     public function setPackStreamVersion(int $version = 1)
     {
-        $this->packStreamVersion = $version;
+        $packerClass = "\\Bolt\\PackStream\\v" . $version . "\\Packer";
+        if (!class_exists($packerClass)) {
+            throw new PackException('Requested PackStream version (' . $version . ') not yet implemented');
+        }
+        $this->packer = new $packerClass();
+
+        $unpackerClass = "\\Bolt\\PackStream\\v" . $version . "\\Unpacker";
+        if (!class_exists($unpackerClass)) {
+            throw new UnpackException('Requested PackStream version (' . $version . ') not yet implemented');
+        }
+        $this->unpacker = new $unpackerClass();
+
         return $this;
     }
 

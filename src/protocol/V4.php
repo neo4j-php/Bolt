@@ -41,8 +41,8 @@ class V4 extends V3
         } while ($signature == self::RECORD);
 
         if ($signature == self::FAILURE) {
-            $this->reset();
-            throw new MessageException($output['message']);
+            $last = array_pop($output);
+            throw new MessageException($last['message'] . ' (' . $last['code'] . ')');
         }
 
         return $output;
