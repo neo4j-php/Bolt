@@ -2,8 +2,8 @@
 
 namespace Bolt\PackStream\v1;
 
-use Exception;
 use Bolt\PackStream\IPacker;
+use Bolt\error\PackException;
 
 /**
  * Class Packer of PackStream version 1
@@ -24,7 +24,7 @@ class Packer implements IPacker
      * @param $signature
      * @param mixed ...$params
      * @return string
-     * @throws Exception
+     * @throws PackException
      */
     public function pack($signature, ...$params): string
     {
@@ -39,7 +39,7 @@ class Packer implements IPacker
         } elseif ($length < self::LARGE) { //STRUCT_16
             $output .= chr(0xDD) . pack('n', $length);
         } else {
-            throw new Exception('Too many parameters');
+            throw new PackException('Too many parameters');
         }
 
         $output .= chr($signature);
@@ -55,7 +55,7 @@ class Packer implements IPacker
     /**
      * @param mixed $param
      * @return string
-     * @throws Exception
+     * @throws PackException
      */
     private function p($param): string
     {
@@ -80,7 +80,7 @@ class Packer implements IPacker
         } elseif (is_object($param)) {
             $output .= $this->packMap((array)$param);
         } else {
-            throw new Exception('Not recognized type of parameter');
+            throw new PackException('Not recognized type of parameter');
         }
 
         return $output;
@@ -89,7 +89,7 @@ class Packer implements IPacker
     /**
      * @param string $str
      * @return string
-     * @throws Exception
+     * @throws PackException
      */
     private function packString(string $str): string
     {
@@ -105,7 +105,7 @@ class Packer implements IPacker
         } elseif ($length < self::HUGE) { //STRING_32
             $output .= chr(0xD2) . pack('N', $length) . $str;
         } else {
-            throw new Exception('String too long');
+            throw new PackException('String too long');
         }
 
         return $output;
@@ -123,7 +123,7 @@ class Packer implements IPacker
     /**
      * @param int $value
      * @return string
-     * @throws Exception
+     * @throws PackException
      */
     private function packInteger(int $value): string
     {
@@ -150,7 +150,7 @@ class Packer implements IPacker
             $packed = pack('q', $value);
             $output .= chr(0xCB) . ($little ? strrev($packed) : $packed);
         } else {
-            throw new Exception('Integer out of range');
+            throw new PackException('Integer out of range');
         }
 
         return $output;
@@ -159,7 +159,7 @@ class Packer implements IPacker
     /**
      * @param array $arr
      * @return string
-     * @throws Exception
+     * @throws PackException
      */
     private function packMap(array $arr): string
     {
@@ -175,7 +175,7 @@ class Packer implements IPacker
         } elseif ($size < self::HUGE) { //MAP_32
             $output .= chr(0xDA) . pack('N', $size);
         } else {
-            throw new Exception('Too many map elements');
+            throw new PackException('Too many map elements');
         }
 
         foreach ($arr as $k => $v) {
@@ -189,7 +189,7 @@ class Packer implements IPacker
     /**
      * @param array $arr
      * @return string
-     * @throws Exception
+     * @throws PackException
      */
     private function packList(array $arr): string
     {
@@ -205,7 +205,7 @@ class Packer implements IPacker
         } elseif ($size < self::HUGE) { //LIST_32
             $output .= chr(0xD6) . pack('N', $size);
         } else {
-            throw new Exception('Too many list elements');
+            throw new PackException('Too many list elements');
         }
 
         foreach ($arr as $v) {

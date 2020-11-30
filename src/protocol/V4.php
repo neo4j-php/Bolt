@@ -2,8 +2,8 @@
 
 namespace Bolt\protocol;
 
-use Bolt\Bolt;
 use Exception;
+use Bolt\error\MessageException;
 
 /**
  * Class Protocol version 4
@@ -15,21 +15,24 @@ use Exception;
 class V4 extends V3
 {
 
+    /**
+     * @param mixed ...$args
+     * @return array
+     * @throws Exception
+     */
     public function pullAll(...$args)
     {
         return $this->pull(...$args);
     }
 
+    /**
+     * @param mixed ...$args
+     * @return array
+     * @throws Exception
+     */
     public function pull(...$args)
     {
-        try {
-            $msg = $this->packer->pack(0x3F, $args[0]);
-        } catch (Exception $ex) {
-            Bolt::error($ex->getMessage());
-            return false;
-        }
-
-        $this->write($msg);
+        $this->write($this->packer->pack(0x3F, $args[0]));
 
         $output = [];
         do {
@@ -38,29 +41,31 @@ class V4 extends V3
         } while ($signature == self::RECORD);
 
         if ($signature == self::FAILURE) {
-            $this->reset();
-            Bolt::error($ret['message'], $ret['code']);
-            $output = false;
+            $last = array_pop($output);
+            throw new MessageException($last['message'] . ' (' . $last['code'] . ')');
         }
 
         return $output;
     }
 
+    /**
+     * @param mixed ...$args
+     * @return bool
+     * @throws Exception
+     */
     public function discardAll(...$args): bool
     {
         return $this->discard(...$args);
     }
 
+    /**
+     * @param mixed ...$args
+     * @return bool
+     * @throws Exception
+     */
     public function discard(...$args): bool
     {
-        try {
-            $msg = $this->packer->pack(0x2F, $args[0]);
-        } catch (Exception $ex) {
-            Bolt::error($ex->getMessage());
-            return false;
-        }
-
-        $this->write($msg);
+        $this->write($this->packer->pack(0x2F, $args[0]));
         $this->read($signature);
 
         return $signature == self::SUCCESS;

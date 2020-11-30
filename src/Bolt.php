@@ -2,6 +2,11 @@
 
 namespace Bolt;
 
+use Bolt\error\{
+    ConnectException,
+    PackException,
+    UnpackException
+};
 use Exception;
 use Bolt\PackStream\{IPacker, IUnpacker};
 use Bolt\protocol\AProtocol;
@@ -48,21 +53,10 @@ final class Bolt
     private $version;
 
     /**
-     * @var int
-     */
-    private $packStreamVersion = 1;
-
-    /**
      * @var string
      */
     private $scheme = 'basic';
 
-    /**
-     * Custom error handler instead of throwing Exceptions
-     * @var callable (string message, string code)
-     */
-    public static $errorHandler;
-    
     /**
      * Print debug info
      * @var bool 
@@ -77,20 +71,7 @@ final class Bolt
     public function __construct(IConnection $connection)
     {
         $this->connection = $connection;
-
-        $packerClass = "\\Bolt\\PackStream\\v" . $this->packStreamVersion . "\\Packer";
-        if (!class_exists($packerClass)) {
-            Bolt::error('Requested PackStream version (' . $this->packStreamVersion . ') not yet implemented');
-        } else {
-            $this->packer = new $packerClass();
-        }
-
-        $unpackerClass = "\\Bolt\\PackStream\\v" . $this->packStreamVersion . "\\Unpacker";
-        if (!class_exists($unpackerClass)) {
-            Bolt::error('Requested PackStream version (' . $this->packStreamVersion . ') not yet implemented');
-        } else {
-            $this->unpacker = new $unpackerClass();
-        }
+        $this->setPackStreamVersion();
     }
 
     /**
@@ -106,10 +87,22 @@ final class Bolt
     /**
      * @param int $version
      * @return Bolt
+     * @throws Exception
      */
     public function setPackStreamVersion(int $version = 1)
     {
-        $this->packStreamVersion = $version;
+        $packerClass = "\\Bolt\\PackStream\\v" . $version . "\\Packer";
+        if (!class_exists($packerClass)) {
+            throw new PackException('Requested PackStream version (' . $version . ') not yet implemented');
+        }
+        $this->packer = new $packerClass();
+
+        $unpackerClass = "\\Bolt\\PackStream\\v" . $version . "\\Unpacker";
+        if (!class_exists($unpackerClass)) {
+            throw new UnpackException('Requested PackStream version (' . $version . ') not yet implemented');
+        }
+        $this->unpacker = new $unpackerClass();
+
         return $this;
     }
 
@@ -146,16 +139,14 @@ final class Bolt
 
         $this->unpackProtocolVersion();
         if (empty($this->version)) {
-            Bolt::error('Wrong version');
-            return false;
+            throw new ConnectException('Wrong version');
         }
 
         $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $this->version);
         if (!class_exists($protocolClass)) {
-            Bolt::error('Requested Protocol version (' . $this->version . ') not yet implemented');
-        } else {
-            $this->protocol = new $protocolClass($this->packer, $this->unpacker, $this->connection);
+            throw new ConnectException('Requested Protocol version (' . $this->version . ') not yet implemented');
         }
+        $this->protocol = new $protocolClass($this->packer, $this->unpacker, $this->connection);
 
         return $this->protocol instanceof AProtocol;
     }
@@ -258,7 +249,8 @@ final class Bolt
     The tx_metadata is a dictionary that can contain some metadata information, mainly used for logging.
     The mode specifies what kind of server the RUN message is targeting. For write access use "w" and for read access use "r". Defaults to write access if no mode is sent.
     The db specifies the database name for multi-database to select where the transaction takes place. If no db is sent or empty string it implies that it is the default database.</pre>
-     * @return mixed Return false on error
+     * @return array
+     * @throws Exception
      */
     public function run(string $statement, array $parameters = [], array $extra = [])
     {
@@ -272,7 +264,8 @@ final class Bolt
      * @version <4
      * @param int $n The n specifies how many records to fetch. n=-1 will fetch all records.
      * @param int $qid The qid (query identification) specifies the result of which statement the operation should be carried out. (Explicit Transaction only). qid=-1 can be used to denote the last executed statement and if no ``.
-     * @return mixed Array of records or false on error. Last array element is success message.
+     * @return array
+     * @throws Exception
      */
     public function pullAll(int $n = -1, int $qid = -1)
     {
@@ -287,7 +280,8 @@ final class Bolt
      * @internal PULL_ALL alias
      * @param int $n The n specifies how many records to fetch. n=-1 will fetch all records.
      * @param int $qid The qid (query identification) specifies the result of which statement the operation should be carried out. (Explicit Transaction only). qid=-1 can be used to denote the last executed statement and if no ``.
-     * @return mixed Array of records or false on error. Last array element is success message.
+     * @return array Array of records. Last array element is success message.
+     * @throws Exception
      */
     public function pull(int $n = -1, int $qid = -1)
     {
@@ -300,6 +294,7 @@ final class Bolt
      * @param int $n The n specifies how many records to throw away. n=-1 will throw away all records.
      * @param int $qid The qid (query identification) specifies the result of which statement the operation should be carried out. (Explicit Transaction only). qid=-1 can be used to denote the last executed statement and if no ``.
      * @return bool
+     * @throws Exception
      */
     public function discardAll(int $n = -1, int $qid = -1)
     {
@@ -315,6 +310,7 @@ final class Bolt
      * @param int $n The n specifies how many records to throw away. n=-1 will throw away all records.
      * @param int $qid The qid (query identification) specifies the result of which statement the operation should be carried out. (Explicit Transaction only). qid=-1 can be used to denote the last executed statement and if no ``.
      * @return bool
+     * @throws Exception
      */
     public function discard(int $n = -1, int $qid = -1): bool
     {
@@ -330,6 +326,7 @@ final class Bolt
     The mode specifies what kind of server the RUN message is targeting. For write access use "w" and for read access use "r". Defaults to write access if no mode is sent.
     The db specifies the database name for multi-database to select where the transaction takes place. If no db is sent or empty string it implies that it is the default database.</pre>
      * @return bool
+     * @throws Exception
      */
     public function begin(array $extra = []): bool
     {
@@ -341,6 +338,7 @@ final class Bolt
     /**
      * Send COMMIT message
      * @return bool
+     * @throws Exception
      */
     public function commit(): bool
     {
@@ -352,6 +350,7 @@ final class Bolt
     /**
      * Send ROLLBACK message
      * @return bool
+     * @throws Exception
      */
     public function rollback(): bool
     {
@@ -363,30 +362,13 @@ final class Bolt
     /**
      * Send RESET message
      * @return bool
+     * @throws Exception
      */
     public function reset(): bool
     {
         if (self::$debug)
             echo 'RESET';
         return $this->protocol->reset();
-    }
-
-    /**
-     * Process error
-     * @param string $msg
-     * @param string $code
-     * @throws Exception
-     */
-    public static function error(string $msg, string $code = '')
-    {
-        if (is_callable(self::$errorHandler)) {
-            call_user_func(self::$errorHandler, $msg, $code);
-        } else {
-            if (!empty($code)) {
-                $msg .= ' (' . $code . ')';
-            }
-            throw new Exception($msg);
-        }
     }
 
     /**

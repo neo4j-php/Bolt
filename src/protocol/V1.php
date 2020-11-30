@@ -2,7 +2,8 @@
 
 namespace Bolt\protocol;
 
-use Bolt\Bolt;
+use Bolt\error\MessageException;
+use Bolt\error\PackException;
 use Exception;
 
 /**
@@ -15,78 +16,63 @@ use Exception;
 class V1 extends AProtocol
 {
 
+    /**
+     * @param mixed ...$args
+     * @return bool
+     * @throws Exception
+     */
     public function init(...$args): bool
     {
         if (count($args) < 4) {
-            Bolt::error('Wrong arguments count');
-            return false;
+            throw new PackException('Wrong arguments count');
         }
 
-        try {
-            $msg = $this->packer->pack(0x01, $args[0], [
-                'scheme' => $args[1],
-                'principal' => $args[2],
-                'credentials' => $args[3]
-            ]);
-        } catch (Exception $ex) {
-            Bolt::error($ex->getMessage());
-            return false;
-        }
-
-        $this->write($msg);
+        $this->write($this->packer->pack(0x01, $args[0], [
+            'scheme' => $args[1],
+            'principal' => $args[2],
+            'credentials' => $args[3]
+        ]));
         $output = $this->read($signature);
 
         if ($signature == self::FAILURE) {
-            try {
-                $msg = $this->packer->pack(0x0E);
-            } catch (Exception $ex) {
-                Bolt::error($msg);
-                return false;
-            }
-
             //AckFailure after init do not respond with any message
-            $this->write($msg);
-            Bolt::error($output['message'], $output['code']);
+            $this->write($this->packer->pack(0x0E));
+            throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
         return $signature == self::SUCCESS;
     }
 
+    /**
+     * @param mixed ...$args
+     * @return array
+     * @throws Exception
+     */
     public function run(...$args)
     {
         if (empty($args)) {
-            Bolt::error('Wrong arguments count');
-            return false;
+            throw new PackException('Wrong arguments count');
         }
 
-        try {
-            $msg = $this->packer->pack(0x10, $args[0], $args[1] ?? []);
-        } catch (Exception $ex) {
-            Bolt::error($ex->getMessage());
-            return false;
-        }
-
-        $this->write($msg);
+        $this->write($this->packer->pack(0x10, $args[0], $args[1] ?? []));
         $output = $this->read($signature);
 
         if ($signature == self::FAILURE) {
             $this->ackFailure();
-            Bolt::error($output['message'], $output['code']);
+            throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
-        return $signature == self::SUCCESS ? $output : false;
+        return $signature == self::SUCCESS ? $output : [];
     }
 
+    /**
+     * @param mixed ...$args
+     * @return array
+     * @throws Exception
+     */
     public function pullAll(...$args)
     {
-        try {
-            $msg = $this->packer->pack(0x3F);
-        } catch (Exception $ex) {
-            Bolt::error($ex->getMessage());
-            return false;
-        }
-
-        $this->write($msg);
+        $this->write($this->packer->pack(0x3F));
 
         $output = [];
         do {
@@ -96,57 +82,50 @@ class V1 extends AProtocol
 
         if ($signature == self::FAILURE) {
             $this->ackFailure();
-            Bolt::error($ret['message'], $ret['code']);
+            $last = array_pop($output);
+            throw new MessageException($last['message'] . ' (' . $last['code'] . ')');
         }
 
-        return $signature == self::SUCCESS ? $output : false;
+        return $signature == self::SUCCESS ? $output : [];
     }
 
+    /**
+     * @param mixed ...$args
+     * @return bool
+     * @throws Exception
+     */
     public function discardAll(...$args): bool
     {
-        try {
-            $msg = $this->packer->pack(0x2F);
-        } catch (Exception $ex) {
-            Bolt::error($ex->getMessage());
-            return false;
-        }
-
-        $this->write($msg);
+        $this->write($this->packer->pack(0x2F));
         $this->read($signature);
 
         return $signature == self::SUCCESS;
     }
 
-    /*
+    /**
      * When requests fail on the server, the server will send the client a FAILURE message.
      * The client must acknowledge the FAILURE message by sending an ACK_FAILURE message to the server.
      * Until the server receives the ACK_FAILURE message, it will send an IGNORED message in response to any other message from the client.
+     *
+     * @return bool
+     * @throws Exception
      */
     private function ackFailure(): bool
     {
-        try {
-            $msg = $this->packer->pack(0x0E);
-        } catch (Exception $ex) {
-            Bolt::error($ex->getMessage());
-            return false;
-        }
-
-        $this->write($msg);
+        $this->write($this->packer->pack(0x0E));
         $this->read($signature);
 
         return $signature == self::SUCCESS;
     }
 
-    public function reset(...$args)
+    /**
+     * @param mixed ...$args
+     * @return bool
+     * @throws Exception
+     */
+    public function reset(...$args): bool
     {
-        try {
-            $msg = $this->packer->pack(0x0F);
-        } catch (Exception $ex) {
-            Bolt::error($ex->getMessage());
-            return false;
-        }
-
-        $this->write($msg);
+        $this->write($this->packer->pack(0x0F));
         $this->read($signature);
 
         return $signature == self::SUCCESS;

@@ -18,7 +18,7 @@ use Bolt\structures\{
     Point3D
 };
 use Bolt\PackStream\IUnpacker;
-use Exception;
+use Bolt\error\UnpackException;
 
 /**
  * Class Unpacker of PackStream version 1
@@ -55,7 +55,7 @@ class Unpacker implements IUnpacker
      * @param string $msg
      * @param int &$signature
      * @return mixed
-     * @throws Exception
+     * @throws UnpackException
      */
     public function unpack(string $msg, int &$signature)
     {
@@ -93,7 +93,7 @@ class Unpacker implements IUnpacker
 
     /**
      * @return mixed
-     * @throws Exception
+     * @throws UnpackException
      */
     private function u()
     {
@@ -143,7 +143,7 @@ class Unpacker implements IUnpacker
      * @param int $marker
      * @param bool $result
      * @return mixed|null
-     * @throws Exception
+     * @throws UnpackException
      */
     private function unpackStruct(int $marker, bool &$result = false)
     {
@@ -181,7 +181,7 @@ class Unpacker implements IUnpacker
      * @param string $class
      * @param mixed ...$methods
      * @return mixed
-     * @throws Exception
+     * @throws UnpackException
      */
     private function unpackSpecificStructure(bool &$result, string $class, ...$methods)
     {
@@ -191,7 +191,7 @@ class Unpacker implements IUnpacker
             $marker = ord($this->next(1));
             $output[] = $this->{$method}($marker, $result);
             if (!$result)
-                throw new Exception('Structure call for method "' . $method . '" generated unpack error');
+                throw new UnpackException('Structure call for method "' . $method . '" generated unpack error');
         }
 
         return new $class(...$output);
@@ -201,7 +201,7 @@ class Unpacker implements IUnpacker
      * @param int $marker
      * @param bool $result
      * @return array
-     * @throws Exception
+     * @throws UnpackException
      */
     private function unpackMap(int $marker, bool &$result = false): array
     {
@@ -307,7 +307,7 @@ class Unpacker implements IUnpacker
      * @param int $marker
      * @param bool $result
      * @return array
-     * @throws Exception
+     * @throws UnpackException
      */
     private function unpackList(int $marker, bool &$result = false): array
     {

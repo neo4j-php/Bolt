@@ -3,7 +3,7 @@
 namespace Bolt\connection;
 
 use Bolt\Bolt;
-use Exception;
+use Bolt\error\ConnectException;
 
 /**
  * Socket class
@@ -23,7 +23,7 @@ class Socket extends AConnection
     /**
      * Create socket connection
      * @return bool
-     * @throws Exception
+     * @throws ConnectException
      */
     public function connect(): bool
     {
@@ -33,13 +33,11 @@ class Socket extends AConnection
 
         $this->socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if (!is_resource($this->socket)) {
-            Bolt::error('Cannot create socket');
-            return false;
+            throw new ConnectException('Cannot create socket');
         }
 
         if (socket_set_block($this->socket) === false) {
-            Bolt::error('Cannot set socket into blocking mode');
-            return false;
+            throw new ConnectException('Cannot set socket into blocking mode');
         }
 
         socket_set_option($this->socket, SOL_TCP, TCP_NODELAY, 1);
@@ -50,8 +48,7 @@ class Socket extends AConnection
         $conn = @socket_connect($this->socket, $this->ip, $this->port);
         if (!$conn) {
             $code = socket_last_error($this->socket);
-            Bolt::error(socket_strerror($code), $code);
-            return false;
+            throw new ConnectException(socket_strerror($code), $code);
         }
 
         return true;
@@ -60,13 +57,12 @@ class Socket extends AConnection
     /**
      * Write buffer to socket
      * @param string $buffer
-     * @throws Exception
+     * @throws ConnectException
      */
     public function write(string $buffer)
     {
         if (!is_resource($this->socket)) {
-            Bolt::error('Not initialized socket');
-            return;
+            throw new ConnectException('Not initialized socket');
         }
 
         $size = mb_strlen($buffer, '8bit');
@@ -79,8 +75,7 @@ class Socket extends AConnection
             $sent = socket_write($this->socket, $buffer, $size);
             if ($sent === false) {
                 $code = socket_last_error($this->socket);
-                Bolt::error(socket_strerror($code), $code);
-                return;
+                throw new ConnectException(socket_strerror($code), $code);
             }
 
             $buffer = mb_strcut($buffer, $sent, null, '8bit');
@@ -92,25 +87,23 @@ class Socket extends AConnection
      * Read buffer from socket
      * @param int $length
      * @return string
-     * @throws Exception
+     * @throws ConnectException
      */
     public function read(int $length = 2048): string
     {
         $output = '';
 
         if (!is_resource($this->socket)) {
-            Bolt::error('Not initialized socket');
-            return $output;
+            throw new ConnectException('Not initialized socket');
         }
 
         do {
             $readed = socket_read($this->socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
             if ($readed === false) {
                 $code = socket_last_error($this->socket);
-                Bolt::error(socket_strerror($code), $code);
-            } else {
-                $output .= $readed;
+                throw new ConnectException(socket_strerror($code), $code);
             }
+            $output .= $readed;
         } while (mb_strlen($output, '8bit') < $length);
 
         if (Bolt::$debug)

@@ -1,7 +1,7 @@
 # Bolt
 Bolt protocol library over TCP socket. Bolt protocol is primary used for communication with [Neo4j](https://neo4j.com/) Graph database. The documentation is available at [https://7687.org/](https://7687.org/).
 
-![](https://img.shields.io/badge/phpunit-passed-success) ![](https://img.shields.io/badge/coverage-77%25-green) ![](https://img.shields.io/github/stars/stefanak-michal/Bolt) ![](https://img.shields.io/packagist/dt/stefanak-michal/bolt) ![](https://img.shields.io/github/v/release/stefanak-michal/bolt) ![](https://img.shields.io/github/commits-since/stefanak-michal/bolt/latest)
+![](https://img.shields.io/badge/phpunit-passed-success) ![](https://img.shields.io/badge/coverage-86%25-green) ![](https://img.shields.io/github/stars/stefanak-michal/Bolt) ![](https://img.shields.io/packagist/dt/stefanak-michal/bolt) ![](https://img.shields.io/github/v/release/stefanak-michal/bolt) ![](https://img.shields.io/github/commits-since/stefanak-michal/bolt/latest)
 
 ## Version support
 Bolt <= 4.1
