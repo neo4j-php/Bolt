@@ -3,23 +3,7 @@ Bolt protocol library over TCP socket. Bolt protocol is primary used for communi
 
 ![](https://img.shields.io/badge/phpunit-passed-success) ![](https://img.shields.io/badge/coverage-86%25-green) ![](https://img.shields.io/github/stars/stefanak-michal/Bolt) ![](https://img.shields.io/packagist/dt/stefanak-michal/bolt) ![](https://img.shields.io/github/v/release/stefanak-michal/bolt) ![](https://img.shields.io/github/commits-since/stefanak-michal/bolt/latest)
 
-## Version support
-Bolt <= 4.1
-
-| Neo4j Version | Bolt 1 | Bolt 2 | Bolt 3 | Bolt 4.0 | Bolt 4.1 |
-|:-------------:|:------:|:------:|:------:|:--------:|:--------:|
-| 3.0           | x      |        |        |          |          |
-| 3.1           | x      |        |        |          |          |
-| 3.2           | x      |        |        |          |          |
-| 3.3           | x      |        |        |          |          |
-| 3.4           | (x)    | x      |        |          |          |
-| 3.5           |        | (x)    | x      |          |          |
-| 4.0           |        |        | (x)    | x        |          |
-| 4.1           |        |        | (x)    | (x)      | x        |
-| 4.2           |        |        | (x)    | (x)      | (x)      |
-
-<sup>The (x) denotes that support could be removed in next version of Neo4j.</sup>
-
+## [Version support](https://github.com/stefanak-michal/Bolt/wiki/Version-support)
 ## [Requirements](https://github.com/stefanak-michal/Bolt/wiki/Requirements)
 ## [Installation](https://github.com/stefanak-michal/Bolt/wiki/Installation)
 ## [Usage](https://github.com/stefanak-michal/Bolt/wiki/Usage)
