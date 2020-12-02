@@ -100,7 +100,7 @@ abstract class ATest extends TestCase
     /**
      * Reset mockup IConnetion variables
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         self::$readIndex = 0;
         self::$readArray = [];

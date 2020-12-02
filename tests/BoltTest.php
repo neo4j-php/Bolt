@@ -13,14 +13,12 @@ use Exception;
  *
  * @covers \Bolt\Bolt
  * @covers \Bolt\connection\AConnection
- * @covers \Bolt\connection\Socket
  * @covers \Bolt\connection\StreamSocket
  * @covers \Bolt\PackStream\v1\Packer
  * @covers \Bolt\PackStream\v1\Unpacker
  *
  * @package Bolt\tests
  * @requires PHP >= 7.1
- * @requires extension sockets
  * @requires extension mbstring
  */
 class BoltTest extends ATest
@@ -36,13 +34,7 @@ class BoltTest extends ATest
         try {
             $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
             $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
-            $bolt = new Bolt($conn);
-            $this->assertInstanceOf(Bolt::class, $bolt);
-            $this->assertTrue($bolt->hello('Test/1.0', $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
-            unset($bolt);
 
-            $conn = new \Bolt\connection\Socket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
-            $this->assertInstanceOf(\Bolt\connection\Socket::class, $conn);
             $bolt = new Bolt($conn);
             $this->assertInstanceOf(Bolt::class, $bolt);
             $this->assertTrue($bolt->hello('Test/1.0', $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));

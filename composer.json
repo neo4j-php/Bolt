@@ -9,7 +9,6 @@
     "minimum-stability": "stable",
     "require": {
         "php": ">=7.1.0",
-        "ext-sockets": "*",
         "ext-mbstring": "*"
     },
     "require-dev": {
