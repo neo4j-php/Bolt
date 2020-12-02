@@ -3,7 +3,7 @@
 namespace Bolt\tests;
 
 use PHPUnit\Framework\TestCase;
-use Bolt\connection\IConnection;
+use Bolt\connection\AConnection;
 
 /**
  * Class ATest
@@ -33,15 +33,15 @@ abstract class ATest extends TestCase
 
     /**
      * Mock Socket class with "write" and "read" methods
-     * @return IConnection
+     * @return AConnection
      */
     protected function mockConnection()
     {
         $mockBuilder = $this
-            ->getMockBuilder(IConnection::class)
+            ->getMockBuilder(AConnection::class)
             ->disableOriginalConstructor();
         call_user_func([$mockBuilder, method_exists($mockBuilder, 'onlyMethods') ? 'onlyMethods' : 'setMethods'], ['__construct', 'write', 'read', 'connect', 'disconnect']);
-        /** @var IConnection $connection */
+        /** @var AConnection $connection */
         $connection = $mockBuilder->getMock();
 
         $connection
@@ -98,9 +98,9 @@ abstract class ATest extends TestCase
     }
 
     /**
-     * Reset mockup IConnetion variables
+     * Reset mockup AConnetion variables
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         self::$readIndex = 0;
         self::$readArray = [];
