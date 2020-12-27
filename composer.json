@@ -28,7 +28,8 @@
     "authors": [
         {
             "name": "Michal Stefanak",
-            "role": "Developer"
+            "role": "Developer",
+            "homepage": "https://www.linkedin.com/in/michalstefanak/"
         }
     ],
     "autoload": {

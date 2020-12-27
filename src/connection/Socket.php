@@ -16,9 +16,9 @@ class Socket extends AConnection
 {
 
     /**
-     * @var resource
+     * @var resource|object|bool
      */
-    private $socket;
+    private $socket = false;
 
     /**
      * Create socket connection
@@ -32,7 +32,7 @@ class Socket extends AConnection
         }
 
         $this->socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        if (!is_resource($this->socket)) {
+        if ($this->socket === false) {
             throw new ConnectException('Cannot create socket');
         }
 
@@ -61,7 +61,7 @@ class Socket extends AConnection
      */
     public function write(string $buffer)
     {
-        if (!is_resource($this->socket)) {
+        if ($this->socket === false) {
             throw new ConnectException('Not initialized socket');
         }
 
@@ -93,7 +93,7 @@ class Socket extends AConnection
     {
         $output = '';
 
-        if (!is_resource($this->socket)) {
+        if ($this->socket === false) {
             throw new ConnectException('Not initialized socket');
         }
 
@@ -117,7 +117,7 @@ class Socket extends AConnection
      */
     public function disconnect()
     {
-        if (is_resource($this->socket)) {
+        if ($this->socket !== false) {
             @socket_shutdown($this->socket);
             @socket_close($this->socket);
         }
