@@ -92,7 +92,7 @@ class StreamSocket extends AConnection
      */
     public function read(int $length = 2048): string
     {
-        $res = fread($this->stream, $length);
+        $res = stream_get_contents($this->stream, $length);
         if (empty($res))
             throw new ConnectException('Read error');
 
