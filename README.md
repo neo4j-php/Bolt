@@ -9,8 +9,5 @@ Bolt protocol library over TCP socket. Bolt protocol is created and in use for c
 ## [Usage](https://github.com/stefanak-michal/Bolt/wiki/Usage)
 ## [Errors](https://github.com/stefanak-michal/Bolt/wiki/Errors)
 
-## Author note
-Bolt protocol is created by Neo4j and I heard about it first time at 2012 (maybe 2013). I was looking for a opportunity to use their database and that opportunity came after few years. From that moment I love this database. But there was small catch, they had low support for combination Bolt protocol and PHP. Official existing library for this language is outdated and repository is archived. Of course Neo4j has API access, but I feel the cURL in PHP is slower then direct socket connection. I've decided to make my own library for their Bolt protocol.
-
 ## Another solutions
 https://neo4j.com/developer/php/
