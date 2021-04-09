@@ -7,7 +7,6 @@ use Bolt\connection\StreamSocket;
 use Bolt\error\ConnectException;
 use Exception;
 use PHPUnit\Framework\TestCase;
-use function microtime;
 
 final class SocketTest extends TestCase
 {

@@ -5,8 +5,6 @@ namespace Bolt\connection;
 
 use Bolt\Bolt;
 use Bolt\error\ConnectException;
-use function floor;
-use function stream_set_timeout;
 
 /**
  * Stream socket class
