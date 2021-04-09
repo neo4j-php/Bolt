@@ -36,5 +36,10 @@
         "psr-4": {
             "Bolt\\": "src/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Bolt\\tests\\": "tests/"
+        }
     }
 }
