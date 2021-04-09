@@ -5,6 +5,8 @@ namespace Bolt\connection;
 
 use Bolt\Bolt;
 use Bolt\error\ConnectException;
+use function floor;
+use function stream_set_timeout;
 
 /**
  * Stream socket class
@@ -64,6 +66,11 @@ class StreamSocket extends AConnection
             if (stream_socket_enable_crypto($this->stream, true, STREAM_CRYPTO_METHOD_ANY_CLIENT) !== true) {
                 throw new ConnectException('Enable encryption error');
             }
+        }
+
+        $timeout = (int) floor($this->timeout);
+        if (!stream_set_timeout($this->stream, $timeout, (int) floor(($this->timeout - $timeout) * 1000000))) {
+            throw new ConnectException('Cannot set timeout on stream');
         }
 
         return true;

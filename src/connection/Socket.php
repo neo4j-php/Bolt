@@ -42,8 +42,11 @@ class Socket extends AConnection
 
         socket_set_option($this->socket, SOL_TCP, TCP_NODELAY, 1);
         socket_set_option($this->socket, SOL_SOCKET, SO_KEEPALIVE, 1);
-        socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
-        socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, ['sec' => $this->timeout, 'usec' => 0]);
+        $timeoutSeconds = floor($this->timeout);
+        $microSeconds = floor(($this->timeout - $timeoutSeconds) * 1000000);
+        $timeoutOption = ['sec' => $timeoutSeconds, 'usec' => $microSeconds];
+        socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, $timeoutOption);
+        socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, $timeoutOption);
 
         $conn = @socket_connect($this->socket, $this->ip, $this->port);
         if (!$conn) {
