@@ -66,6 +66,11 @@ class StreamSocket extends AConnection
             }
         }
 
+        $timeout = (int) floor($this->timeout);
+        if (!stream_set_timeout($this->stream, $timeout, (int) floor(($this->timeout - $timeout) * 1000000))) {
+            throw new ConnectException('Cannot set timeout on stream');
+        }
+
         return true;
     }
 
