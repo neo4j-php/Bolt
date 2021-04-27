@@ -12,7 +12,7 @@ namespace Bolt\structures;
  * @link https://github.com/stefanak-michal/Bolt
  * @package Bolt\structures
  */
-class Date
+class Date implements IStructure
 {
     /**
      * @var int
@@ -37,4 +37,8 @@ class Date
         return $this->days;
     }
 
+    public function __toString(): string
+    {
+        return date('Y-m-d', strtotime($this->days . ' days'));
+    }
 }

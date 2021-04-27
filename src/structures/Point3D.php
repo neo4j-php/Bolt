@@ -12,7 +12,7 @@ namespace Bolt\structures;
  * @link https://github.com/stefanak-michal/Bolt
  * @package Bolt\structures
  */
-class Point3D
+class Point3D implements IStructure
 {
     /**
      * @var int
@@ -80,6 +80,11 @@ class Point3D
     public function z(): float
     {
         return $this->z;
+    }
+
+    public function __toString(): string
+    {
+        return 'point({srid: ' . $this->srid . ', ' . 'x: ' . $this->x . ', y: ' . $this->y . ', z: ' . $this->z . '})';
     }
 
 }

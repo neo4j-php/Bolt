@@ -10,7 +10,7 @@ namespace Bolt\structures;
  * @link https://github.com/stefanak-michal/Bolt
  * @package Bolt\structures
  */
-class Relationship
+class Relationship implements IStructure
 {
     /**
      * @var int
@@ -88,5 +88,16 @@ class Relationship
     public function properties(): array
     {
         return $this->properties;
+    }
+
+    public function __toString(): string
+    {
+        return json_encode([
+            'identity' => $this->id,
+            'start' => $this->startNodeId,
+            'end' => $this->endNodeId,
+            'type' => $this->type,
+            'properties' => $this->properties
+        ]);
     }
 }
