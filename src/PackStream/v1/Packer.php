@@ -4,6 +4,7 @@ namespace Bolt\PackStream\v1;
 
 use Bolt\PackStream\IPacker;
 use Bolt\error\PackException;
+use Generator;
 
 /**
  * Class Packer of PackStream version 1
@@ -23,10 +24,10 @@ class Packer implements IPacker
      * Pack message with parameters
      * @param $signature
      * @param mixed ...$params
-     * @return string
+     * @return Generator
      * @throws PackException
      */
-    public function pack($signature, ...$params): string
+    public function pack($signature, ...$params): Generator
     {
         $output = '';
 
@@ -49,7 +50,13 @@ class Packer implements IPacker
         }
 
         //structure buffer
-        return pack('n', mb_strlen($output, '8bit')) . $output . chr(0x00) . chr(0x00);
+        $len = mb_strlen($output, 'UTF-8');
+        for ($i = 0; $i < $len; $i += 65535) {
+            $chunk = mb_substr($output, $i, 65535, '8bit');
+            yield pack('n', mb_strlen($chunk, '8bit')) . $chunk;
+        }
+
+        yield chr(0x00) . chr(0x00);
     }
 
     /**

@@ -2,6 +2,8 @@
 
 namespace Bolt\PackStream;
 
+use Generator;
+
 /**
  * Interface IPacker
  *
@@ -14,7 +16,7 @@ interface IPacker
     /**
      * @param $signature
      * @param mixed ...$params
-     * @return string
+     * @return Generator
      */
-    public function pack($signature, ...$params): string;
+    public function pack($signature, ...$params): Generator;
 }
