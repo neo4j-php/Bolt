@@ -44,15 +44,16 @@ class ErrorsTest extends ATest
         }
 
         $this->expectException(\Bolt\error\MessageException::class);
-        $bolt->hello('Test/1.0', $GLOBALS['NEO_USER'], 'wrong password');
+        $bolt->hello('Test/1.0', $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
+        $bolt->run('Wrong message');
     }
 
     public function testPackException1()
     {
-        $this->expectException(\Bolt\error\PackException::class);
         $packer = new \Bolt\PackStream\v1\Packer();
         $this->assertInstanceOf(\Bolt\PackStream\v1\Packer::class, $packer);
-        $packer->pack(0x00, fopen('php://input', 'r'));
+        $this->expectException(\Bolt\error\PackException::class);
+        foreach ($packer->pack(0x00, fopen('php://input', 'r')) as $chunk) { }
     }
 
     public function testPackException2()

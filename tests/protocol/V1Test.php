@@ -39,7 +39,7 @@ class V1Test extends \Bolt\tests\ATest
     public function testInit(V1 $cls)
     {
         self::$readArray = [1, 2, 0];
-        self::$writeBuffer = [hex2bin('003db20188546573742f312e30a386736368656d65856261736963897072696e636970616c84757365728b63726564656e7469616c738870617373776f72640000')];
+        self::$writeBuffer = [hex2bin('003db20188546573742f312e30a386736368656d65856261736963897072696e636970616c84757365728b63726564656e7469616c738870617373776f7264')];
 
         $this->assertTrue($cls->init('Test/1.0', 'basic', 'user', 'password'));
     }
