@@ -41,7 +41,7 @@ class PackerTest extends \Bolt\tests\ATest
      */
     public function testPack(string $bin, array $args, Packer $packer)
     {
-        $this->assertEquals($bin, $packer->pack(0x88, $args));
+        $this->assertEquals($bin, implode(iterator_to_array($packer->pack(0x88, $args))));
     }
 
     /**

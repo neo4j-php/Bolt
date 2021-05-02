@@ -34,15 +34,17 @@ class BoltTest extends ATest
         Bolt::$debug = true;
 
         try {
-            $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
-            $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
-            $bolt = new Bolt($conn);
-            $this->assertInstanceOf(Bolt::class, $bolt);
-            $this->assertTrue($bolt->hello('Test/1.0', $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+            if (extension_loaded('sockets')) {
+                $conn = new \Bolt\connection\Socket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
+                $this->assertInstanceOf(\Bolt\connection\Socket::class, $conn);
+                $bolt = new Bolt($conn);
+                $this->assertInstanceOf(Bolt::class, $bolt);
+                $this->assertTrue($bolt->hello('Test/1.0', $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+            }
             unset($bolt);
 
-            $conn = new \Bolt\connection\Socket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
-            $this->assertInstanceOf(\Bolt\connection\Socket::class, $conn);
+            $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
+            $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
             $bolt = new Bolt($conn);
             $this->assertInstanceOf(Bolt::class, $bolt);
             $this->assertTrue($bolt->hello('Test/1.0', $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));

@@ -48,6 +48,9 @@ abstract class ATest extends TestCase
             ->method('write')
             ->with(
                 $this->callback(function ($buffer) {
+                    if ($buffer == 0x0000)
+                        return true;
+
                     $i = self::$writeIndex;
                     self::$writeIndex++;
 
