@@ -2,7 +2,7 @@
 
 namespace Bolt\protocol;
 
-use Bolt\Bolt;
+use Generator;
 use Bolt\PackStream\{IPacker, IUnpacker};
 use Bolt\connection\IConnection;
 use Exception;
@@ -72,12 +72,13 @@ abstract class AProtocol implements IProtocol
 
     /**
      * Write to connection
-     * @param string $buffer
+     * @param Generator $generator
      * @throws Exception
      */
-    protected function write(string $buffer)
+    protected function write(Generator $generator)
     {
-        $this->connection->write($buffer);
+        foreach ($generator as $buffer)
+            $this->connection->write($buffer);
     }
 
     /**
