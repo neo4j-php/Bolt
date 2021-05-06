@@ -10,7 +10,7 @@ namespace Bolt\structures;
  * @link https://github.com/stefanak-michal/Bolt
  * @package Bolt\structures
  */
-class UnboundRelationship
+class UnboundRelationship implements IStructure
 {
     /**
      * @var int
@@ -60,5 +60,14 @@ class UnboundRelationship
     public function properties(): array
     {
         return $this->properties;
+    }
+
+    public function __toString(): string
+    {
+        return json_encode([
+            'identity' => $this->id,
+            'type' => $this->type,
+            'properties' => $this->properties
+        ]);
     }
 }

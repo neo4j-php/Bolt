@@ -12,7 +12,7 @@ namespace Bolt\structures;
  * @link https://github.com/stefanak-michal/Bolt
  * @package Bolt\structures
  */
-class Duration
+class Duration implements IStructure
 {
 
     /**
@@ -82,4 +82,8 @@ class Duration
         return $this->nanoseconds;
     }
 
+    public function __toString(): string
+    {
+        return 'P' . $this->months . 'M' . $this->days . 'DT' . ($this->seconds + $this->nanoseconds / 1000000000) . 'S';
+    }
 }

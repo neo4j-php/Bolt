@@ -43,7 +43,7 @@ class Unpacker implements IUnpacker
         0x54 => [Time::class, 'unpackInteger', 'unpackInteger'],
         0x74 => [LocalTime::class, 'unpackInteger'],
         0x46 => [DateTime::class, 'unpackInteger', 'unpackInteger', 'unpackInteger'],
-        0x66 => [DateTimeZoneId::class, 'unpackInteger', 'unpackInteger', 'unpackInteger'],
+        0x66 => [DateTimeZoneId::class, 'unpackInteger', 'unpackInteger', 'unpackString'],
         0x64 => [LocalDateTime::class, 'unpackInteger', 'unpackInteger'],
         0x45 => [Duration::class, 'unpackInteger', 'unpackInteger', 'unpackInteger', 'unpackInteger'],
         0x58 => [Point2D::class, 'unpackInteger', 'unpackFloat', 'unpackFloat'],

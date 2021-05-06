@@ -15,7 +15,7 @@ namespace Bolt\structures;
  * @link https://github.com/stefanak-michal/Bolt
  * @package Bolt\structures
  */
-class Time
+class Time implements IStructure
 {
     /**
      * @var int
@@ -56,4 +56,14 @@ class Time
         return $this->tz_offset_seconds;
     }
 
+    public function __toString(): string
+    {
+        $tz = new \DateTimeZone(sprintf('+%04d', $this->tz_offset_seconds / 3600 * 100));
+        $dt = new \DateTime('today', $tz);
+        $dt->add(new \DateInterval('PT' . floor($this->nanoseconds / 1000000000) . 'S'));
+        $fraction = new \DateInterval('PT0S');
+        $fraction->f = $this->nanoseconds % 1000000000 / 1000000000;
+        $dt->add($fraction);
+        return $dt->format('H:i:s.uP');
+    }
 }

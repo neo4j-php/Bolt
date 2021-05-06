@@ -12,7 +12,7 @@ namespace Bolt\structures;
  * @link https://github.com/stefanak-michal/Bolt
  * @package Bolt\structures
  */
-class LocalTime
+class LocalTime implements IStructure
 {
     /**
      * @var int
@@ -37,4 +37,8 @@ class LocalTime
         return $this->nanoseconds;
     }
 
+    public function __toString(): string
+    {
+        return date('H:i:s', floor($this->nanoseconds / 1000000000)) . '.' . $this->nanoseconds % 1000000000;
+    }
 }

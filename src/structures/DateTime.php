@@ -16,7 +16,7 @@ namespace Bolt\structures;
  * @link https://github.com/stefanak-michal/Bolt
  * @package Bolt\structures
  */
-class DateTime
+class DateTime implements IStructure
 {
 
     /**
@@ -73,4 +73,13 @@ class DateTime
         return $this->tz_offset_seconds;
     }
 
+    public function __toString(): string
+    {
+        $dt = \DateTime::createFromFormat('U', $this->seconds, new \DateTimeZone('UTC'));
+        $fraction = new \DateInterval('PT0S');
+        $fraction->f = $this->nanoseconds / 1000000000;
+        $dt->add($fraction);
+        $dt->setTimezone(new \DateTimeZone(sprintf('+%04d', $this->tz_offset_seconds / 3600 * 100)));
+        return $dt->format('Y-m-d\TH:i:s.uP');
+    }
 }

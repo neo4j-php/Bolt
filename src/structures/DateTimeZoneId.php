@@ -16,7 +16,7 @@ namespace Bolt\structures;
  * @link https://github.com/stefanak-michal/Bolt
  * @package Bolt\structures
  */
-class DateTimeZoneId
+class DateTimeZoneId implements IStructure
 {
 
     /**
@@ -30,7 +30,7 @@ class DateTimeZoneId
     private $nanoseconds;
 
     /**
-     * @var int
+     * @var string
      */
     private $tz_id;
 
@@ -38,9 +38,9 @@ class DateTimeZoneId
      * DateTimeZoneId constructor.
      * @param int $seconds
      * @param int $nanoseconds
-     * @param int $tz_id
+     * @param string $tz_id
      */
-    public function __construct(int $seconds, int $nanoseconds, int $tz_id)
+    public function __construct(int $seconds, int $nanoseconds, string $tz_id)
     {
         $this->seconds = $seconds;
         $this->nanoseconds = $nanoseconds;
@@ -66,11 +66,20 @@ class DateTimeZoneId
 
     /**
      * identifier for a specific time zone
-     * @return int
+     * @return string
      */
-    public function tz_id(): int
+    public function tz_id(): string
     {
         return $this->tz_id;
     }
 
+    public function __toString(): string
+    {
+        $dt = \DateTime::createFromFormat('U', $this->seconds, new \DateTimeZone('UTC'));
+        $fraction = new \DateInterval('PT0S');
+        $fraction->f = $this->nanoseconds / 1000000000;
+        $dt->add($fraction);
+        $dt->setTimezone(new \DateTimeZone($this->tz_id));
+        return $dt->format('Y-m-d\TH:i:s.uP');
+    }
 }

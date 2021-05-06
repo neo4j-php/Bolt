@@ -12,7 +12,7 @@ namespace Bolt\structures;
  * @link https://github.com/stefanak-michal/Bolt
  * @package Bolt\structures
  */
-class LocalDateTime
+class LocalDateTime implements IStructure
 {
 
     /**
@@ -51,6 +51,15 @@ class LocalDateTime
     public function nanoseconds(): int
     {
         return $this->nanoseconds;
+    }
+
+    public function __toString(): string
+    {
+        $dt = \DateTime::createFromFormat('U', $this->seconds, new \DateTimeZone('UTC'));
+        $fraction = new \DateInterval('PT0S');
+        $fraction->f = $this->nanoseconds / 1000000000;
+        $dt->add($fraction);
+        return $dt->format('Y-m-d\TH:i:s.u');
     }
 
 }
