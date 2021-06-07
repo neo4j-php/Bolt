@@ -18,26 +18,26 @@ class V3 extends V2
 
     /**
      * @param mixed ...$args
-     * @return bool
+     * @return array
      * @throws Exception
      */
-    public function init(...$args): bool
+    public function init(...$args): array
     {
         return $this->hello(...$args);
     }
 
     /**
      * @param mixed ...$args
-     * @return bool
+     * @return array
      * @throws Exception
      */
-    public function hello(...$args): bool
+    public function hello(...$args): array
     {
         if (count($args) < 4) {
             throw new PackException('Wrong arguments count');
         }
 
-        $this->write($msg = $this->packer->pack(0x01, [
+        $this->write($this->packer->pack(0x01, [
             'user_agent' => $args[0],
             'scheme' => $args[1],
             'principal' => $args[2],
@@ -49,7 +49,7 @@ class V3 extends V2
             throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
-        return $signature == self::SUCCESS;
+        return $signature == self::SUCCESS ? $output : [];
     }
 
     /**

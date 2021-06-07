@@ -203,10 +203,11 @@ final class Bolt
      <pre>null - the server should not carry out routing
      [] - the server should carry out routing
      ['address' => 'ip:port'] - the server should carry out routing according to the given routing context</pre>
+     * @param array $metadata Server success response metadata
      * @return bool
      * @throws Exception
      */
-    public function init(string $name, string $user, string $password, array $routing = null): bool
+    public function init(string $name, string $user, string $password, array $routing = null, array &$metadata = []): bool
     {
         if (!$this->connection->connect())
             return false;
@@ -217,7 +218,8 @@ final class Bolt
         if (self::$debug)
             echo 'INIT';
 
-        return $this->protocol->init($name, $this->scheme, $user, $password, $routing);
+        $metadata = $this->protocol->init($name, $this->scheme, $user, $password, $routing);
+        return !empty($metadata);
     }
 
     /**
