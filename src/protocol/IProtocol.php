@@ -15,9 +15,9 @@ interface IProtocol
     /**
      * Send INIT/HELLO message
      * @param mixed ...$args
-     * @return bool
+     * @return array
      */
-    public function init(...$args): bool;
+    public function init(...$args): array;
 
     /**
      * Send RUN message

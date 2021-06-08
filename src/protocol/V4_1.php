@@ -18,10 +18,10 @@ class V4_1 extends V4
 
     /**
      * @param mixed ...$args
-     * @return bool
+     * @return array
      * @throws Exception
      */
-    public function hello(...$args): bool
+    public function hello(...$args): array
     {
         if (count($args) < 5) {
             throw new PackException('Wrong arguments count');
@@ -42,7 +42,7 @@ class V4_1 extends V4
             throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
-        return $signature == self::SUCCESS;
+        return $signature == self::SUCCESS ? $output : [];
     }
 
 }

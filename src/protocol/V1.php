@@ -18,10 +18,10 @@ class V1 extends AProtocol
 
     /**
      * @param mixed ...$args
-     * @return bool
+     * @return array
      * @throws Exception
      */
-    public function init(...$args): bool
+    public function init(...$args): array
     {
         if (count($args) < 4) {
             throw new PackException('Wrong arguments count');
@@ -40,7 +40,7 @@ class V1 extends AProtocol
             throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
-        return $signature == self::SUCCESS;
+        return $signature == self::SUCCESS ? $output : [];
     }
 
     /**
