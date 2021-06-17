@@ -74,7 +74,7 @@ class Socket extends AConnection
         if (Bolt::$debug)
             $this->printHex($buffer);
 
-        while ($sent < $size) {
+        while (0 < $size) {
             $sent = socket_write($this->socket, $buffer, $size);
             if ($sent === false) {
                 $code = socket_last_error($this->socket);
