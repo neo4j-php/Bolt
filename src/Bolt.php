@@ -233,12 +233,13 @@ final class Bolt
     <pre>null - the server should not carry out routing
     [] - the server should carry out routing
     ['address' => 'ip:port'] - the server should carry out routing according to the given routing context</pre>
+     * @param array $metadata Server success response metadata
      * @return bool
      * @throws Exception
      */
-    public function hello(string $name, string $user, string $password, array $routing = null): bool
+    public function hello(string $name, string $user, string $password, array $routing = null, array &$metadata = []): bool
     {
-        return $this->init($name, $user, $password, $routing);
+        return $this->init($name, $user, $password, $routing, $metadata);
     }
 
     /**
