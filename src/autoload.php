@@ -9,7 +9,7 @@ spl_autoload_register(function ($name) {
         return;
     array_shift($parts);
 
-    if ($parts[0] == 'tests')
+    if (reset($parts) == 'tests')
         array_unshift($parts,'..');
 
     //compose standart namespaced path to file

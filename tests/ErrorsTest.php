@@ -22,10 +22,9 @@ class ErrorsTest extends ATest
 {
     public function testConnectException()
     {
-        $this->expectException(\Bolt\error\ConnectException::class);
-        ini_set('default_socket_timeout', 1000);
-        $conn = new \Bolt\connection\StreamSocket('1.1.1.1', 7687, 1);
+        $conn = new \Bolt\connection\StreamSocket('127.0.0.1', 7800, 1);
         $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
+        $this->expectException(\Bolt\error\ConnectException::class);
         $conn->connect();
     }
 

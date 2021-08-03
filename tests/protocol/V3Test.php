@@ -38,7 +38,7 @@ class V3Test extends \Bolt\tests\ATest
         self::$readArray = [1, 2, 0];
         self::$writeBuffer = [hex2bin('0048b101a48a757365725f6167656e7488546573742f312e3086736368656d65856261736963897072696e636970616c84757365728b63726564656e7469616c738870617373776f72640000')];
 
-        $this->assertTrue($cls->hello('Test/1.0', 'basic', 'user', 'password'));
+        $this->assertIsArray($cls->hello('Test/1.0', 'basic', 'user', 'password'));
     }
 
     /**

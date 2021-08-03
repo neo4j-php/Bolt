@@ -1,5 +1,7 @@
 .idea/
 .vscode/
-phpunit*.phar
 /index.php
 cert/
+/vendor/
+*.lock
+*.cache

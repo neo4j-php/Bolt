@@ -13,7 +13,7 @@
         "ext-mbstring": "*"
     },
     "require-dev": {
-        "phpunit/phpunit": ">=7.5.0"
+        "phpunit/phpunit": ">=7.5.0",
     },
     "support": {
         "issues": "https://github.com/neo4j-php/Bolt/issues",
@@ -42,7 +42,14 @@
             "Bolt\\tests\\": "tests/"
         }
     },
-    "suggests": {
+    "suggest": {
         "laudis/neo4j-php-client": "Neo4j-PHP-Client is the most advanced PHP Client for Neo4j"
+    },
+    "scripts": {
+        "test": [
+            "@putenv XDEBUG_MODE=debug",
+            "Composer\\Config::disableProcessTimeout",
+            "phpunit"
+        ]
     }
 }
