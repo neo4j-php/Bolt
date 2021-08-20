@@ -48,7 +48,7 @@ final class Bolt
     /**
      * @var array
      */
-    private $versions = [4.1, 4, 3];
+    private $versions = [4.3, 4.2, 4.1, 4, 3];
 
     /**
      * @var float
@@ -138,7 +138,7 @@ final class Bolt
             echo 'HANDSHAKE';
 
         $this->connection->write(chr(0x60) . chr(0x60) . chr(0xb0) . chr(0x17));
-        $this->connection->write($this->packProtocolVersions());
+        $this->connection->write(chr(0x00) . chr(0x03) . chr(0x03) . chr(0x04) . chr(0x00) . chr(0x00) . chr(0x01) . chr(0x04) . chr(0x00) . chr(0x00) . chr(0x00) . chr(0x04) . chr(0x00) . chr(0x00) . chr(0x00) . chr(0x03));
 
         $this->unpackProtocolVersion();
         if (empty($this->version)) {
@@ -396,7 +396,7 @@ final class Bolt
      *
      * @param array|null $routing
      *
-     * @return array|null
+     * @return array{rt: array{servers: list<array{addresses: list<string>, role: 'WRITE'|'READ'|'ROUTE'}>, ttl: int}}|null
      */
     public function route(?array $routing = null): ?array
     {
@@ -404,6 +404,7 @@ final class Bolt
             return null;
         }
 
+        $routing = $routing ?? ['address' => $this->connection->getIp() . ':' . $this->connection->getPort()];
         return $this->protocol->route($routing);
     }
 }

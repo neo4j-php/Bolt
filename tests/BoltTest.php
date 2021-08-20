@@ -3,6 +3,7 @@
 namespace Bolt\tests;
 
 use Bolt\Bolt;
+use Bolt\protocol\V4_3;
 use Exception;
 
 /**
@@ -165,4 +166,20 @@ class BoltTest extends ATest
         return self::$parameterType ? ('{' . $name . '}') : ('$' . $name);
     }
 
+
+
+    /**
+     * @depends testHello
+     * @param Bolt $bolt
+     */
+    public function testRoute(Bolt $bolt): void
+    {
+        $version = $bolt->getProtocolVersion();
+        if ($version >= 4.3) {
+            $route = $bolt->route();
+            self::assertNotEmpty($route);
+        } else {
+            self::assertNull($bolt->route());
+        }
+    }
 }
