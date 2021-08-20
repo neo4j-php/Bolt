@@ -48,7 +48,7 @@ final class Bolt
     /**
      * @var array
      */
-    private $versions = [4.3, 4.2, 4.1, 4, 3];
+    private $versions = [4.3, 4.1, 4, 3];
 
     /**
      * @var float
@@ -138,7 +138,7 @@ final class Bolt
             echo 'HANDSHAKE';
 
         $this->connection->write(chr(0x60) . chr(0x60) . chr(0xb0) . chr(0x17));
-        $this->connection->write(chr(0x00) . chr(0x03) . chr(0x03) . chr(0x04) . chr(0x00) . chr(0x00) . chr(0x01) . chr(0x04) . chr(0x00) . chr(0x00) . chr(0x00) . chr(0x04) . chr(0x00) . chr(0x00) . chr(0x00) . chr(0x03));
+        $this->connection->write($this->packProtocolVersions());
 
         $this->unpackProtocolVersion();
         if (empty($this->version)) {
