@@ -56,4 +56,19 @@ abstract class AConnection implements IConnection
         }
         echo '</pre>';
     }
+
+    public function getIp(): string
+    {
+        return $this->ip;
+    }
+
+    public function getPort(): int
+    {
+        return $this->port;
+    }
+
+    public function getTimeout(): float
+    {
+        return $this->timeout;
+    }
 }

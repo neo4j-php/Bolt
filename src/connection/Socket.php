@@ -125,5 +125,4 @@ class Socket extends AConnection
             @socket_close($this->socket);
         }
     }
-
 }

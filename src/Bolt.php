@@ -45,7 +45,7 @@ final class Bolt
     /**
      * @var array
      */
-    private $versions = [4.1, 4, 3];
+    private $versions = [4.3, 4.1, 4, 3];
 
     /**
      * @var float
@@ -388,4 +388,20 @@ final class Bolt
         $this->connection->disconnect();
     }
 
+    /**
+     * fetch the current routing table, if the message specification allows it.
+     *
+     * @param array|null $routing
+     *
+     * @return array{rt: array{servers: list<array{addresses: list<string>, role: 'WRITE'|'READ'|'ROUTE'}>, ttl: int}}|null
+     */
+    public function route(?array $routing = null): ?array
+    {
+        if (!method_exists($this->protocol, 'route')) {
+            return null;
+        }
+
+        $routing = $routing ?? ['address' => $this->connection->getIp() . ':' . $this->connection->getPort()];
+        return $this->protocol->route($routing);
+    }
 }

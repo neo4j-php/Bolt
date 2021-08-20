@@ -25,4 +25,10 @@ interface IConnection
     public function read(int $length = 2048): string;
 
     public function disconnect();
+
+    public function getIp(): string;
+
+    public function getPort(): int;
+
+    public function getTimeout(): float;
 }
