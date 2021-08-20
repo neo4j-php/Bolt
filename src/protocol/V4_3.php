@@ -16,9 +16,13 @@ use function is_array;
  */
 class V4_3 extends V4_1
 {
-    public function route(array $routing, ?array $bookmarks = null, ?string $database=null): array
+    public function route(...$args): array
     {
-        $this->write($this->packer->pack(0x66, (object) $routing, $bookmarks ?? [], $database));
+        if (count($args) < 1) {
+            throw new PackException('Wrong arguments count');
+        }
+
+        $this->write($this->packer->pack(0x66, (object) $args[0], $args[1] ?? [], $args[2] ?? null));
 
         $signature = 0;
         $output = $this->read($signature);
