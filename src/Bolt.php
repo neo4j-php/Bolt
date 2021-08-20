@@ -2,6 +2,7 @@
 
 namespace Bolt;
 
+use Bolt\protocol\V4_3;
 use Bolt\error\{
     ConnectException,
     PackException,
@@ -11,6 +12,8 @@ use Exception;
 use Bolt\PackStream\{IPacker, IUnpacker};
 use Bolt\protocol\AProtocol;
 use Bolt\connection\IConnection;
+use function get_called_class;
+use function method_exists;
 
 /**
  * Main class Bolt
@@ -388,4 +391,18 @@ final class Bolt
         $this->connection->disconnect();
     }
 
+    /**
+     * fetch the current routing table, if the message specification allows it.
+     *
+     * @param array $routing
+     * @return array|null
+     */
+    public function route(array $routing): ?array
+    {
+        if (!method_exists($this->protocol, 'route')) {
+            return null;
+        }
+
+        return $this->protocol->route($routing);
+    }
 }
