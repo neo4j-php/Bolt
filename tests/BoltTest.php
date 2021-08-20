@@ -3,7 +3,6 @@
 namespace Bolt\tests;
 
 use Bolt\Bolt;
-use Bolt\protocol\V4_3;
 use Exception;
 
 /**

@@ -2,7 +2,6 @@
 
 namespace Bolt;
 
-use Bolt\protocol\V4_3;
 use Bolt\error\{
     ConnectException,
     PackException,
@@ -12,8 +11,6 @@ use Exception;
 use Bolt\PackStream\{IPacker, IUnpacker};
 use Bolt\protocol\AProtocol;
 use Bolt\connection\IConnection;
-use function get_called_class;
-use function method_exists;
 
 /**
  * Main class Bolt

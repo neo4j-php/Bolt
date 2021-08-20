@@ -4,8 +4,6 @@ namespace Bolt\protocol;
 
 use Bolt\error\MessageException;
 use Bolt\error\PackException;
-use function count;
-use function is_array;
 
 /**
  * Class Protocol version 4.3
