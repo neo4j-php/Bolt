@@ -29,4 +29,14 @@ class V4_3Test extends \Bolt\tests\ATest
         return $cls;
     }
 
+    /**
+     * @return V4_3
+     */
+    public function testRoute(): void
+    {
+        $v4_3 = $this->test__construct();
+
+        self::assertEquals([], $v4_3->route());
+    }
+
 }

@@ -394,10 +394,11 @@ final class Bolt
     /**
      * fetch the current routing table, if the message specification allows it.
      *
-     * @param array $routing
+     * @param array|null $routing
+     *
      * @return array|null
      */
-    public function route(array $routing): ?array
+    public function route(?array $routing = null): ?array
     {
         if (!method_exists($this->protocol, 'route')) {
             return null;

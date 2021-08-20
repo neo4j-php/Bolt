@@ -16,9 +16,9 @@ use function is_array;
  */
 class V4_3 extends V4_1
 {
-    public function route(array $routing): array
+    public function route(?array $routing = null): array
     {
-        $this->write($this->packer->pack(0x66, $routing));
+        $this->write($this->packer->pack(0x66, $routing ?? []));
 
         $signature = 0;
         $output = $this->read($signature);
