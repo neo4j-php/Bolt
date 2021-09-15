@@ -50,7 +50,7 @@ class Packer implements IPacker
         }
 
         //structure buffer
-        $len = mb_strlen($output, 'UTF-8');
+        $len = mb_strlen($output, '8bit');
         for ($i = 0; $i < $len; $i += 65535) {
             $chunk = mb_substr($output, $i, 65535, '8bit');
             yield pack('n', mb_strlen($chunk, '8bit')) . $chunk;
