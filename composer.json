@@ -9,7 +9,6 @@
     "minimum-stability": "stable",
     "require": {
         "php": ">=7.1.0",
-        "ext-sockets": "*",
         "ext-mbstring": "*"
     },
     "require-dev": {
@@ -43,7 +42,8 @@
         }
     },
     "suggest": {
-        "laudis/neo4j-php-client": "Neo4j-PHP-Client is the most advanced PHP Client for Neo4j"
+        "laudis/neo4j-php-client": "Neo4j-PHP-Client is the most advanced PHP Client for Neo4j",
+        "ext-sockets": "Needed when using the Bolt\\connection\\Socket"
     },
     "scripts": {
         "test": [
