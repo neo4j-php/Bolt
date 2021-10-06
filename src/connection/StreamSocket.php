@@ -98,6 +98,10 @@ class StreamSocket extends AConnection
     public function read(int $length = 2048): string
     {
         $res = stream_get_contents($this->stream, $length);
+
+        if (stream_get_meta_data($this->stream)["timed_out"])
+            throw new ConnectException('Connection timeout reached after '.$this->timeout.' seconds.');
+
         if (empty($res))
             throw new ConnectException('Read error');
 
