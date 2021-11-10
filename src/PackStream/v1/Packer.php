@@ -186,7 +186,7 @@ class Packer implements IPacker
         }
 
         foreach ($arr as $k => $v) {
-            $output .= $this->p($k);
+            $output .= $this->p((string)$k); // The key names in a map must be of type String.
             $output .= $this->p($v);
         }
 
