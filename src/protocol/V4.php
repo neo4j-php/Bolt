@@ -10,27 +10,28 @@ use Bolt\error\MessageException;
  *
  * @author Michal Stefanak
  * @link https://github.com/stefanak-michal/Bolt
+ * @see https://7687.org/bolt/bolt-protocol-message-specification-4.html
  * @package Bolt\protocol
  */
 class V4 extends V3
 {
 
     /**
-     * @param mixed ...$args
+     * @param array ...$args
      * @return array
      * @throws Exception
      */
-    public function pullAll(...$args)
+    public function pullAll(...$args): array
     {
         return $this->pull(...$args);
     }
 
     /**
-     * @param mixed ...$args
+     * @param array ...$args
      * @return array
      * @throws Exception
      */
-    public function pull(...$args)
+    public function pull(...$args): array
     {
         $this->write($this->packer->pack(0x3F, $args[0]));
 

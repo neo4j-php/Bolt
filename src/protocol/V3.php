@@ -11,6 +11,7 @@ use Exception;
  *
  * @author Michal Stefanak
  * @link https://github.com/stefanak-michal/Bolt
+ * @see https://7687.org/bolt/bolt-protocol-message-specification-3.html
  * @package Bolt\protocol
  */
 class V3 extends V2
@@ -53,11 +54,11 @@ class V3 extends V2
     }
 
     /**
-     * @param mixed ...$args
+     * @param string|array ...$args query, parameters, extra
      * @return array
      * @throws Exception
      */
-    public function run(...$args)
+    public function run(...$args): array
     {
         if (empty($args)) {
             throw new PackException('Wrong arguments count');

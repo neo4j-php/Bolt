@@ -11,6 +11,7 @@ use Bolt\error\MessageException;
  *
  * @author Michal Stefanak
  * @link https://github.com/stefanak-michal/Bolt
+ * @see https://7687.org/bolt/bolt-protocol-message-specification-4.html#version-41
  * @package Bolt\protocol
  */
 class V4_1 extends V4

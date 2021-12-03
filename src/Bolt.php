@@ -389,17 +389,17 @@ final class Bolt
     }
 
     /**
-     * fetch the current routing table, if the message specification allows it.
-     *
+     * Fetch the current routing table, if the message specification allows it.
      * @param array|null $routing
-     *
-     * @return array{rt: array{servers: list<array{addresses: list<string>, role: 'WRITE'|'READ'|'ROUTE'}>, ttl: int}}|null
+     * @return array|null
      */
     public function route(?array $routing = null): ?array
     {
-        if (!method_exists($this->protocol, 'route')) {
+        if (self::$debug)
+            echo 'ROUTE';
+
+        if (!method_exists($this->protocol, 'route'))
             return null;
-        }
 
         $routing = $routing ?? ['address' => $this->connection->getIp() . ':' . $this->connection->getPort()];
         return $this->protocol->route($routing);

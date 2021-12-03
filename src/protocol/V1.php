@@ -11,6 +11,7 @@ use Exception;
  *
  * @author Michal Stefanak
  * @link https://github.com/stefanak-michal/Bolt
+ * @see https://7687.org/bolt/bolt-protocol-message-specification-1.html
  * @package Bolt\protocol
  */
 class V1 extends AProtocol
@@ -48,7 +49,7 @@ class V1 extends AProtocol
      * @return array
      * @throws Exception
      */
-    public function run(...$args)
+    public function run(...$args): array
     {
         if (empty($args)) {
             throw new PackException('Wrong arguments count');
@@ -70,7 +71,7 @@ class V1 extends AProtocol
      * @return array
      * @throws Exception
      */
-    public function pullAll(...$args)
+    public function pullAll(...$args): array
     {
         $this->write($this->packer->pack(0x3F));
 

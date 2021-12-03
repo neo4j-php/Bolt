@@ -7,6 +7,7 @@ namespace Bolt\protocol;
  *
  * @author Michal Stefanak
  * @link https://github.com/stefanak-michal/Bolt
+ * @see https://7687.org/bolt/bolt-protocol-message-specification-4.html#version-42
  * @package Bolt\protocol
  */
 class V4_2 extends V4_1

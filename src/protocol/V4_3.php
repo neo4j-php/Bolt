@@ -10,10 +10,17 @@ use Bolt\error\PackException;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
+ * @see https://7687.org/bolt/bolt-protocol-message-specification-4.html#version-43
  * @package Bolt\protocol
  */
-class V4_3 extends V4_1
+class V4_3 extends V4_2
 {
+    /**
+     * @param array|string|null ...$args
+     * @return array
+     * @throws MessageException
+     * @throws PackException
+     */
     public function route(...$args): array
     {
         if (count($args) < 1) {
