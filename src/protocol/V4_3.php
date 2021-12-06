@@ -4,6 +4,7 @@ namespace Bolt\protocol;
 
 use Bolt\error\MessageException;
 use Bolt\error\PackException;
+use Exception;
 
 /**
  * Class Protocol version 4.3
@@ -18,8 +19,7 @@ class V4_3 extends V4_2
     /**
      * @param array|string|null ...$args
      * @return array
-     * @throws MessageException
-     * @throws PackException
+     * @throws Exception
      */
     public function route(...$args): array
     {

@@ -50,26 +50,6 @@ abstract class AProtocol implements IProtocol
         $this->connection = $connection;
     }
 
-    public function begin(...$args): bool
-    {
-        return false;
-    }
-
-    public function commit(...$args): bool
-    {
-        return false;
-    }
-
-    public function rollback(...$args): bool
-    {
-        return false;
-    }
-
-    public function goodbye(...$args)
-    {
-
-    }
-
     /**
      * Write to connection
      * @param Generator $generator

@@ -322,6 +322,7 @@ final class Bolt
 
     /**
      * Send BEGIN message
+     * @version >=3
      * @param array $extra extra::Dictionary(bookmarks::List<String>, tx_timeout::Integer, tx_metadata::Dictionary, mode::String, db:String)
     <pre>The bookmarks is a list of strings containg some kind of bookmark identification e.g [“neo4j-bookmark-transaction:1”, “neo4j-bookmark-transaction:2”]
     The tx_timeout is an integer in that specifies a transaction timeout in ms.
@@ -335,11 +336,12 @@ final class Bolt
     {
         if (self::$debug)
             echo 'BEGIN';
-        return $this->protocol->begin($extra);
+        return method_exists($this->protocol, 'begin') && $this->protocol->begin($extra);
     }
 
     /**
      * Send COMMIT message
+     * @version >=3
      * @return bool
      * @throws Exception
      */
@@ -347,11 +349,12 @@ final class Bolt
     {
         if (self::$debug)
             echo 'COMMIT';
-        return $this->protocol->commit();
+        return method_exists($this->protocol, 'commit') && $this->protocol->commit();
     }
 
     /**
      * Send ROLLBACK message
+     * @version >=3
      * @return bool
      * @throws Exception
      */
@@ -359,7 +362,7 @@ final class Bolt
     {
         if (self::$debug)
             echo 'ROLLBACK';
-        return $this->protocol->rollback();
+        return method_exists($this->protocol, 'rollback') && $this->protocol->rollback();
     }
 
     /**
@@ -375,6 +378,22 @@ final class Bolt
     }
 
     /**
+     * Send ROUTE message to instruct the server to return the current routing table.
+     * @version >=4.3 In previous versions there was no explicit message for this and a procedure had to be invoked using Cypher through the RUN and PULL messages.
+     * @param array|null $routing
+     * @param array $bookmarks
+     * @param array|string|null $extra
+     * @return array|null
+     */
+    public function route(?array $routing = null, array $bookmarks = [], $extra = null): ?array
+    {
+        if (self::$debug)
+            echo 'ROUTE';
+        $routing = $routing ?? ['address' => $this->connection->getIp() . ':' . $this->connection->getPort()];
+        return method_exists($this->protocol, 'route') ? $this->protocol->route($routing, $bookmarks, $extra) : null;
+    }
+
+    /**
      * Say goodbye
      */
     public function __destruct()
@@ -382,26 +401,9 @@ final class Bolt
         if ($this->protocol instanceof AProtocol) {
             if (self::$debug)
                 echo 'GOODBYE';
-            $this->protocol->goodbye();
+            method_exists($this->protocol, 'goodbye') && $this->protocol->goodbye();
         }
 
         $this->connection->disconnect();
-    }
-
-    /**
-     * Fetch the current routing table, if the message specification allows it.
-     * @param array|null $routing
-     * @return array|null
-     */
-    public function route(?array $routing = null): ?array
-    {
-        if (self::$debug)
-            echo 'ROUTE';
-
-        if (!method_exists($this->protocol, 'route'))
-            return null;
-
-        $routing = $routing ?? ['address' => $this->connection->getIp() . ':' . $this->connection->getPort()];
-        return $this->protocol->route($routing);
     }
 }
