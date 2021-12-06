@@ -17,6 +17,14 @@ use Exception;
  * @covers \Bolt\connection\StreamSocket
  * @covers \Bolt\PackStream\v1\Packer
  * @covers \Bolt\PackStream\v1\Unpacker
+ * @covers \Bolt\protocol\V1
+ * @covers \Bolt\protocol\V2
+ * @covers \Bolt\protocol\V3
+ * @covers \Bolt\protocol\V4
+ * @covers \Bolt\protocol\V4_1
+ * @covers \Bolt\protocol\V4_2
+ * @covers \Bolt\protocol\V4_3
+ * @covers \Bolt\protocol\V4_4
  *
  * @package Bolt\tests
  * @requires PHP >= 7.1
@@ -165,8 +173,6 @@ class BoltTest extends ATest
         return self::$parameterType ? ('{' . $name . '}') : ('$' . $name);
     }
 
-
-
     /**
      * @depends testHello
      * @param Bolt $bolt
@@ -174,11 +180,11 @@ class BoltTest extends ATest
     public function testRoute(Bolt $bolt): void
     {
         $version = $bolt->getProtocolVersion();
+        $route = $bolt->route();
         if ($version >= 4.3) {
-            $route = $bolt->route();
             self::assertNotEmpty($route);
         } else {
-            self::assertNull($bolt->route());
+            self::assertNull($route);
         }
     }
 }

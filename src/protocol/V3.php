@@ -81,11 +81,10 @@ class V3 extends V2
     }
 
     /**
-     * @param mixed ...$args
      * @return bool
      * @throws Exception
      */
-    public function reset(...$args): bool
+    public function reset(): bool
     {
         $this->write($this->packer->pack(0x0F));
         return true;
@@ -110,11 +109,10 @@ class V3 extends V2
     }
 
     /**
-     * @param mixed ...$args
      * @return bool
      * @throws Exception
      */
-    public function commit(...$args): bool
+    public function commit(): bool
     {
         $this->write($this->packer->pack(0x12));
         $output = $this->read($signature);
@@ -128,11 +126,10 @@ class V3 extends V2
     }
 
     /**
-     * @param mixed ...$args
      * @return bool
      * @throws Exception
      */
-    public function rollback(...$args): bool
+    public function rollback(): bool
     {
         $this->write($this->packer->pack(0x13));
         $output = $this->read($signature);
@@ -146,10 +143,9 @@ class V3 extends V2
     }
 
     /**
-     * @param mixed ...$args
      * @throws Exception
      */
-    public function goodbye(...$args)
+    public function goodbye()
     {
         $this->write($this->packer->pack(0x02));
     }

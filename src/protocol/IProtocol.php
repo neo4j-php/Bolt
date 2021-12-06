@@ -42,8 +42,7 @@ interface IProtocol
 
     /**
      * Send RESET message
-     * @param mixed ...$args
      */
-    public function reset(...$args): bool;
+    public function reset(): bool;
 
 }

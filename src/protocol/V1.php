@@ -120,11 +120,10 @@ class V1 extends AProtocol
     }
 
     /**
-     * @param mixed ...$args
      * @return bool
      * @throws Exception
      */
-    public function reset(...$args): bool
+    public function reset(): bool
     {
         $this->write($this->packer->pack(0x0F));
         $this->read($signature);
