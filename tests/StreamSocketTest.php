@@ -8,7 +8,7 @@ use Bolt\error\ConnectException;
 use Exception;
 use PHPUnit\Framework\TestCase;
 
-final class SocketTest extends TestCase
+final class StreamSocketTest extends TestCase
 {
     /**
      * @throws Exception
@@ -18,7 +18,10 @@ final class SocketTest extends TestCase
         $socket = new StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', (int) ($GLOBALS['NEO_PORT'] ?? 7687), 1.5);
         $bolt = new Bolt($socket);
 
-        $bolt->init('Test/1.0', $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
+        $basic = new \Bolt\auth\Basic();
+        $basic->setCredentials($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
+
+        $bolt->init($basic);
 
         $time = microtime(true);
         try {
@@ -41,7 +44,11 @@ final class SocketTest extends TestCase
     {
         $socket = new StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', (int) ($GLOBALS['NEO_PORT'] ?? 7687), 1);
         $bolt = new Bolt($socket);
-        $bolt->init('Test/1.0', $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
+
+        $basic = new \Bolt\auth\Basic();
+        $basic->setCredentials($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
+
+        $bolt->init($basic);
 
         $time = microtime(true);
         try {

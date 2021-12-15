@@ -43,7 +43,11 @@ class ErrorsTest extends ATest
         }
 
         $this->expectException(\Bolt\error\MessageException::class);
-        $bolt->hello('Test/1.0', $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
+
+        $basic = new \Bolt\auth\Basic();
+        $basic->setCredentials($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
+
+        $bolt->hello($basic);
         $bolt->run('Wrong message');
     }
 

@@ -22,8 +22,9 @@ class V3 extends V2
      * @return array
      * @throws Exception
      */
-    public function init(...$args): array
+    public function init(...$args): ?array
     {
+        $args[] = null;
         return $this->hello(...$args);
     }
 
@@ -32,25 +33,20 @@ class V3 extends V2
      * @return array
      * @throws Exception
      */
-    public function hello(...$args): array
+    public function hello(...$args): ?array
     {
-        if (count($args) < 4) {
+        if (count($args) < 1) {
             throw new PackException('Wrong arguments count');
         }
 
-        $this->write($this->packer->pack(0x01, [
-            'user_agent' => $args[0],
-            'scheme' => $args[1],
-            'principal' => $args[2],
-            'credentials' => $args[3]
-        ]));
+        $this->write($this->packer->pack(0x01, $args[0]));
         $output = $this->read($signature);
 
         if ($signature == self::FAILURE) {
             throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
-        return $signature == self::SUCCESS ? $output : [];
+        return $signature == self::SUCCESS ? $output : null;
     }
 
     /**

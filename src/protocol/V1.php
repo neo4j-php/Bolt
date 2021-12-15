@@ -22,17 +22,16 @@ class V1 extends AProtocol
      * @return array
      * @throws Exception
      */
-    public function init(...$args): array
+    public function init(...$args): ?array
     {
-        if (count($args) < 4) {
+        if (count($args) < 1) {
             throw new PackException('Wrong arguments count');
         }
 
-        $this->write($this->packer->pack(0x01, $args[0], [
-            'scheme' => $args[1],
-            'principal' => $args[2],
-            'credentials' => $args[3]
-        ]));
+        $userAgent = $args[0]['user_agent'];
+        unset($args[0]['user_agent']);
+
+        $this->write($this->packer->pack(0x01, $userAgent, $args[0]));
         $output = $this->read($signature);
 
         if ($signature == self::FAILURE) {
@@ -41,7 +40,7 @@ class V1 extends AProtocol
             throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
-        return $signature == self::SUCCESS ? $output : [];
+        return $signature == self::SUCCESS ? $output : null;
     }
 
     /**

@@ -41,7 +41,10 @@ class V1Test extends \Bolt\tests\ATest
         self::$readArray = [1, 2, 0];
         self::$writeBuffer = [hex2bin('003db20188546573742f312e30a386736368656d65856261736963897072696e636970616c84757365728b63726564656e7469616c738870617373776f72640000')];
 
-        $this->assertIsArray($cls->init('Test/1.0', 'basic', 'user', 'password'));
+        $basic = new \Bolt\auth\Basic('Test/1.0');
+        $basic->setCredentials('user', 'password');
+
+        $this->assertIsArray($cls->init($basic->getCredentials()));
     }
 
     /**
@@ -58,7 +61,11 @@ class V1Test extends \Bolt\tests\ATest
 
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
-        $cls->init('Test/1.0', 'basic', 'user', 'password');
+
+        $basic = new \Bolt\auth\Basic('Test/1.0');
+        $basic->setCredentials('user', 'password');
+
+        $cls->init($basic->getCredentials());
     }
 
     /**
