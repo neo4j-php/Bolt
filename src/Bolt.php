@@ -54,11 +54,6 @@ final class Bolt
     private $version;
 
     /**
-     * @var string
-     */
-    private $scheme = 'basic';
-
-    /**
      * Print debug info
      * @var bool
      */
