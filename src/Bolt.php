@@ -182,58 +182,56 @@ final class Bolt
     /**
      * Send INIT message
      *
-     * @note The usage of $user, $password, $routing and $metadata is deprecated. Please use helpers\Auth to generate an authentication strategy as an array.
-     *
-     * @param array|string $nameOrExtra You can use helpers\Auth to generate required array or use the deprecated approach to fill in $name, $user and $password
+     * @param array|string $userAgentOrExtra You can use helpers\Auth to generate required array or use the deprecated approach to fill in $name, $user and $password
      * @param string|null $user
      * @param string|null $password
-     * @param array|null $routing
+     * @param array|null|bool $routing
      * @param array $metadata
      *
-     * @return array
+     * @return bool
      * @throws Exception
+     * @deprecated The usage of $user, $password, $routing and $metadata is deprecated. Please use helpers\Auth to generate an authentication strategy as an array.
+     *
      * @version <3
      */
-    public function init($nameOrExtra, string $user = null, string $password = null, array $routing = null, array $metadata = []): array
+    public function init($userAgentOrExtra, string $user = '', string $password = '', $routing = false, array &$metadata = []): bool
     {
-        if (is_string($nameOrExtra)) {
-            $nameOrExtra = Auth::basic($user, $password);
-            if ($routing) {
-                $nameOrExtra['routing'] = $routing;
-            }
-            if ($metadata) {
-                $nameOrExtra['metaData'] = $metadata;
-            }
+        if (is_string($userAgentOrExtra)) {
+            Auth::$userAgent = $userAgentOrExtra;
+            $userAgentOrExtra = Auth::basic($user, $password);
+            if ($routing !== false)
+                $userAgentOrExtra['routing'] = $routing;
         }
 
         if ($this->connection->connect() && $this->handshake()) {
             if (self::$debug)
                 echo 'INIT';
-            return $this->protocol->init($nameOrExtra);
+            $metadata = $this->protocol->init($userAgentOrExtra);
+            return true;
         }
 
         // I don't think it will reach this point, but otherwise I've to end method with return
-        throw new Exception('INIT message wasn\'t successful');
+        throw new Exception('INIT message failed');
     }
 
     /**
      * Send HELLO message
      *
-     * @note The usage of $user, $password, $routing and $metadata is deprecated. Please use helpers\Auth to generate an authentication strategy as an array.
-     *
-     * @param array|string $nameOrExtra You can use helpers\Auth to generate required array or use the deprecated approach to fill in $name, $user and $password
-     * @param string|null $user
-     * @param string|null $password
-     * @param array|null $routing
+     * @param array|string $userAgentOrExtra You can use helpers\Auth to generate required array or use the deprecated approach to fill in $name, $user and $password
+     * @param string $user
+     * @param string $password
+     * @param array|null|bool $routing
      * @param array $metadata
      *
-     * @return array
+     * @return bool
      * @throws Exception
+     * @deprecated The usage of $user, $password, $routing and $metadata is deprecated. Please use helpers\Auth to generate an authentication strategy as an array.
+     *
      * @version >=3
      */
-    public function hello($nameOrExtra, string $user = null, string $password = null, array $routing = null, array $metadata = []): array
+    public function hello($userAgentOrExtra, string $user = '', string $password = '', $routing = false, array &$metadata = []): bool
     {
-        return $this->init($nameOrExtra, $user, $password, $routing, $metadata);
+        return $this->init($userAgentOrExtra, $user, $password, $routing, $metadata);
     }
 
     /**
