@@ -21,11 +21,11 @@ class V4_1 extends V4
      */
     public function hello(...$args): array
     {
-        if (count($args) < 2) {
+        if (count($args) < 1) {
             throw new PackException('Wrong arguments count');
         }
 
-        $args[0]['routing'] = is_array($args[1]) ? (object)$args[1] : null;
+        $args[0]['routing'] = array_key_exists('routing', $args[0]) && is_array($args[0]['routing']) ? (object)$args[1] : null;
         $this->write($this->packer->pack(0x01, $args[0]));
 
         $signature = 0;

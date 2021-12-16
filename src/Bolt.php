@@ -53,11 +53,6 @@ final class Bolt
     private $version;
 
     /**
-     * @var array|null
-     */
-    private $routing = null;
-
-    /**
      * Print debug info
      * @var bool
      */
@@ -190,12 +185,12 @@ final class Bolt
      * @throws Exception
      * @version <3
      */
-    public function init(array $extra)
+    public function init(array $extra): array
     {
         if ($this->connection->connect() && $this->handshake()) {
             if (self::$debug)
                 echo 'INIT';
-            return $this->protocol->init($extra, $this->routing);
+            return $this->protocol->init($extra);
         }
 
         // I don't think it will reach this point, but otherwise I've to end method with return
@@ -209,23 +204,9 @@ final class Bolt
      * @throws Exception
      * @version >=3
      */
-    public function hello(array $extra)
+    public function hello(array $extra): array
     {
         return $this->init($extra);
-    }
-
-    /**
-     * Set routing table for HELLO message
-     * @param array|null $routing routing::Dictionary(address::String)
-     * <pre>null - the server should not carry out routing
-     * [] - the server should carry out routing
-     * ['address' => 'ip:port'] - the server should carry out routing according to the given routing context</pre>
-     * @return Bolt
-     */
-    public function setRouting(?array $routing = null): Bolt
-    {
-        $this->routing = $routing;
-        return $this;
     }
 
     /**
