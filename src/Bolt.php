@@ -54,6 +54,11 @@ final class Bolt
     private $version;
 
     /**
+     * @var string
+     */
+    private $scheme = 'basic';
+
+    /**
      * Print debug info
      * @var bool
      */
@@ -99,6 +104,16 @@ final class Bolt
         }
         $this->unpacker = new $unpackerClass();
 
+        return $this;
+    }
+
+    /**
+     * @deprecated Use Auth helper
+     * @param string $scheme
+     * @return Bolt
+     */
+    public function setScheme(string $scheme = 'basic'): Bolt
+    {
         return $this;
     }
 
@@ -198,7 +213,7 @@ final class Bolt
     {
         if (is_string($userAgentOrExtra)) {
             Auth::$userAgent = $userAgentOrExtra;
-            $userAgentOrExtra = Auth::basic($user, $password);
+            $userAgentOrExtra = empty($user) && empty($password) ? Auth::none() : Auth::basic($user, $password);
             if ($routing !== false)
                 $userAgentOrExtra['routing'] = $routing;
         }
