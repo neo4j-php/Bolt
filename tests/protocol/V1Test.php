@@ -60,7 +60,6 @@ class V1Test extends \Bolt\tests\ATest
 
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
-
         $cls->init(\Bolt\helpers\Auth::basic('user', 'password'));
     }
 

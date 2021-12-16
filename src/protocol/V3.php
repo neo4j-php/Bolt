@@ -23,7 +23,6 @@ class V3 extends V2
      */
     public function init(...$args): array
     {
-        $args[] = null;
         return $this->hello(...$args);
     }
 
