@@ -14,7 +14,7 @@ use Exception;
  * @link https://github.com/stefanak-michal/Bolt
  * @package Bolt\protocol
  */
-abstract class AProtocol implements IProtocol
+abstract class AProtocol
 {
 
     protected const SUCCESS = 0x70;
