@@ -15,8 +15,7 @@ use Exception;
  * @covers \Bolt\connection\AConnection
  * @covers \Bolt\connection\Socket
  * @covers \Bolt\connection\StreamSocket
- * @covers \Bolt\auth\Auth
- * @covers \Bolt\auth\Basic
+ * @covers \Bolt\helpers\Auth
  * @covers \Bolt\PackStream\v1\Packer
  * @covers \Bolt\PackStream\v1\Unpacker
  * @covers \Bolt\protocol\V1
@@ -37,14 +36,11 @@ class BoltTest extends ATest
 {
 
     /**
-     * @return Bolt|null
+     * @return Bolt
      */
-    public function testHello(): ?Bolt
+    public function testHello(): Bolt
     {
         Bolt::$debug = true;
-
-        $basic = new \Bolt\auth\Basic();
-        $basic->setCredentials($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
 
         try {
             if (extension_loaded('sockets')) {
@@ -52,7 +48,7 @@ class BoltTest extends ATest
                 $this->assertInstanceOf(\Bolt\connection\Socket::class, $conn);
                 $bolt = new Bolt($conn);
                 $this->assertInstanceOf(Bolt::class, $bolt);
-                $this->assertNotFalse($bolt->hello($basic));
+                $this->assertNotFalse($bolt->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
             }
             unset($bolt);
 
@@ -60,14 +56,12 @@ class BoltTest extends ATest
             $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
             $bolt = new Bolt($conn);
             $this->assertInstanceOf(Bolt::class, $bolt);
-            $this->assertNotFalse($bolt->hello($basic));
+            $this->assertNotFalse($bolt->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
 
             return $bolt;
         } catch (Exception $e) {
             $this->markTestSkipped($e->getMessage());
         }
-
-        return null;
     }
 
     /**
@@ -133,7 +127,6 @@ class BoltTest extends ATest
     {
         if ($bolt->getProtocolVersion() < 3) {
             $this->markTestSkipped('Old Neo4j version does not support transactions');
-            return;
         }
 
         try {

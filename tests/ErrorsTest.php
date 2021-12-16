@@ -39,15 +39,10 @@ class ErrorsTest extends ATest
             $this->assertInstanceOf(\Bolt\Bolt::class, $bolt);
         } catch (\Exception $e) {
             $this->markTestIncomplete($e->getMessage());
-            return;
         }
 
         $this->expectException(\Bolt\error\MessageException::class);
-
-        $basic = new \Bolt\auth\Basic();
-        $basic->setCredentials($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
-
-        $bolt->hello($basic);
+        $bolt->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         $bolt->run('Wrong message');
     }
 
@@ -70,7 +65,6 @@ class ErrorsTest extends ATest
             $this->assertInstanceOf(\Bolt\Bolt::class, $bolt);
         } catch (\Exception $e) {
             $this->markTestIncomplete($e->getMessage());
-            return;
         }
 
         $this->expectException(\Bolt\error\PackException::class);

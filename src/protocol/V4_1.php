@@ -3,7 +3,6 @@
 namespace Bolt\protocol;
 
 use Bolt\error\PackException;
-use Exception;
 use Bolt\error\MessageException;
 
 /**
@@ -18,9 +17,7 @@ class V4_1 extends V4
 {
 
     /**
-     * @param mixed ...$args
-     * @return array
-     * @throws Exception
+     * @inheritDoc
      */
     public function hello(...$args): array
     {
@@ -38,7 +35,7 @@ class V4_1 extends V4
             throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
-        return $signature == self::SUCCESS ? $output : [];
+        return $output;
     }
 
 }

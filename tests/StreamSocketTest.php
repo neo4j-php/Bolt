@@ -17,11 +17,7 @@ final class StreamSocketTest extends TestCase
     {
         $socket = new StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', (int) ($GLOBALS['NEO_PORT'] ?? 7687), 1.5);
         $bolt = new Bolt($socket);
-
-        $basic = new \Bolt\auth\Basic();
-        $basic->setCredentials($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
-
-        $bolt->init($basic);
+        $bolt->init(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 
         $time = microtime(true);
         try {
@@ -44,18 +40,14 @@ final class StreamSocketTest extends TestCase
     {
         $socket = new StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', (int) ($GLOBALS['NEO_PORT'] ?? 7687), 1);
         $bolt = new Bolt($socket);
-
-        $basic = new \Bolt\auth\Basic();
-        $basic->setCredentials($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
-
-        $bolt->init($basic);
+        $bolt->init(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 
         $time = microtime(true);
         try {
             $bolt->run('FOREACH ( i IN range(1,10000) | 
   MERGE (d:Day {day: i})
 )');
-            $this->assertTrue(false, 'No timeout error triggered');
+            $this->fail('No timeout error triggered');
         } catch (ConnectException $e) {
             $newTime = microtime(true);
 

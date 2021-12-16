@@ -185,35 +185,33 @@ final class Bolt
 
     /**
      * Send INIT message
-     * @param auth\Auth $auth
-     * @return bool|array
+     * @param array $extra You can use helpers\Auth to generate required array
+     * @return array
      * @throws Exception
      * @version <3
      */
-    public function init(\Bolt\auth\Auth $auth)
+    public function init(array $extra)
     {
-        if (!$this->connection->connect())
-            return false;
+        if ($this->connection->connect() && $this->handshake()) {
+            if (self::$debug)
+                echo 'INIT';
+            return $this->protocol->init($extra, $this->routing);
+        }
 
-        if (!$this->handshake())
-            return false;
-
-        if (self::$debug)
-            echo 'INIT';
-
-        return $this->protocol->init($auth->getCredentials(), $this->routing) ?? false;
+        // I don't think it will reach this point, but otherwise I've to end method with return
+        throw new Exception('INIT message wasn\'t successful');
     }
 
     /**
      * Send HELLO message
-     * @param auth\Auth $auth
-     * @return bool|array
+     * @param array $extra You can use helpers\Auth to generate required array
+     * @return array
      * @throws Exception
      * @version >=3
      */
-    public function hello(\Bolt\auth\Auth $auth)
+    public function hello(array $extra)
     {
-        return $this->init($auth);
+        return $this->init($extra);
     }
 
     /**

@@ -17,7 +17,7 @@ interface IProtocol
      * @param mixed ...$args
      * @return array
      */
-    public function init(...$args): ?array;
+    public function init(...$args): array;
 
     /**
      * Send RUN message

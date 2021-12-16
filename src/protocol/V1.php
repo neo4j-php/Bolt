@@ -18,11 +18,12 @@ class V1 extends AProtocol
 {
 
     /**
+     * Send INIT message
      * @param mixed ...$args
      * @return array
      * @throws Exception
      */
-    public function init(...$args): ?array
+    public function init(...$args): array
     {
         if (count($args) < 1) {
             throw new PackException('Wrong arguments count');
@@ -40,10 +41,11 @@ class V1 extends AProtocol
             throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
-        return $signature == self::SUCCESS ? $output : null;
+        return $output;
     }
 
     /**
+     * Send RUN message
      * @param mixed ...$args
      * @return array
      * @throws Exception
@@ -66,6 +68,7 @@ class V1 extends AProtocol
     }
 
     /**
+     * Send PULL_ALL message
      * @param mixed ...$args
      * @return array
      * @throws Exception
@@ -90,6 +93,7 @@ class V1 extends AProtocol
     }
 
     /**
+     * Send DISCARD_ALL message
      * @param mixed ...$args
      * @return bool
      * @throws Exception
@@ -119,6 +123,9 @@ class V1 extends AProtocol
     }
 
     /**
+     * Send RESET message
+     * The RESET message requests that the connection should be set back to its initial READY state, as if an INIT had just successfully completed.
+     *
      * @return bool
      * @throws Exception
      */

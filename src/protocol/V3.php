@@ -18,22 +18,22 @@ class V3 extends V2
 {
 
     /**
-     * @param mixed ...$args
-     * @return array
-     * @throws Exception
+     * @inheritDoc
+     * @deprecated Replaced with HELLO message
      */
-    public function init(...$args): ?array
+    public function init(...$args): array
     {
         $args[] = null;
         return $this->hello(...$args);
     }
 
     /**
+     * Send HELLO message
      * @param mixed ...$args
      * @return array
      * @throws Exception
      */
-    public function hello(...$args): ?array
+    public function hello(...$args): array
     {
         if (count($args) < 1) {
             throw new PackException('Wrong arguments count');
@@ -46,7 +46,7 @@ class V3 extends V2
             throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
-        return $signature == self::SUCCESS ? $output : null;
+        return $output;
     }
 
     /**
