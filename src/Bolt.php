@@ -2,6 +2,7 @@
 
 namespace Bolt;
 
+use Bolt\helpers\Auth;
 use Bolt\error\{
     ConnectException,
     PackException,
@@ -180,17 +181,35 @@ final class Bolt
 
     /**
      * Send INIT message
-     * @param array $extra You can use helpers\Auth to generate required array
+     *
+     * @note The usage of $user, $password, $routing and $metadata is deprecated. Please use helpers\Auth to generate an authentication strategy as an array.
+     *
+     * @param array|string $nameOrExtra You can use helpers\Auth to generate required array or use the deprecated approach to fill in $name, $user and $password
+     * @param string|null $user
+     * @param string|null $password
+     * @param array|null $routing
+     * @param array $metadata
+     *
      * @return array
      * @throws Exception
      * @version <3
      */
-    public function init(array $extra): array
+    public function init($nameOrExtra, string $user = null, string $password = null, array $routing = null, array $metadata = []): array
     {
+        if (is_string($nameOrExtra)) {
+            $nameOrExtra = Auth::basic($user, $password);
+            if ($routing) {
+                $nameOrExtra['routing'] = $routing;
+            }
+            if ($metadata) {
+                $nameOrExtra['metaData'] = $metadata;
+            }
+        }
+
         if ($this->connection->connect() && $this->handshake()) {
             if (self::$debug)
                 echo 'INIT';
-            return $this->protocol->init($extra);
+            return $this->protocol->init($nameOrExtra);
         }
 
         // I don't think it will reach this point, but otherwise I've to end method with return
@@ -199,14 +218,22 @@ final class Bolt
 
     /**
      * Send HELLO message
-     * @param array $extra You can use helpers\Auth to generate required array
+     *
+     * @note The usage of $user, $password, $routing and $metadata is deprecated. Please use helpers\Auth to generate an authentication strategy as an array.
+     *
+     * @param array|string $nameOrExtra You can use helpers\Auth to generate required array or use the deprecated approach to fill in $name, $user and $password
+     * @param string|null $user
+     * @param string|null $password
+     * @param array|null $routing
+     * @param array $metadata
+     *
      * @return array
      * @throws Exception
      * @version >=3
      */
-    public function hello(array $extra): array
+    public function hello($nameOrExtra, string $user = null, string $password = null, array $routing = null, array $metadata = []): array
     {
-        return $this->init($extra);
+        return $this->init($nameOrExtra, $user, $password, $routing, $metadata);
     }
 
     /**
