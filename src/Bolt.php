@@ -2,6 +2,7 @@
 
 namespace Bolt;
 
+use Bolt\helpers\Auth;
 use Bolt\error\{
     ConnectException,
     PackException,
@@ -26,7 +27,7 @@ final class Bolt
      * @var IPacker
      */
     private $packer;
-    
+
     /**
      * @var IUnpacker
      */
@@ -53,13 +54,8 @@ final class Bolt
     private $version;
 
     /**
-     * @var string
-     */
-    private $scheme = 'basic';
-
-    /**
      * Print debug info
-     * @var bool 
+     * @var bool
      */
     public static $debug = false;
 
@@ -89,7 +85,7 @@ final class Bolt
      * @return Bolt
      * @throws Exception
      */
-    public function setPackStreamVersion(int $version = 1)
+    public function setPackStreamVersion(int $version = 1): Bolt
     {
         $packerClass = "\\Bolt\\PackStream\\v" . $version . "\\Packer";
         if (!class_exists($packerClass)) {
@@ -107,17 +103,7 @@ final class Bolt
     }
 
     /**
-     * @param string $scheme
-     * @return Bolt
-     */
-    public function setScheme(string $scheme = 'basic')
-    {
-        if (in_array($scheme, ['none', 'basic', 'kerberos']))
-            $this->scheme = $scheme;
-        return $this;
-    }
-
-    /**
+     * Version is available after successful connection with init/hello message
      * @return float
      */
     public function getProtocolVersion(): float
@@ -195,51 +181,57 @@ final class Bolt
 
     /**
      * Send INIT message
-     * @version <3
-     * @param string $name should conform to "Name/Version" https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent
-     * @param string $user
-     * @param string $password
-     * @param array $routing routing::Dictionary(address::String)
-     <pre>null - the server should not carry out routing
-     [] - the server should carry out routing
-     ['address' => 'ip:port'] - the server should carry out routing according to the given routing context</pre>
-     * @param array $metadata Server success response metadata
+     *
+     * @param array|string $userAgentOrExtra You can use helpers\Auth to generate required array or use the deprecated approach to fill in $name, $user and $password
+     * @param string|null $user
+     * @param string|null $password
+     * @param array|null|bool $routing
+     * @param array $metadata
+     *
      * @return bool
      * @throws Exception
+     * @deprecated The usage of $user, $password, $routing and $metadata is deprecated. Please use helpers\Auth to generate an authentication strategy as an array.
+     *
+     * @version <3
      */
-    public function init(string $name, string $user, string $password, array $routing = null, array &$metadata = []): bool
+    public function init($userAgentOrExtra, string $user = '', string $password = '', $routing = false, array &$metadata = []): bool
     {
-        if (!$this->connection->connect())
-            return false;
+        if (is_string($userAgentOrExtra)) {
+            Auth::$userAgent = $userAgentOrExtra;
+            $userAgentOrExtra = Auth::basic($user, $password);
+            if ($routing !== false)
+                $userAgentOrExtra['routing'] = $routing;
+        }
 
-        if (!$this->handshake())
-            return false;
+        if ($this->connection->connect() && $this->handshake()) {
+            if (self::$debug)
+                echo 'INIT';
+            $metadata = $this->protocol->init($userAgentOrExtra);
+            return true;
+        }
 
-        if (self::$debug)
-            echo 'INIT';
-
-        $metadata = $this->protocol->init($name, $this->scheme, $user, $password, $routing);
-        return !empty($metadata);
+        // I don't think it will reach this point, but otherwise I've to end method with return
+        throw new Exception('INIT message failed');
     }
 
     /**
      * Send HELLO message
-     * @internal INIT alias
-     * @version >=3
-     * @param string $name
+     *
+     * @param array|string $userAgentOrExtra You can use helpers\Auth to generate required array or use the deprecated approach to fill in $name, $user and $password
      * @param string $user
      * @param string $password
-     * @param array $routing routing::Dictionary(address::String)
-    <pre>null - the server should not carry out routing
-    [] - the server should carry out routing
-    ['address' => 'ip:port'] - the server should carry out routing according to the given routing context</pre>
-     * @param array $metadata Server success response metadata
+     * @param array|null|bool $routing
+     * @param array $metadata
+     *
      * @return bool
      * @throws Exception
+     * @deprecated The usage of $user, $password, $routing and $metadata is deprecated. Please use helpers\Auth to generate an authentication strategy as an array.
+     *
+     * @version >=3
      */
-    public function hello(string $name, string $user, string $password, array $routing = null, array &$metadata = []): bool
+    public function hello($userAgentOrExtra, string $user = '', string $password = '', $routing = false, array &$metadata = []): bool
     {
-        return $this->init($name, $user, $password, $routing, $metadata);
+        return $this->init($userAgentOrExtra, $user, $password, $routing, $metadata);
     }
 
     /**
@@ -247,15 +239,15 @@ final class Bolt
      * @param string $statement
      * @param array $parameters
      * @param array $extra extra::Dictionary(bookmarks::List<String>, tx_timeout::Integer, tx_metadata::Dictionary, mode::String, db:String)
-    <pre>The bookmarks is a list of strings containg some kind of bookmark identification e.g [“neo4j-bookmark-transaction:1”, “neo4j-bookmark-transaction:2”]
-    The tx_timeout is an integer in that specifies a transaction timeout in ms.
-    The tx_metadata is a dictionary that can contain some metadata information, mainly used for logging.
-    The mode specifies what kind of server the RUN message is targeting. For write access use "w" and for read access use "r". Defaults to write access if no mode is sent.
-    The db specifies the database name for multi-database to select where the transaction takes place. If no db is sent or empty string it implies that it is the default database.</pre>
+     * <pre>The bookmarks is a list of strings containg some kind of bookmark identification e.g [“neo4j-bookmark-transaction:1”, “neo4j-bookmark-transaction:2”]
+     * The tx_timeout is an integer in that specifies a transaction timeout in ms.
+     * The tx_metadata is a dictionary that can contain some metadata information, mainly used for logging.
+     * The mode specifies what kind of server the RUN message is targeting. For write access use "w" and for read access use "r". Defaults to write access if no mode is sent.
+     * The db specifies the database name for multi-database to select where the transaction takes place. If no db is sent or empty string it implies that it is the default database.</pre>
      * @return array
      * @throws Exception
      */
-    public function run(string $statement, array $parameters = [], array $extra = [])
+    public function run(string $statement, array $parameters = [], array $extra = []): array
     {
         if (self::$debug)
             echo 'RUN: ' . $statement;
@@ -264,13 +256,13 @@ final class Bolt
 
     /**
      * Send PULL_ALL message
-     * @version <4
      * @param int $n The n specifies how many records to fetch. n=-1 will fetch all records.
      * @param int $qid The qid (query identification) specifies the result of which statement the operation should be carried out. (Explicit Transaction only). qid=-1 can be used to denote the last executed statement and if no ``.
      * @return array
      * @throws Exception
+     * @version <4
      */
-    public function pullAll(int $n = -1, int $qid = -1)
+    public function pullAll(int $n = -1, int $qid = -1): array
     {
         if (self::$debug)
             echo 'PULL';
@@ -279,27 +271,27 @@ final class Bolt
 
     /**
      * Send PULL message
-     * @version >=4
-     * @internal PULL_ALL alias
      * @param int $n The n specifies how many records to fetch. n=-1 will fetch all records.
      * @param int $qid The qid (query identification) specifies the result of which statement the operation should be carried out. (Explicit Transaction only). qid=-1 can be used to denote the last executed statement and if no ``.
      * @return array Array of records. Last array element is success message.
      * @throws Exception
+     * @version >=4
+     * @internal PULL_ALL alias
      */
-    public function pull(int $n = -1, int $qid = -1)
+    public function pull(int $n = -1, int $qid = -1): array
     {
         return $this->pullAll($n, $qid);
     }
 
     /**
      * Send DISCARD_ALL message
-     * @version <4
      * @param int $n The n specifies how many records to throw away. n=-1 will throw away all records.
      * @param int $qid The qid (query identification) specifies the result of which statement the operation should be carried out. (Explicit Transaction only). qid=-1 can be used to denote the last executed statement and if no ``.
      * @return bool
      * @throws Exception
+     * @version <4
      */
-    public function discardAll(int $n = -1, int $qid = -1)
+    public function discardAll(int $n = -1, int $qid = -1): bool
     {
         if (self::$debug)
             echo 'DISCARD';
@@ -308,12 +300,12 @@ final class Bolt
 
     /**
      * Send DISCARD message
-     * @version >=4
-     * @internal DISCARD_ALL alias
      * @param int $n The n specifies how many records to throw away. n=-1 will throw away all records.
      * @param int $qid The qid (query identification) specifies the result of which statement the operation should be carried out. (Explicit Transaction only). qid=-1 can be used to denote the last executed statement and if no ``.
      * @return bool
      * @throws Exception
+     * @version >=4
+     * @internal DISCARD_ALL alias
      */
     public function discard(int $n = -1, int $qid = -1): bool
     {
@@ -322,15 +314,15 @@ final class Bolt
 
     /**
      * Send BEGIN message
-     * @version >=3
      * @param array $extra extra::Dictionary(bookmarks::List<String>, tx_timeout::Integer, tx_metadata::Dictionary, mode::String, db:String)
-    <pre>The bookmarks is a list of strings containg some kind of bookmark identification e.g [“neo4j-bookmark-transaction:1”, “neo4j-bookmark-transaction:2”]
-    The tx_timeout is an integer in that specifies a transaction timeout in ms.
-    The tx_metadata is a dictionary that can contain some metadata information, mainly used for logging.
-    The mode specifies what kind of server the RUN message is targeting. For write access use "w" and for read access use "r". Defaults to write access if no mode is sent.
-    The db specifies the database name for multi-database to select where the transaction takes place. If no db is sent or empty string it implies that it is the default database.</pre>
+     * <pre>The bookmarks is a list of strings containg some kind of bookmark identification e.g [“neo4j-bookmark-transaction:1”, “neo4j-bookmark-transaction:2”]
+     * The tx_timeout is an integer in that specifies a transaction timeout in ms.
+     * The tx_metadata is a dictionary that can contain some metadata information, mainly used for logging.
+     * The mode specifies what kind of server the RUN message is targeting. For write access use "w" and for read access use "r". Defaults to write access if no mode is sent.
+     * The db specifies the database name for multi-database to select where the transaction takes place. If no db is sent or empty string it implies that it is the default database.</pre>
      * @return bool
      * @throws Exception
+     * @version >=3
      */
     public function begin(array $extra = []): bool
     {
@@ -341,9 +333,9 @@ final class Bolt
 
     /**
      * Send COMMIT message
-     * @version >=3
      * @return bool
      * @throws Exception
+     * @version >=3
      */
     public function commit(): bool
     {
@@ -354,9 +346,9 @@ final class Bolt
 
     /**
      * Send ROLLBACK message
-     * @version >=3
      * @return bool
      * @throws Exception
+     * @version >=3
      */
     public function rollback(): bool
     {
@@ -379,11 +371,11 @@ final class Bolt
 
     /**
      * Send ROUTE message to instruct the server to return the current routing table.
-     * @version >=4.3 In previous versions there was no explicit message for this and a procedure had to be invoked using Cypher through the RUN and PULL messages.
      * @param array|null $routing
      * @param array $bookmarks
      * @param array|string|null $extra
      * @return array|null
+     * @version >=4.3 In previous versions there was no explicit message for this and a procedure had to be invoked using Cypher through the RUN and PULL messages.
      */
     public function route(?array $routing = null, array $bookmarks = [], $extra = null): ?array
     {

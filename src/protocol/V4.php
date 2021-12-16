@@ -20,6 +20,7 @@ class V4 extends V3
      * @param array ...$args
      * @return array
      * @throws Exception
+     * @deprecated Renamed to PULL
      */
     public function pullAll(...$args): array
     {
@@ -53,6 +54,7 @@ class V4 extends V3
      * @param mixed ...$args
      * @return bool
      * @throws Exception
+     * @deprecated Renamed to DISCARD
      */
     public function discardAll(...$args): bool
     {

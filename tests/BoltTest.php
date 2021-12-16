@@ -15,6 +15,7 @@ use Exception;
  * @covers \Bolt\connection\AConnection
  * @covers \Bolt\connection\Socket
  * @covers \Bolt\connection\StreamSocket
+ * @covers \Bolt\helpers\Auth
  * @covers \Bolt\PackStream\v1\Packer
  * @covers \Bolt\PackStream\v1\Unpacker
  * @covers \Bolt\protocol\V1
@@ -35,9 +36,9 @@ class BoltTest extends ATest
 {
 
     /**
-     * @return Bolt|null
+     * @return Bolt
      */
-    public function testHello(): ?Bolt
+    public function testHello(): Bolt
     {
         Bolt::$debug = true;
 
@@ -47,7 +48,7 @@ class BoltTest extends ATest
                 $this->assertInstanceOf(\Bolt\connection\Socket::class, $conn);
                 $bolt = new Bolt($conn);
                 $this->assertInstanceOf(Bolt::class, $bolt);
-                $this->assertTrue($bolt->hello('Test/1.0', $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+                $this->assertNotFalse($bolt->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
             }
             unset($bolt);
 
@@ -55,14 +56,12 @@ class BoltTest extends ATest
             $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
             $bolt = new Bolt($conn);
             $this->assertInstanceOf(Bolt::class, $bolt);
-            $this->assertTrue($bolt->hello('Test/1.0', $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+            $this->assertNotFalse($bolt->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
 
             return $bolt;
         } catch (Exception $e) {
             $this->markTestSkipped($e->getMessage());
         }
-
-        return null;
     }
 
     /**
@@ -128,7 +127,6 @@ class BoltTest extends ATest
     {
         if ($bolt->getProtocolVersion() < 3) {
             $this->markTestSkipped('Old Neo4j version does not support transactions');
-            return;
         }
 
         try {

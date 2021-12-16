@@ -18,9 +18,8 @@ class V3 extends V2
 {
 
     /**
-     * @param mixed ...$args
-     * @return array
-     * @throws Exception
+     * @inheritDoc
+     * @deprecated Replaced with HELLO message
      */
     public function init(...$args): array
     {
@@ -28,29 +27,25 @@ class V3 extends V2
     }
 
     /**
+     * Send HELLO message
      * @param mixed ...$args
      * @return array
      * @throws Exception
      */
     public function hello(...$args): array
     {
-        if (count($args) < 4) {
+        if (count($args) < 1) {
             throw new PackException('Wrong arguments count');
         }
 
-        $this->write($this->packer->pack(0x01, [
-            'user_agent' => $args[0],
-            'scheme' => $args[1],
-            'principal' => $args[2],
-            'credentials' => $args[3]
-        ]));
+        $this->write($this->packer->pack(0x01, $args[0]));
         $output = $this->read($signature);
 
         if ($signature == self::FAILURE) {
             throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
-        return $signature == self::SUCCESS ? $output : [];
+        return $output;
     }
 
     /**

@@ -27,6 +27,7 @@ class V1Test extends \Bolt\tests\ATest
      */
     public function test__construct()
     {
+        \Bolt\helpers\Auth::$userAgent = 'Test/1.0';
         $cls = new V1(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection());
         $this->assertInstanceOf(V1::class, $cls);
         return $cls;
@@ -35,13 +36,14 @@ class V1Test extends \Bolt\tests\ATest
     /**
      * @depends test__construct
      * @param V1 $cls
+     * @throws \Exception
      */
     public function testInit(V1 $cls)
     {
         self::$readArray = [1, 2, 0];
         self::$writeBuffer = [hex2bin('003db20188546573742f312e30a386736368656d65856261736963897072696e636970616c84757365728b63726564656e7469616c738870617373776f72640000')];
 
-        $this->assertIsArray($cls->init('Test/1.0', 'basic', 'user', 'password'));
+        $this->assertIsArray($cls->init(\Bolt\helpers\Auth::basic('user', 'password')));
     }
 
     /**
@@ -58,12 +60,13 @@ class V1Test extends \Bolt\tests\ATest
 
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
-        $cls->init('Test/1.0', 'basic', 'user', 'password');
+        $cls->init(\Bolt\helpers\Auth::basic('user', 'password'));
     }
 
     /**
      * @depends test__construct
      * @param V1 $cls
+     * @throws \Exception
      */
     public function testRun(V1 $cls)
     {

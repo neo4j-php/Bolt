@@ -18,21 +18,21 @@ class V1 extends AProtocol
 {
 
     /**
+     * Send INIT message
      * @param mixed ...$args
      * @return array
      * @throws Exception
      */
     public function init(...$args): array
     {
-        if (count($args) < 4) {
+        if (count($args) < 1) {
             throw new PackException('Wrong arguments count');
         }
 
-        $this->write($this->packer->pack(0x01, $args[0], [
-            'scheme' => $args[1],
-            'principal' => $args[2],
-            'credentials' => $args[3]
-        ]));
+        $userAgent = $args[0]['user_agent'];
+        unset($args[0]['user_agent']);
+
+        $this->write($this->packer->pack(0x01, $userAgent, $args[0]));
         $output = $this->read($signature);
 
         if ($signature == self::FAILURE) {
@@ -41,10 +41,11 @@ class V1 extends AProtocol
             throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
-        return $signature == self::SUCCESS ? $output : [];
+        return $output;
     }
 
     /**
+     * Send RUN message
      * @param mixed ...$args
      * @return array
      * @throws Exception
@@ -67,6 +68,7 @@ class V1 extends AProtocol
     }
 
     /**
+     * Send PULL_ALL message
      * @param mixed ...$args
      * @return array
      * @throws Exception
@@ -91,6 +93,7 @@ class V1 extends AProtocol
     }
 
     /**
+     * Send DISCARD_ALL message
      * @param mixed ...$args
      * @return bool
      * @throws Exception
@@ -120,6 +123,9 @@ class V1 extends AProtocol
     }
 
     /**
+     * Send RESET message
+     * The RESET message requests that the connection should be set back to its initial READY state, as if an INIT had just successfully completed.
+     *
      * @return bool
      * @throws Exception
      */

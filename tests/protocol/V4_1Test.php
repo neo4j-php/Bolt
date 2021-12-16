@@ -24,6 +24,7 @@ class V4_1Test extends \Bolt\tests\ATest
      */
     public function test__construct()
     {
+        \Bolt\helpers\Auth::$userAgent = 'Test/1.0';
         $cls = new V4_1(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection());
         $this->assertInstanceOf(V4_1::class, $cls);
         return $cls;
@@ -32,13 +33,14 @@ class V4_1Test extends \Bolt\tests\ATest
     /**
      * @depends test__construct
      * @param V4_1 $cls
+     * @throws \Exception
      */
     public function testHello(V4_1 $cls)
     {
         self::$readArray = [1, 2, 0];
         self::$writeBuffer = [hex2bin('0051b101a58a757365725f6167656e7488546573742f312e3086736368656d65856261736963897072696e636970616c84757365728b63726564656e7469616c738870617373776f726487726f7574696e67a00000')];
 
-        $this->assertIsArray($cls->hello('Test/1.0', 'basic', 'user', 'password', []));
+        $this->assertIsArray($cls->hello(\Bolt\helpers\Auth::basic('user', 'password'), []));
     }
 
     /**
@@ -55,7 +57,7 @@ class V4_1Test extends \Bolt\tests\ATest
 
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
-        $cls->hello('Test/1.0', 'basic', 'user', 'password', []);
+        $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'), []);
     }
 
 }

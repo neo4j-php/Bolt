@@ -3,7 +3,6 @@
 namespace Bolt\protocol;
 
 use Bolt\error\PackException;
-use Exception;
 use Bolt\error\MessageException;
 
 /**
@@ -18,23 +17,16 @@ class V4_1 extends V4
 {
 
     /**
-     * @param mixed ...$args
-     * @return array
-     * @throws Exception
+     * @inheritDoc
      */
     public function hello(...$args): array
     {
-        if (count($args) < 5) {
+        if (count($args) < 1) {
             throw new PackException('Wrong arguments count');
         }
 
-        $this->write($this->packer->pack(0x01, [
-            'user_agent' => $args[0],
-            'scheme' => $args[1],
-            'principal' => $args[2],
-            'credentials' => $args[3],
-            'routing' => is_array($args[4]) ? (object)$args[4] : null
-        ]));
+        $args[0]['routing'] = array_key_exists('routing', $args[0]) && is_array($args[0]['routing']) ? (object)$args[0]['routing'] : null;
+        $this->write($this->packer->pack(0x01, $args[0]));
 
         $signature = 0;
         $output = $this->read($signature);
@@ -43,7 +35,7 @@ class V4_1 extends V4
             throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
-        return $signature == self::SUCCESS ? $output : [];
+        return $output;
     }
 
 }
