@@ -10,7 +10,7 @@ use Exception;
  * Class Protocol version 1
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  * @see https://7687.org/bolt/bolt-protocol-message-specification-1.html
  * @package Bolt\protocol
  */
@@ -19,7 +19,9 @@ class V1 extends AProtocol
 
     /**
      * Send INIT message
-     * @param mixed ...$args
+     *
+     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---init
+     * @param mixed ...$args Use \Bolt\helpers\Auth to generate appropiate array
      * @return array
      * @throws Exception
      */
@@ -36,8 +38,8 @@ class V1 extends AProtocol
         $output = $this->read($signature);
 
         if ($signature == self::FAILURE) {
-            //AckFailure after init do not respond with any message
-            $this->write($this->packer->pack(0x0E));
+            // ..but must immediately close the connection after the failure has been sent.
+            $this->connection->disconnect();
             throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
@@ -46,6 +48,8 @@ class V1 extends AProtocol
 
     /**
      * Send RUN message
+     *
+     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---run
      * @param mixed ...$args
      * @return array
      * @throws Exception
@@ -64,11 +68,17 @@ class V1 extends AProtocol
             throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
         }
 
-        return $signature == self::SUCCESS ? $output : [];
+        if ($signature == self::IGNORED) {
+            throw new MessageException('RUN message IGNORED. Server in FAILED or INTERRUPTED state.');
+        }
+
+        return $output;
     }
 
     /**
      * Send PULL_ALL message
+     *
+     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---pull_all
      * @param mixed ...$args
      * @return array
      * @throws Exception
@@ -79,8 +89,8 @@ class V1 extends AProtocol
 
         $output = [];
         do {
-            $ret = $this->read($signature);
-            $output[] = $ret;
+            $message = $this->read($signature);
+            $output[] = $message;
         } while ($signature == self::RECORD);
 
         if ($signature == self::FAILURE) {
@@ -89,21 +99,36 @@ class V1 extends AProtocol
             throw new MessageException($last['message'] . ' (' . $last['code'] . ')');
         }
 
-        return $signature == self::SUCCESS ? $output : [];
+        if ($signature == self::IGNORED) {
+            throw new MessageException('PULL_ALL message IGNORED. Server in FAILED or INTERRUPTED state.');
+        }
+
+        return $output;
     }
 
     /**
      * Send DISCARD_ALL message
+     *
+     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---discard_all
      * @param mixed ...$args
-     * @return bool
+     * @return array
      * @throws Exception
      */
-    public function discardAll(...$args): bool
+    public function discardAll(...$args): array
     {
         $this->write($this->packer->pack(0x2F));
-        $this->read($signature);
+        $message = $this->read($signature);
 
-        return $signature == self::SUCCESS;
+        if ($signature == self::FAILURE) {
+            $this->ackFailure();
+            throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
+        }
+
+        if ($signature == self::IGNORED) {
+            throw new MessageException('DISCARD_ALL message IGNORED. Server in FAILED or INTERRUPTED state.');
+        }
+
+        return $message;
     }
 
     /**
@@ -111,30 +136,37 @@ class V1 extends AProtocol
      * The client must acknowledge the FAILURE message by sending an ACK_FAILURE message to the server.
      * Until the server receives the ACK_FAILURE message, it will send an IGNORED message in response to any other message from the client.
      *
-     * @return bool
+     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---ack_failure
      * @throws Exception
      */
-    private function ackFailure(): bool
+    private function ackFailure()
     {
         $this->write($this->packer->pack(0x0E));
-        $this->read($signature);
+        $message = $this->read($signature);
 
-        return $signature == self::SUCCESS;
+        if ($signature == self::FAILURE) {
+            $this->connection->disconnect();
+            throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
+        }
     }
 
     /**
      * Send RESET message
      * The RESET message requests that the connection should be set back to its initial READY state, as if an INIT had just successfully completed.
      *
-     * @return bool
+     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---reset
+     * @return void No need to return anything because on error it throws Exception
      * @throws Exception
      */
-    public function reset(): bool
+    public function reset()
     {
         $this->write($this->packer->pack(0x0F));
-        $this->read($signature);
+        $message = $this->read($signature);
 
-        return $signature == self::SUCCESS;
+        if ($signature == self::FAILURE) {
+            $this->connection->disconnect();
+            throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
+        }
     }
 
 }
