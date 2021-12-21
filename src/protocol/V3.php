@@ -32,7 +32,7 @@ class V3 extends V2
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---hello
      * @param mixed ...$args Use \Bolt\helpers\Auth to generate appropiate array
-     * @return array [server, connection_id]
+     * @return array
      * @throws Exception
      */
     public function hello(...$args): array
@@ -57,8 +57,9 @@ class V3 extends V2
      * The RUN message requests that a Cypher query is executed with a set of parameters and additional extra data.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---run
+     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---run
      * @param string|array ...$args query, parameters, extra
-     * @return array [fields, t_first]
+     * @return array
      * @throws Exception
      */
     public function run(...$args): array
@@ -91,6 +92,7 @@ class V3 extends V2
      * The BEGIN message request the creation of a new Explicit Transaction.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---begin
+     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---begin
      * @param mixed ...$args extra
      * @return array Current version has empty success message
      * @throws Exception
