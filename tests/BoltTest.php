@@ -3,6 +3,7 @@
 namespace Bolt\tests;
 
 use Bolt\Bolt;
+use Bolt\protocol\AProtocol;
 use Exception;
 
 /**
@@ -35,30 +36,57 @@ use Exception;
 class BoltTest extends ATest
 {
 
+    private static $version;
+
+    public function testSockets()
+    {
+        if (!extension_loaded('sockets'))
+            $this->markTestSkipped('Sockets extension not available');
+
+        Bolt::$debug = true;
+
+        try {
+            $conn = new \Bolt\connection\Socket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687, 3);
+            $this->assertInstanceOf(\Bolt\connection\Socket::class, $conn);
+
+            $bolt = new Bolt($conn);
+            $this->assertInstanceOf(Bolt::class, $bolt);
+
+            $protocol = $bolt->build();
+            $this->assertInstanceOf(AProtocol::class, $protocol);
+
+            $this->assertIsArray($protocol->init(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
+
+            if (method_exists($protocol, 'goodbye'))
+                $protocol->goodbye();
+            else
+                $conn->disconnect();
+        } catch (Exception $e) {
+            $this->markTestIncomplete($e->getMessage());
+        }
+    }
+
     /**
-     * @return Bolt
+     * @return AProtocol
      */
-    public function testHello(): Bolt
+    public function testHello(): AProtocol
     {
         Bolt::$debug = true;
 
         try {
-            if (extension_loaded('sockets')) {
-                $conn = new \Bolt\connection\Socket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
-                $this->assertInstanceOf(\Bolt\connection\Socket::class, $conn);
-                $bolt = new Bolt($conn);
-                $this->assertInstanceOf(Bolt::class, $bolt);
-                $this->assertNotFalse($bolt->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
-            }
-            unset($bolt);
-
             $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
             $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
+
             $bolt = new Bolt($conn);
             $this->assertInstanceOf(Bolt::class, $bolt);
-            $this->assertNotFalse($bolt->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
 
-            return $bolt;
+            $protocol = $bolt->build();
+            $this->assertInstanceOf(AProtocol::class, $protocol);
+
+            $this->assertNotEmpty($protocol->init(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
+
+            self::$version = $bolt->getProtocolVersion();
+            return $protocol;
         } catch (Exception $e) {
             $this->markTestSkipped($e->getMessage());
         }
@@ -66,16 +94,16 @@ class BoltTest extends ATest
 
     /**
      * @depends testHello
-     * @param Bolt $bolt
+     * @param AProtocol $bolt
      */
-    public function testPull(Bolt $bolt)
+    public function testPull(AProtocol $bolt)
     {
         try {
             $res = $bolt->run('RETURN 1 AS num, 2 AS cnt');
             $this->assertIsArray($res);
             $this->assertArrayHasKey('fields', $res);
 
-            $res = $bolt->pull();
+            $res = $bolt->pullAll();
             $this->assertEquals(1, $res[0][0] ?? 0);
             $this->assertEquals(2, $res[0][1] ?? 0);
         } catch (Exception $e) {
@@ -85,13 +113,13 @@ class BoltTest extends ATest
 
     /**
      * @depends testHello
-     * @param Bolt $bolt
+     * @param AProtocol $bolt
      */
-    public function testDiscard(Bolt $bolt)
+    public function testDiscard(AProtocol $bolt)
     {
         try {
             $this->assertNotFalse($bolt->run('MATCH (a:Test) RETURN *'));
-            $this->assertTrue($bolt->discard());
+            $this->assertIsArray($bolt->discardAll());
         } catch (Exception $e) {
             $this->markTestSkipped($e->getMessage());
         }
@@ -99,21 +127,21 @@ class BoltTest extends ATest
 
     /**
      * @depends testHello
-     * @param Bolt $bolt
+     * @param AProtocol $bolt
      */
-    public function testNode(Bolt $bolt)
+    public function testNode(AProtocol $bolt)
     {
         try {
             $this->assertNotFalse($bolt->run('CREATE (a:Test) RETURN a, ID(a)'));
 
-            $created = $bolt->pull();
+            $created = $bolt->pullAll();
             $this->assertIsArray($created);
             $this->assertInstanceOf(\Bolt\structures\Node::class, $created[0][0]);
 
             $this->assertNotFalse($bolt->run('MATCH (a:Test) WHERE ID(a) = ' . $this->formatParameter($bolt, 'a') . ' DELETE a', [
                 'a' => $created[0][1]
             ]));
-            $this->assertEquals(1, $bolt->pull()[0]['stats']['nodes-deleted'] ?? 0);
+            $this->assertEquals(1, $bolt->pullAll()[0]['stats']['nodes-deleted'] ?? 0);
         } catch (Exception $e) {
             $this->markTestSkipped($e->getMessage());
         }
@@ -121,25 +149,25 @@ class BoltTest extends ATest
 
     /**
      * @depends testHello
-     * @param Bolt $bolt
+     * @param AProtocol $bolt
      */
-    public function testTransaction(Bolt $bolt)
+    public function testTransaction(AProtocol $bolt)
     {
-        if ($bolt->getProtocolVersion() < 3) {
+        if (self::$version < 3) {
             $this->markTestSkipped('Old Neo4j version does not support transactions');
         }
 
         try {
-            $this->assertTrue($bolt->begin());
-            $this->assertNotFalse($bolt->run('CREATE (a:Test) RETURN a, ID(a)'));
-            $created = $bolt->pull();
+            $this->assertIsArray($bolt->begin());
+            $this->assertIsArray($bolt->run('CREATE (a:Test) RETURN a, ID(a)'));
+            $created = $bolt->pullAll();
             $this->assertIsArray($created);
-            $this->assertTrue($bolt->rollback());
+            $this->assertIsArray($bolt->rollback());
 
-            $this->assertNotFalse($bolt->run('MATCH (a:Test) WHERE ID(a) = ' . $this->formatParameter($bolt, 'a') . ' RETURN COUNT(a)', [
+            $this->assertIsArray($bolt->run('MATCH (a:Test) WHERE ID(a) = ' . $this->formatParameter($bolt, 'a') . ' RETURN COUNT(a)', [
                 'a' => $created[0][1]
             ]));
-            $res = $bolt->pull();
+            $res = $bolt->pullAll();
             $this->assertIsArray($res);
             $this->assertEquals(0, $res[0][0]);
         } catch (Exception $e) {
@@ -154,12 +182,12 @@ class BoltTest extends ATest
 
     /**
      * Because from Neo4j >= 4.0 is different placeholder for parameters
-     * @param Bolt $bolt
+     * @param AProtocol $bolt
      * @param string $name
      * @return string
      * @throws Exception
      */
-    private function formatParameter(Bolt $bolt, string $name): string
+    private function formatParameter(AProtocol $bolt, string $name): string
     {
         if (self::$parameterType == null) {
             $this->assertNotFalse($bolt->run('call dbms.components() yield versions unwind versions as version return version'));
@@ -173,16 +201,16 @@ class BoltTest extends ATest
 
     /**
      * @depends testHello
-     * @param Bolt $bolt
+     * @param AProtocol $bolt
      */
-    public function testRoute(Bolt $bolt): void
+    public function testRoute(AProtocol $bolt): void
     {
-        $version = $bolt->getProtocolVersion();
-        $route = $bolt->route();
-        if ($version >= 4.3) {
-            self::assertNotEmpty($route);
+        if (self::$version >= 4.3) {
+            self::assertIsArray($bolt->route([
+                'address' => ($GLOBALS['NEO_HOST'] ?? '127.0.0.1') . ':' . ($GLOBALS['NEO_PORT'] ?? 7687)
+            ], [], []));
         } else {
-            self::assertNull($route);
+            $this->markTestSkipped('Old Neo4j version does not support route message');
         }
     }
 }
