@@ -58,6 +58,7 @@ class V3 extends V2
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---run
      * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---run
+     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---run---44
      * @param string|array ...$args query, parameters, extra
      * @return array
      * @throws Exception
@@ -93,6 +94,7 @@ class V3 extends V2
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---begin
      * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---begin
+     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---begin---44
      * @param mixed ...$args extra
      * @return array Current version has empty success message
      * @throws Exception
