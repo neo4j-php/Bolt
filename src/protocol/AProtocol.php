@@ -35,7 +35,7 @@ abstract class AProtocol
     /**
      * @var IConnection
      */
-    private $connection;
+    protected $connection;
 
     /**
      * AProtocol constructor.
