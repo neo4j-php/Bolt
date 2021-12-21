@@ -22,7 +22,7 @@ class V1 extends AProtocol
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---init
      * @param mixed ...$args Use \Bolt\helpers\Auth to generate appropiate array
-     * @return array
+     * @return array [server]
      * @throws Exception
      */
     public function init(...$args): array
@@ -51,7 +51,7 @@ class V1 extends AProtocol
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---run
      * @param mixed ...$args
-     * @return array
+     * @return array [fields, result_available_after]
      * @throws Exception
      */
     public function run(...$args): array
@@ -80,7 +80,7 @@ class V1 extends AProtocol
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---pull_all
      * @param mixed ...$args
-     * @return array
+     * @return array Array of records with last success entry [bookmark, result_consumed_after]
      * @throws Exception
      */
     public function pullAll(...$args): array
@@ -111,7 +111,7 @@ class V1 extends AProtocol
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---discard_all
      * @param mixed ...$args
-     * @return array
+     * @return array [bookmark, result_consumed_after]
      * @throws Exception
      */
     public function discardAll(...$args): array
@@ -155,7 +155,7 @@ class V1 extends AProtocol
      * The RESET message requests that the connection should be set back to its initial READY state, as if an INIT had just successfully completed.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---reset
-     * @return void No need to return anything because on error it throws Exception
+     * @return void No need to return anything because on error it throws Exception and success response returns no metadata
      * @throws Exception
      */
     public function reset()
