@@ -19,6 +19,7 @@ class V1 extends AProtocol
 
     /**
      * Send INIT message
+     * The INIT message is a request for the connection to be authorized for use with the remote database.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---init
      * @param mixed ...$args Use \Bolt\helpers\Auth to generate appropiate array
@@ -48,6 +49,7 @@ class V1 extends AProtocol
 
     /**
      * Send RUN message
+     * A RUN message submits a new query for execution, the result of which will be consumed by a subsequent message, such as PULL_ALL.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---run
      * @param mixed ...$args
@@ -77,6 +79,7 @@ class V1 extends AProtocol
 
     /**
      * Send PULL_ALL message
+     * The PULL_ALL message issues a request to stream the outstanding result back to the client, before returning to a READY state.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---pull_all
      * @param mixed ...$args
@@ -108,6 +111,7 @@ class V1 extends AProtocol
 
     /**
      * Send DISCARD_ALL message
+     * The DISCARD_ALL message issues a request to discard the outstanding result and return to a READY state.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---discard_all
      * @param mixed ...$args
