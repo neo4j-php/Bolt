@@ -35,15 +35,15 @@ class V1 extends AProtocol
         unset($args[0]['user_agent']);
 
         $this->write($this->packer->pack(0x01, $userAgent, $args[0]));
-        $output = $this->read($signature);
+        $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
             // ..but must immediately close the connection after the failure has been sent.
             $this->connection->disconnect();
-            throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
+            throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
         }
 
-        return $output;
+        return $message;
     }
 
     /**
@@ -61,18 +61,18 @@ class V1 extends AProtocol
         }
 
         $this->write($this->packer->pack(0x10, $args[0], $args[1] ?? []));
-        $output = $this->read($signature);
+        $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
             $this->ackFailure();
-            throw new MessageException($output['message'] . ' (' . $output['code'] . ')');
+            throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
         }
 
         if ($signature == self::IGNORED) {
             throw new MessageException('RUN message IGNORED. Server in FAILED or INTERRUPTED state.');
         }
 
-        return $output;
+        return $message;
     }
 
     /**
