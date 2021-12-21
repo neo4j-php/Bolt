@@ -62,7 +62,7 @@ final class Bolt
     }
 
     /**
-     * Build and get protocol version class
+     * Connect via Connection, execute handshake on it, create and return protocol version class
      * @return AProtocol
      * @throws Exception
      */
