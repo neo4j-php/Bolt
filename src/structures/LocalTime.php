@@ -9,7 +9,8 @@ namespace Bolt\structures;
  * An instant capturing the time of day, but not the date, nor the time zone
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
+ * @link https://7687.org/packstream/packstream-specification-1.html#localtime---structure
  * @package Bolt\structures
  */
 class LocalTime implements IStructure
@@ -39,6 +40,13 @@ class LocalTime implements IStructure
 
     public function __toString(): string
     {
-        return date('H:i:s', floor($this->nanoseconds / 1000000000)) . '.' . $this->nanoseconds % 1000000000;
+        $value = sprintf("%09d", $this->nanoseconds);
+        $seconds = substr($value, 0, -9);
+        if (empty($seconds))
+            $seconds = '0';
+        $fraction = substr($value, -9, 6);
+
+        return \DateTime::createFromFormat('U.u', $seconds . '.' . $fraction)
+            ->format('H:i:s.u');
     }
 }

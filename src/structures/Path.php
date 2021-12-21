@@ -7,29 +7,30 @@ namespace Bolt\structures;
  * Immutable
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
+ * @link https://7687.org/packstream/packstream-specification-1.html#path---structure
  * @package Bolt\structures
  */
 class Path implements IStructure
 {
     /**
-     * @var array
+     * @var Node[]
      */
     private $nodes;
     /**
-     * @var array
+     * @var UnboundRelationship[]
      */
     private $rels;
     /**
-     * @var array
+     * @var int[]
      */
     private $ids;
 
     /**
      * Path constructor.
-     * @param array $nodes
-     * @param array $rels
-     * @param array $ids
+     * @param Node[] $nodes
+     * @param UnboundRelationship[] $rels
+     * @param int[] $ids
      */
     public function __construct(array $nodes, array $rels, array $ids)
     {
@@ -39,7 +40,7 @@ class Path implements IStructure
     }
 
     /**
-     * @return array
+     * @return Node[]
      */
     public function nodes(): array
     {
@@ -48,7 +49,7 @@ class Path implements IStructure
 
     /**
      * list of unbound relationships
-     * @return array
+     * @return UnboundRelationship[]
      */
     public function rels(): array
     {
@@ -57,7 +58,7 @@ class Path implements IStructure
 
     /**
      * relationship id and node id to represent the path
-     * @return array
+     * @return int[]
      */
     public function ids(): array
     {

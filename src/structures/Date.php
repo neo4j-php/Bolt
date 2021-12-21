@@ -9,7 +9,8 @@ namespace Bolt\structures;
  * An instant capturing the date, but not the time, nor the time zone
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
+ * @link https://7687.org/packstream/packstream-specification-1.html#date---structure
  * @package Bolt\structures
  */
 class Date implements IStructure
@@ -39,6 +40,6 @@ class Date implements IStructure
 
     public function __toString(): string
     {
-        return date('Y-m-d', strtotime($this->days . ' days'));
+        return gmdate('Y-m-d', strtotime(sprintf("%+d", $this->days) . ' days +0000', 0));
     }
 }

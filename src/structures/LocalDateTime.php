@@ -9,7 +9,8 @@ namespace Bolt\structures;
  * An instant capturing the date and the time, but not the time zone
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
+ * @link https://7687.org/packstream/packstream-specification-1.html#localdatetime---structure
  * @package Bolt\structures
  */
 class LocalDateTime implements IStructure
@@ -55,11 +56,10 @@ class LocalDateTime implements IStructure
 
     public function __toString(): string
     {
-        $dt = \DateTime::createFromFormat('U', $this->seconds, new \DateTimeZone('UTC'));
-        $fraction = new \DateInterval('PT0S');
-        $fraction->f = $this->nanoseconds / 1000000000;
-        $dt->add($fraction);
-        return $dt->format('Y-m-d\TH:i:s.u');
+        $datetime = sprintf("%d", $this->seconds)
+            . '.' . substr(sprintf("%09d", $this->nanoseconds), 0, 6);
+        return \DateTime::createFromFormat('U.u', $datetime)
+            ->format('Y-m-d\TH:i:s.u');
     }
 
 }

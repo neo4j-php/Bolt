@@ -12,7 +12,8 @@ namespace Bolt\structures;
  * <pre> utc_nanoseconds = nanoseconds - (tz_offset_seconds * 1000000000) </pre>
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
+ * @link https://7687.org/packstream/packstream-specification-1.html#time---structure
  * @package Bolt\structures
  */
 class Time implements IStructure
@@ -58,12 +59,14 @@ class Time implements IStructure
 
     public function __toString(): string
     {
-        $tz = new \DateTimeZone(sprintf('+%04d', $this->tz_offset_seconds / 3600 * 100));
-        $dt = new \DateTime('today', $tz);
-        $dt->add(new \DateInterval('PT' . floor($this->nanoseconds / 1000000000) . 'S'));
-        $fraction = new \DateInterval('PT0S');
-        $fraction->f = $this->nanoseconds % 1000000000 / 1000000000;
-        $dt->add($fraction);
-        return $dt->format('H:i:s.uP');
+        $value = sprintf("%09d", $this->nanoseconds - $this->tz_offset_seconds * 1e9);
+        $seconds = substr($value, 0, -9);
+        if (empty($seconds))
+            $seconds = '0';
+        $fraction = substr($value, -9, 6);
+
+        return \DateTime::createFromFormat('U.u', $seconds . '.' . $fraction, new \DateTimeZone('UTC'))
+            ->setTimezone(new \DateTimeZone(sprintf("%+'05d", $this->tz_offset_seconds / 3600 * 100)))
+            ->format('H:i:s.uP');
     }
 }
