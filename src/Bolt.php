@@ -122,6 +122,7 @@ final class Bolt
     }
 
     /**
+     * @link https://7687.org/bolt/bolt-protocol-handshake-specification.html
      * @throws Exception
      */
     private function handshake()
