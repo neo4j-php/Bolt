@@ -159,10 +159,10 @@ class V1 extends AProtocol
      * The RESET message requests that the connection should be set back to its initial READY state, as if an INIT had just successfully completed.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---reset
-     * @return void No need to return anything because on error it throws Exception and success response returns no metadata
+     * @return array Current version has empty success message
      * @throws Exception
      */
-    public function reset()
+    public function reset(): array
     {
         $this->write($this->packer->pack(0x0F));
         $message = $this->read($signature);
@@ -171,6 +171,8 @@ class V1 extends AProtocol
             $this->connection->disconnect();
             throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
         }
+
+        return $message;
     }
 
 }
