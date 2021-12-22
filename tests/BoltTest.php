@@ -88,7 +88,7 @@ class BoltTest extends ATest
             self::$version = $bolt->getProtocolVersion();
             return $protocol;
         } catch (Exception $e) {
-            $this->markTestSkipped($e->getMessage());
+            $this->markTestIncomplete($e->getMessage());
         }
     }
 
@@ -107,7 +107,7 @@ class BoltTest extends ATest
             $this->assertEquals(1, $res[0][0] ?? 0);
             $this->assertEquals(2, $res[0][1] ?? 0);
         } catch (Exception $e) {
-            $this->markTestSkipped($e->getMessage());
+            $this->markTestIncomplete($e->getMessage());
         }
     }
 
@@ -121,7 +121,7 @@ class BoltTest extends ATest
             $this->assertNotFalse($bolt->run('MATCH (a:Test) RETURN *'));
             $this->assertIsArray($bolt->discardAll());
         } catch (Exception $e) {
-            $this->markTestSkipped($e->getMessage());
+            $this->markTestIncomplete($e->getMessage());
         }
     }
 
@@ -143,7 +143,7 @@ class BoltTest extends ATest
             ]));
             $this->assertEquals(1, $bolt->pullAll()[0]['stats']['nodes-deleted'] ?? 0);
         } catch (Exception $e) {
-            $this->markTestSkipped($e->getMessage());
+            $this->markTestIncomplete($e->getMessage());
         }
     }
 
@@ -171,7 +171,7 @@ class BoltTest extends ATest
             $this->assertIsArray($res);
             $this->assertEquals(0, $res[0][0]);
         } catch (Exception $e) {
-            $this->markTestSkipped($e->getMessage());
+            $this->markTestIncomplete($e->getMessage());
         }
     }
 
@@ -191,7 +191,7 @@ class BoltTest extends ATest
     {
         if (self::$parameterType == null) {
             $this->assertNotFalse($bolt->run('call dbms.components() yield versions unwind versions as version return version'));
-            $neo4jVersion = $bolt->pull()[0][0] ?? '';
+            $neo4jVersion = $bolt->pullAll()[0][0] ?? '';
             $this->assertNotEmpty($neo4jVersion);
             self::$parameterType = version_compare($neo4jVersion, '4') == -1;
         }
@@ -211,6 +211,19 @@ class BoltTest extends ATest
             ], [], []));
         } else {
             $this->markTestSkipped('Old Neo4j version does not support route message');
+        }
+    }
+
+    /**
+     * @depends testHello
+     * @param AProtocol $bolt
+     */
+    public function testReset(AProtocol $bolt): void
+    {
+        try {
+            $this->assertIsArray($bolt->reset());
+        } catch (Exception $e) {
+            $this->markTestIncomplete($e->getMessage());
         }
     }
 }
