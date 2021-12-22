@@ -12,7 +12,7 @@ namespace Bolt\structures;
  * <pre> utc_nanoseconds = nanoseconds - (tz_offset_seconds * 1000000000) </pre>
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\structures
  */
 class Time implements IStructure

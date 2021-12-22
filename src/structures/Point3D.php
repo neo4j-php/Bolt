@@ -9,7 +9,7 @@ namespace Bolt\structures;
  * Represents a single location in space.
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\structures
  */
 class Point3D implements IStructure

@@ -9,7 +9,7 @@ use Bolt\error\ConnectException;
  * Socket class
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\connection
  */
 class Socket extends AConnection
