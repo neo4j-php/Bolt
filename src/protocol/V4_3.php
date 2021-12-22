@@ -28,13 +28,11 @@ class V4_3 extends V4_2
      */
     public function route(...$args): array
     {
-        if (count($args) < 1) {
+        if (count($args) != 3) {
             throw new PackException('Wrong arguments count');
         }
 
-        $this->write($this->packer->pack(0x66, (object) $args[0], $args[1] ?? [], $args[2] ?? null));
-
-        $signature = 0;
+        $this->write($this->packer->pack(0x66, (object)$args[0], $args[1], $args[2]));
         $message = $this->read($signature);
 
         if ($signature === self::FAILURE) {

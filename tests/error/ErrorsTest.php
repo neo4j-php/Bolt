@@ -1,6 +1,8 @@
 <?php
 
-namespace Bolt\tests;
+namespace Bolt\tests\error;
+
+use Bolt\tests\ATest;
 
 /**
  * Class ErrorsTest
@@ -37,13 +39,15 @@ class ErrorsTest extends ATest
         try {
             $bolt = new \Bolt\Bolt($conn);
             $this->assertInstanceOf(\Bolt\Bolt::class, $bolt);
+
+            $protocol = $bolt->build();
         } catch (\Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
 
         $this->expectException(\Bolt\error\MessageException::class);
-        $bolt->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
-        $bolt->run('Wrong message');
+        $protocol->init(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $protocol->run('Wrong message');
     }
 
     public function testPackException1()

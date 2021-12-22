@@ -62,7 +62,7 @@ class V1 extends AProtocol
             throw new PackException('Wrong arguments count');
         }
 
-        $this->write($this->packer->pack(0x10, $args[0], $args[1] ?? []));
+        $this->write($this->packer->pack(0x10, $args[0], (object)($args[1] ?? [])));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
