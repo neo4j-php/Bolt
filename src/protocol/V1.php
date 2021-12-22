@@ -2,6 +2,7 @@
 
 namespace Bolt\protocol;
 
+use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
 use Bolt\error\PackException;
 use Exception;
@@ -71,7 +72,7 @@ class V1 extends AProtocol
         }
 
         if ($signature == self::IGNORED) {
-            throw new MessageException('RUN message IGNORED. Server in FAILED or INTERRUPTED state.');
+            throw new IgnoredException('RUN message IGNORED. Server in FAILED or INTERRUPTED state.');
         }
 
         return $message;
@@ -103,7 +104,7 @@ class V1 extends AProtocol
         }
 
         if ($signature == self::IGNORED) {
-            throw new MessageException('PULL_ALL message IGNORED. Server in FAILED or INTERRUPTED state.');
+            throw new IgnoredException('PULL_ALL message IGNORED. Server in FAILED or INTERRUPTED state.');
         }
 
         return $output;
@@ -129,7 +130,7 @@ class V1 extends AProtocol
         }
 
         if ($signature == self::IGNORED) {
-            throw new MessageException('DISCARD_ALL message IGNORED. Server in FAILED or INTERRUPTED state.');
+            throw new IgnoredException('DISCARD_ALL message IGNORED. Server in FAILED or INTERRUPTED state.');
         }
 
         return $message;

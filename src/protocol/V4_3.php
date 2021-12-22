@@ -2,6 +2,7 @@
 
 namespace Bolt\protocol;
 
+use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
 use Bolt\error\PackException;
 use Exception;
@@ -40,7 +41,7 @@ class V4_3 extends V4_2
         }
 
         if ($signature == self::IGNORED) {
-            throw new MessageException('ROUTE message IGNORED. Server in FAILED or INTERRUPTED state.');
+            throw new IgnoredException('ROUTE message IGNORED. Server in FAILED or INTERRUPTED state.');
         }
 
         return $message;
