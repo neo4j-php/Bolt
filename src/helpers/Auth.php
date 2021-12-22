@@ -58,4 +58,19 @@ class Auth
             'credentials' => $token
         ];
     }
+
+    /**
+     * Kerberos authorization with token
+     * @param string $token
+     * @return array
+     */
+    public static function kerberos(string $token): array
+    {
+        return [
+            'user_agent' => self::$userAgent,
+            'scheme' => 'kerberos',
+            'principal' => '',
+            'credentials' => $token
+        ];
+    }
 }
