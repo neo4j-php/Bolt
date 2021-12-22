@@ -3,11 +3,11 @@ Bolt protocol library over TCP socket. Bolt protocol is created and in use for c
 
 ![](https://img.shields.io/badge/phpunit-passed-success) ![](https://img.shields.io/github/stars/stefanak-michal/Bolt) ![](https://img.shields.io/packagist/dt/stefanak-michal/bolt) ![](https://img.shields.io/github/v/release/stefanak-michal/bolt) ![](https://img.shields.io/github/commits-since/stefanak-michal/bolt/latest)
 
-## [Version support](https://github.com/stefanak-michal/Bolt/wiki/Version-support)
-## [Requirements](https://github.com/stefanak-michal/Bolt/wiki/Requirements)
-## [Installation](https://github.com/stefanak-michal/Bolt/wiki/Installation)
-## [Usage](https://github.com/stefanak-michal/Bolt/wiki/Usage)
-## [Errors](https://github.com/stefanak-michal/Bolt/wiki/Errors)
+## [Version support](https://github.com/neo4j-php/Bolt/wiki/Version-support)
+## [Requirements](https://github.com/neo4j-php/Bolt/wiki/Requirements)
+## [Installation](https://github.com/neo4j-php/Bolt/wiki/Installation)
+## [Usage](https://github.com/neo4j-php/Bolt/wiki/Usage)
+## [Errors](https://github.com/neo4j-php/Bolt/wiki/Errors)
 
 ## Another solutions
 https://neo4j.com/developer/php/

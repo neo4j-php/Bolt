@@ -10,7 +10,7 @@ use Exception;
  * Class BoltTest
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  *
  * @covers \Bolt\Bolt
  * @covers \Bolt\connection\AConnection

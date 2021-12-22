@@ -9,7 +9,7 @@ use Exception;
  * Class V4_1Test
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  *
  * @covers \Bolt\protocol\AProtocol
  * @covers \Bolt\protocol\V4_1

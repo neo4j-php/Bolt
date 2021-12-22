@@ -8,7 +8,7 @@ use Bolt\connection\AConnection;
 /**
  * Class ATest
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests
  */
 abstract class ATest extends TestCase

@@ -8,7 +8,7 @@ use Bolt\tests\ATest;
  * Class ErrorsTest
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  *
  * @covers \Bolt\error\ConnectException
  * @covers \Bolt\error\MessageException
