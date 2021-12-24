@@ -47,7 +47,7 @@ class V3 extends V2
 
         if ($signature == self::FAILURE) {
             $this->connection->disconnect();
-            throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
+            throw new MessageException($message['message'], $message['code']);
         }
 
         return $message;
@@ -79,7 +79,7 @@ class V3 extends V2
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
-            throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
+            throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
@@ -106,7 +106,7 @@ class V3 extends V2
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
-            throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
+            throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
@@ -130,7 +130,7 @@ class V3 extends V2
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
-            throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
+            throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
@@ -154,7 +154,7 @@ class V3 extends V2
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
-            throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
+            throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
