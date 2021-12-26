@@ -200,7 +200,7 @@ final class Bolt
      *
      * @return bool
      * @throws Exception
-     * @deprecated The usage of $user, $password, $routing and $metadata is deprecated. Please use helpers\Auth to generate an authentication strategy as an array.
+     * @note The usage of $user, $password, $routing and $metadata is deprecated. Please use helpers\Auth to generate an authentication strategy as an array.
      *
      * @version <3
      */
@@ -235,7 +235,7 @@ final class Bolt
      *
      * @return bool
      * @throws Exception
-     * @deprecated The usage of $user, $password, $routing and $metadata is deprecated. Please use helpers\Auth to generate an authentication strategy as an array.
+     * @note The usage of $user, $password, $routing and $metadata is deprecated. Please use helpers\Auth to generate an authentication strategy as an array.
      *
      * @version >=3
      */
