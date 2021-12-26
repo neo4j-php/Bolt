@@ -200,14 +200,14 @@ final class Bolt
      *
      * @return bool
      * @throws Exception
-     * @deprecated The usage of $user, $password, $routing and $metadata is deprecated. Please use helpers\Auth to generate an authentication strategy as an array.
+     * @note The usage of $user, $password, $routing and $metadata is deprecated. Please use helpers\Auth to generate an authentication strategy as an array.
      *
      * @version <3
      */
     public function init($userAgentOrExtra, string $user = '', string $password = '', $routing = false, array &$metadata = []): bool
     {
         if (is_string($userAgentOrExtra)) {
-            Auth::$userAgent = $userAgentOrExtra;
+            Auth::$defaultUserAgent = $userAgentOrExtra;
             $userAgentOrExtra = empty($user) && empty($password) ? Auth::none() : Auth::basic($user, $password);
             if ($routing !== false)
                 $userAgentOrExtra['routing'] = $routing;
@@ -235,7 +235,7 @@ final class Bolt
      *
      * @return bool
      * @throws Exception
-     * @deprecated The usage of $user, $password, $routing and $metadata is deprecated. Please use helpers\Auth to generate an authentication strategy as an array.
+     * @note The usage of $user, $password, $routing and $metadata is deprecated. Please use helpers\Auth to generate an authentication strategy as an array.
      *
      * @version >=3
      */
