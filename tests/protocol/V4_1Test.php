@@ -24,7 +24,7 @@ class V4_1Test extends \Bolt\tests\ATest
      */
     public function test__construct()
     {
-        \Bolt\helpers\Auth::$userAgent = 'Test/1.0';
+        \Bolt\helpers\Auth::$defaultUserAgent = 'Test/1.0';
         $cls = new V4_1(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection());
         $this->assertInstanceOf(V4_1::class, $cls);
         return $cls;

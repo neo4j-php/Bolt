@@ -207,7 +207,7 @@ final class Bolt
     public function init($userAgentOrExtra, string $user = '', string $password = '', $routing = false, array &$metadata = []): bool
     {
         if (is_string($userAgentOrExtra)) {
-            Auth::$userAgent = $userAgentOrExtra;
+            Auth::$defaultUserAgent = $userAgentOrExtra;
             $userAgentOrExtra = empty($user) && empty($password) ? Auth::none() : Auth::basic($user, $password);
             if ($routing !== false)
                 $userAgentOrExtra['routing'] = $routing;
