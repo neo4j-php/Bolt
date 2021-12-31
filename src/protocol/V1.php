@@ -42,7 +42,7 @@ class V1 extends AProtocol
         if ($signature == self::FAILURE) {
             // ..but must immediately close the connection after the failure has been sent.
             $this->connection->disconnect();
-            throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
+            throw new MessageException($message['message'], $message['code']);
         }
 
         return $message;
@@ -68,7 +68,7 @@ class V1 extends AProtocol
 
         if ($signature == self::FAILURE) {
             $this->ackFailure();
-            throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
+            throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
@@ -100,7 +100,7 @@ class V1 extends AProtocol
         if ($signature == self::FAILURE) {
             $this->ackFailure();
             $last = array_pop($output);
-            throw new MessageException($last['message'] . ' (' . $last['code'] . ')');
+            throw new MessageException($last['message'], $last['code']);
         }
 
         if ($signature == self::IGNORED) {
@@ -126,7 +126,7 @@ class V1 extends AProtocol
 
         if ($signature == self::FAILURE) {
             $this->ackFailure();
-            throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
+            throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
@@ -151,7 +151,7 @@ class V1 extends AProtocol
 
         if ($signature == self::FAILURE) {
             $this->connection->disconnect();
-            throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
+            throw new MessageException($message['message'], $message['code']);
         }
     }
 
@@ -170,7 +170,7 @@ class V1 extends AProtocol
 
         if ($signature == self::FAILURE) {
             $this->connection->disconnect();
-            throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
+            throw new MessageException($message['message'], $message['code']);
         }
 
         return $message;

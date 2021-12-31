@@ -52,7 +52,7 @@ class V4 extends V3
 
         if ($signature == self::FAILURE) {
             $last = array_pop($output);
-            throw new MessageException($last['message'] . ' (' . $last['code'] . ')');
+            throw new MessageException($last['message'], $last['code']);
         }
 
         if ($signature == self::IGNORED) {
@@ -91,7 +91,7 @@ class V4 extends V3
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
-            throw new MessageException($message['message'] . ' (' . $message['code'] . ')');
+            throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
