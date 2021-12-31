@@ -15,16 +15,16 @@ class Auth
     /**
      * @var string
      */
-    public static $userAgent = 'bolt-php';
+    public static $defaultUserAgent = 'bolt-php';
 
     /**
      * None authorization
      * @return array
      */
-    public static function none(): array
+    public static function none(?string $userAgent = null): array
     {
         return [
-            'user_agent' => self::$userAgent,
+            'user_agent' => $userAgent ?? self::$defaultUserAgent,
             'scheme' => 'none'
         ];
     }
@@ -35,10 +35,10 @@ class Auth
      * @param string $password
      * @return array
      */
-    public static function basic(string $username, string $password): array
+    public static function basic(string $username, string $password, ?string $userAgent = null): array
     {
         return [
-            'user_agent' => self::$userAgent,
+            'user_agent' => $userAgent ?? self::$defaultUserAgent,
             'scheme' => 'basic',
             'principal' => $username,
             'credentials' => $password
@@ -50,10 +50,10 @@ class Auth
      * @param string $token
      * @return array
      */
-    public static function bearer(string $token): array
+    public static function bearer(string $token, ?string $userAgent = null): array
     {
         return [
-            'user_agent' => self::$userAgent,
+            'user_agent' => $userAgent ?? self::$defaultUserAgent,
             'scheme' => 'bearer',
             'credentials' => $token
         ];

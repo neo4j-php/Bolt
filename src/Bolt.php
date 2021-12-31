@@ -179,5 +179,4 @@ final class Bolt
 
         return implode('', $versions);
     }
-
 }
