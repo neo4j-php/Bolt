@@ -64,10 +64,10 @@ class Auth
      * @param string $token
      * @return array
      */
-    public static function kerberos(string $token): array
+    public static function kerberos(string $token, ?string $userAgent = null): array
     {
         return [
-            'user_agent' => self::$userAgent,
+            'user_agent' => $userAgent ?? self::$defaultUserAgent,
             'scheme' => 'kerberos',
             'principal' => '',
             'credentials' => $token
