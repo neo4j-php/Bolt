@@ -177,4 +177,8 @@ class V3 extends V2
         $this->connection->disconnect();
     }
 
+    public function getVersion(): string
+    {
+        return '3';
+    }
 }

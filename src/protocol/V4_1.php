@@ -26,4 +26,8 @@ class V4_1 extends V4
         return parent::hello(...$args);
     }
 
+    public function getVersion(): string
+    {
+        return '4.1';
+    }
 }

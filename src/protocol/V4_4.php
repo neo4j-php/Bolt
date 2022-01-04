@@ -22,4 +22,8 @@ class V4_4 extends V4_3
         return parent::route(...$args);
     }
 
+    public function getVersion(): string
+    {
+        return '4.4';
+    }
 }

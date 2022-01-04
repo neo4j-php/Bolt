@@ -176,4 +176,8 @@ class V1 extends AProtocol
         return $message;
     }
 
+    public function getVersion(): string
+    {
+        return '1';
+    }
 }

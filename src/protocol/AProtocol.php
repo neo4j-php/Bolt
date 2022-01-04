@@ -16,7 +16,6 @@ use Exception;
  */
 abstract class AProtocol
 {
-
     protected const SUCCESS = 0x70;
     protected const FAILURE = 0x7F;
     protected const IGNORED = 0x7E;
@@ -87,4 +86,10 @@ abstract class AProtocol
         return $output;
     }
 
+    /**
+     * Returns the bolt protocol version as a string.
+     *
+     * @return string
+     */
+    abstract public function getVersion(): string;
 }
