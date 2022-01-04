@@ -40,11 +40,6 @@ final class Bolt
     private $versions = [4.4, 4.3, 4.2, 3];
 
     /**
-     * @var float
-     */
-    private $version;
-
-    /**
      * Print debug info
      * @var bool
      */
@@ -71,11 +66,11 @@ final class Bolt
         if (!$this->connection->connect())
             throw new ConnectException('Connection failed');
 
-        $this->handshake();
+        $version = $this->handshake();
 
-        $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $this->version);
+        $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
         if (!class_exists($protocolClass))
-            throw new ConnectException('Requested Protocol version (' . $this->version . ') not yet implemented');
+            throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
 
         return new $protocolClass($this->packer, $this->unpacker, $this->connection);
     }
@@ -113,19 +108,10 @@ final class Bolt
     }
 
     /**
-     * Version is available after successful connection with init/hello message
-     * @return float
-     */
-    public function getProtocolVersion(): float
-    {
-        return $this->version;
-    }
-
-    /**
      * @link https://7687.org/bolt/bolt-protocol-handshake-specification.html
      * @throws Exception
      */
-    private function handshake()
+    private function handshake(): float
     {
         if (self::$debug)
             echo 'HANDSHAKE';
@@ -133,24 +119,26 @@ final class Bolt
         $this->connection->write(chr(0x60) . chr(0x60) . chr(0xb0) . chr(0x17));
         $this->connection->write($this->packProtocolVersions());
 
-        $this->unpackProtocolVersion();
-        if (empty($this->version))
+        $version = $this->unpackProtocolVersion();
+        if (empty($version))
             throw new ConnectException('Wrong version');
+
+        return $version;
     }
 
     /**
      * Read and compose selected protocol version
      */
-    private function unpackProtocolVersion()
+    private function unpackProtocolVersion(): float
     {
         $result = [];
 
         foreach (str_split($this->connection->read(4)) as $ch)
             $result[] = unpack('C', $ch)[1] ?? 0;
 
-        $result = array_filter($result);
         $result = array_reverse($result);
-        $this->version = implode('.', $result);
+
+        return (float) implode('.', $result);
     }
 
     /**
