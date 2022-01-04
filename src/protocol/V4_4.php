@@ -21,5 +21,4 @@ class V4_4 extends V4_3
             $args[2] = (object)$args[2];
         return parent::route(...$args);
     }
-
 }

@@ -16,7 +16,6 @@ use Exception;
  */
 abstract class AProtocol
 {
-
     protected const SUCCESS = 0x70;
     protected const FAILURE = 0x7F;
     protected const IGNORED = 0x7E;
@@ -87,4 +86,17 @@ abstract class AProtocol
         return $output;
     }
 
+    /**
+     * Returns the bolt protocol version as a string.
+     *
+     * @return string
+     */
+    public function getVersion(): string
+    {
+        if (preg_match("/V([\d_]+)$/", static::class, $match)) {
+            return str_replace('_', '.', $match[1]);
+        }
+
+        throw new Exception('Protocol version class name is not valid');
+    }
 }

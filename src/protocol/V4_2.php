@@ -12,5 +12,4 @@ namespace Bolt\protocol;
  */
 class V4_2 extends V4_1
 {
-
 }
