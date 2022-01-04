@@ -109,9 +109,10 @@ final class Bolt
 
     /**
      * @link https://7687.org/bolt/bolt-protocol-handshake-specification.html
+     * @return string
      * @throws Exception
      */
-    private function handshake(): float
+    private function handshake(): string
     {
         if (self::$debug)
             echo 'HANDSHAKE';
@@ -128,17 +129,21 @@ final class Bolt
 
     /**
      * Read and compose selected protocol version
+     * @return string
      */
-    private function unpackProtocolVersion(): float
+    private function unpackProtocolVersion(): string
     {
         $result = [];
 
-        foreach (str_split($this->connection->read(4)) as $ch)
+        foreach (str_split($this->connection->read(4)) as $ch) {
             $result[] = unpack('C', $ch)[1] ?? 0;
+        }
 
-        $result = array_reverse($result);
+        while (count($result) > 0 && reset($result) == 0) {
+            array_shift($result);
+        }
 
-        return (float) implode('.', $result);
+        return implode('.', array_reverse($result));
     }
 
     /**
