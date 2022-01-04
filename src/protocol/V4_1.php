@@ -12,7 +12,6 @@ namespace Bolt\protocol;
  */
 class V4_1 extends V4
 {
-
     /**
      * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---41---hello
      * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---43---hello
@@ -24,10 +23,5 @@ class V4_1 extends V4
             $args[0]['routing'] = (object)$args[0]['routing'];
 
         return parent::hello(...$args);
-    }
-
-    public function getVersion(): string
-    {
-        return '4.1';
     }
 }

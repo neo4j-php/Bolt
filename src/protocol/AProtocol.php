@@ -91,5 +91,12 @@ abstract class AProtocol
      *
      * @return string
      */
-    abstract public function getVersion(): string;
+    public function getVersion(): string
+    {
+        if (preg_match("/V([\d_]+)$/", static::class, $match)) {
+            return str_replace('_', '.', $match[1]);
+        }
+
+        throw new Exception('Protocol version class name is not valid');
+    }
 }

@@ -176,9 +176,4 @@ class V3 extends V2
         $this->write($this->packer->pack(0x02));
         $this->connection->disconnect();
     }
-
-    public function getVersion(): string
-    {
-        return '3';
-    }
 }

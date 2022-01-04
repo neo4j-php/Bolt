@@ -12,8 +12,4 @@ namespace Bolt\protocol;
  */
 class V2 extends V1
 {
-    public function getVersion(): string
-    {
-        return '2';
-    }
 }

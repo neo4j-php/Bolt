@@ -46,9 +46,4 @@ class V4_3 extends V4_2
 
         return $message;
     }
-
-    public function getVersion(): string
-    {
-        return '4.3';
-    }
 }
