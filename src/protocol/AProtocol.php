@@ -88,8 +88,8 @@ abstract class AProtocol
 
     /**
      * Returns the bolt protocol version as a string.
-     *
      * @return string
+     * @throws Exception
      */
     public function getVersion(): string
     {
