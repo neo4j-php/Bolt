@@ -13,7 +13,7 @@ namespace Bolt\structures;
  * <pre> utc_nanoseconds = (seconds * 1000000000) + nanoseconds - get_offset_in_nanoseconds(tz_id) </pre>
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\structures
  */
 class DateTimeZoneId implements IStructure

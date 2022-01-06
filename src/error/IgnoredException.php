@@ -5,13 +5,13 @@ namespace Bolt\error;
 use Exception;
 
 /**
- * Class PackException
+ * Class IgnoreException
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\error
  */
-class PackException extends Exception
+class IgnoredException extends Exception
 {
 
 }

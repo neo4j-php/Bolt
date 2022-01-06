@@ -9,7 +9,7 @@ namespace Bolt\structures;
  * An instant capturing the time of day, but not the date, nor the time zone
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\structures
  */
 class LocalTime implements IStructure

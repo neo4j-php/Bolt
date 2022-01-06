@@ -9,7 +9,7 @@ namespace Bolt\structures;
  * An instant capturing the date, but not the time, nor the time zone
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\structures
  */
 class Date implements IStructure

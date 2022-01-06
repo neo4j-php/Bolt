@@ -11,12 +11,11 @@ use Exception;
  * Abstract class AProtocol
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\protocol
  */
-abstract class AProtocol implements IProtocol
+abstract class AProtocol
 {
-
     protected const SUCCESS = 0x70;
     protected const FAILURE = 0x7F;
     protected const IGNORED = 0x7E;
@@ -35,7 +34,7 @@ abstract class AProtocol implements IProtocol
     /**
      * @var IConnection
      */
-    private $connection;
+    protected $connection;
 
     /**
      * AProtocol constructor.
@@ -87,4 +86,17 @@ abstract class AProtocol implements IProtocol
         return $output;
     }
 
+    /**
+     * Returns the bolt protocol version as a string.
+     * @return string
+     * @throws Exception
+     */
+    public function getVersion(): string
+    {
+        if (preg_match("/V([\d_]+)$/", static::class, $match)) {
+            return str_replace('_', '.', $match[1]);
+        }
+
+        throw new Exception('Protocol version class name is not valid');
+    }
 }

@@ -10,7 +10,7 @@ use Generator;
  * Class Packer of PackStream version 1
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\PackStream\v1
  */
 class Packer implements IPacker

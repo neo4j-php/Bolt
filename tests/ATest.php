@@ -8,7 +8,7 @@ use Bolt\connection\AConnection;
 /**
  * Class ATest
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests
  */
 abstract class ATest extends TestCase
@@ -35,20 +35,20 @@ abstract class ATest extends TestCase
      * Mock Socket class with "write" and "read" methods
      * @return AConnection
      */
-    protected function mockConnection()
+    protected function mockConnection(): AConnection
     {
         $mockBuilder = $this
             ->getMockBuilder(AConnection::class)
             ->disableOriginalConstructor();
         call_user_func([$mockBuilder, method_exists($mockBuilder, 'onlyMethods') ? 'onlyMethods' : 'setMethods'], ['__construct', 'write', 'read', 'connect', 'disconnect']);
-        /** @var AConnection $connection */
         $connection = $mockBuilder->getMock();
 
         $connection
             ->method('write')
             ->with(
                 $this->callback(function ($buffer) {
-                    if ($buffer == 0x0000)
+                    var_dump(bin2hex($buffer));
+                    if (bin2hex($buffer) == '0000')
                         return true;
 
                     $i = self::$writeIndex;
@@ -59,7 +59,7 @@ abstract class ATest extends TestCase
                         return true;
 
                     //verify expected buffer
-                    return (self::$writeBuffer[$i] ?? '') == $buffer;
+                    return (self::$writeBuffer[$i] ?? '') === $buffer;
                 })
             );
 
@@ -67,6 +67,7 @@ abstract class ATest extends TestCase
             ->method('read')
             ->will($this->returnCallback([$this, 'readCallback']));
 
+        /** @var AConnection $connection */
         return $connection;
     }
 

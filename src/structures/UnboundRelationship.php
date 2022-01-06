@@ -7,7 +7,7 @@ namespace Bolt\structures;
  * Immutable
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\structures
  */
 class UnboundRelationship implements IStructure

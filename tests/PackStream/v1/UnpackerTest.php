@@ -9,7 +9,7 @@ use Exception;
  * Class UnpackerTest
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  *
  * @covers \Bolt\PackStream\v1\Unpacker
  *

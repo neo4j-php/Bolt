@@ -9,7 +9,7 @@ namespace Bolt\structures;
  * Represents a single location in 2-dimensional space.
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\structures
  */
 class Point2D implements IStructure

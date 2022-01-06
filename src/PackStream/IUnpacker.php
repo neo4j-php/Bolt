@@ -6,7 +6,7 @@ namespace Bolt\PackStream;
  * Interface IUnpacker
  *
  * @author Michal Stefanak
- * @link https://github.com/stefanak-michal/Bolt
+ * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\PackStream
  */
 interface IUnpacker

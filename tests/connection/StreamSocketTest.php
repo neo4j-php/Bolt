@@ -1,6 +1,6 @@
 <?php
 
-namespace Bolt\tests;
+namespace Bolt\tests\connection;
 
 use Bolt\Bolt;
 use Bolt\connection\StreamSocket;
@@ -17,11 +17,12 @@ final class StreamSocketTest extends TestCase
     {
         $socket = new StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', (int) ($GLOBALS['NEO_PORT'] ?? 7687), 1.5);
         $bolt = new Bolt($socket);
-        $bolt->init(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $protocol = $bolt->build();
+        $protocol->init(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 
         $time = microtime(true);
         try {
-            $bolt->run('FOREACH ( i IN range(1,10000) | 
+            $protocol->run('FOREACH ( i IN range(1,10000) | 
   MERGE (d:Day {day: i})
 )');
         } catch (ConnectException $e) {
@@ -40,11 +41,12 @@ final class StreamSocketTest extends TestCase
     {
         $socket = new StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', (int) ($GLOBALS['NEO_PORT'] ?? 7687), 1);
         $bolt = new Bolt($socket);
-        $bolt->init(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $protocol = $bolt->build();
+        $protocol->init(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 
         $time = microtime(true);
         try {
-            $bolt->run('FOREACH ( i IN range(1,10000) | 
+            $protocol->run('FOREACH ( i IN range(1,10000) | 
   MERGE (d:Day {day: i})
 )');
             $this->fail('No timeout error triggered');

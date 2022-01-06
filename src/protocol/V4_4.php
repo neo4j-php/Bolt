@@ -12,5 +12,13 @@ namespace Bolt\protocol;
  */
 class V4_4 extends V4_3
 {
-
+    /**
+     * @inheritDoc
+     */
+    public function route(...$args): array
+    {
+        if (array_key_exists(2, $args))
+            $args[2] = (object)$args[2];
+        return parent::route(...$args);
+    }
 }
