@@ -89,7 +89,6 @@ abstract class AProtocol
     /**
      * Returns the bolt protocol version as a string.
      * @return string
-     * @throws Exception
      */
     public function getVersion(): string
     {
@@ -97,6 +96,6 @@ abstract class AProtocol
             return str_replace('_', '.', $match[1]);
         }
 
-        throw new Exception('Protocol version class name is not valid');
+        trigger_error('Protocol version class name is not valid', E_USER_ERROR);
     }
 }
