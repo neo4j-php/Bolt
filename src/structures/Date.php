@@ -10,6 +10,7 @@ namespace Bolt\structures;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
+ * @link https://7687.org/packstream/packstream-specification-1.html#date---structure
  * @package Bolt\structures
  */
 class Date implements IStructure
@@ -39,6 +40,6 @@ class Date implements IStructure
 
     public function __toString(): string
     {
-        return date('Y-m-d', strtotime($this->days . ' days'));
+        return gmdate('Y-m-d', strtotime($this->days . ' days', 0));
     }
 }

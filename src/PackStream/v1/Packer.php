@@ -5,6 +5,19 @@ namespace Bolt\PackStream\v1;
 use Bolt\PackStream\IPacker;
 use Bolt\error\PackException;
 use Generator;
+use Bolt\structures\{
+    IStructure,
+    Relationship,
+    Date,
+    Time,
+    LocalTime,
+    DateTime,
+    DateTimeZoneId,
+    LocalDateTime,
+    Duration,
+    Point2D,
+    Point3D
+};
 
 /**
  * Class Packer of PackStream version 1
@@ -19,6 +32,19 @@ class Packer implements IPacker
     private const MEDIUM = 256;
     private const LARGE = 65536;
     private const HUGE = 4294967295;
+
+    private $structuresLt = [
+        Relationship::class => [0x52, 'packInteger', 'packInteger', 'packInteger', 'packString', 'packMap'],
+        Date::class => [0x44, 'packInteger'],
+        Time::class => [0x54, 'packInteger', 'packInteger'],
+        LocalTime::class => [0x74, 'packInteger'],
+        DateTime::class => [0x46, 'packInteger', 'packInteger', 'packInteger'],
+        DateTimeZoneId::class => [0x66, 'packInteger', 'packInteger', 'packString'],
+        LocalDateTime::class => [0x64, 'packInteger', 'packInteger'],
+        Duration::class => [0x45, 'packInteger', 'packInteger', 'packInteger', 'packInteger'],
+        Point2D::class => [0x58, 'packInteger', 'packFloat', 'packFloat'],
+        Point3D::class => [0x59, 'packInteger', 'packFloat', 'packFloat', 'packFloat']
+    ];
 
     /**
      * Pack message with parameters
@@ -77,6 +103,8 @@ class Packer implements IPacker
             $output .= chr($param ? 0xC3 : 0xC2);
         } elseif (is_string($param)) {
             $output .= $this->packString($param);
+        } elseif ($param instanceof IStructure) {
+            $output .= $this->packStructure($param);
         } elseif (is_array($param)) {
             $keys = array_keys($param);
             if (count($param) == 0 || count(array_filter($keys, 'is_int')) == count($keys)) {
@@ -217,6 +245,36 @@ class Packer implements IPacker
 
         foreach ($arr as $v) {
             $output .= $this->p($v);
+        }
+
+        return $output;
+    }
+
+    /**
+     * @param IStructure $structure
+     * @return string
+     * @throws PackException
+     */
+    private function packStructure(IStructure $structure): string
+    {
+        $reflection = new \ReflectionClass($structure);
+        $properties = $reflection->getProperties();
+        $cnt = count($properties);
+
+        if (!array_key_exists(get_class($structure), $this->structuresLt)) {
+            throw new PackException('Provided structure as parameter is not supported');
+        }
+
+        $arr = $this->structuresLt[get_class($structure)];
+        if (count($arr) != $cnt + 1) {
+            throw new PackException('Invalid amount of structure properties');
+        }
+
+        $output = pack('C', 0b10110000 | $cnt);
+        $output .= chr(array_shift($arr));
+        foreach ($arr as $i => $method) {
+            $properties[$i]->setAccessible(true);
+            $output .= $this->{$method}($properties[$i]->getValue($structure));
         }
 
         return $output;

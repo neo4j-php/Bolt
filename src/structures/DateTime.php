@@ -14,6 +14,7 @@ namespace Bolt\structures;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
+ * @link https://7687.org/packstream/packstream-specification-1.html#datetime---structure
  * @package Bolt\structures
  */
 class DateTime implements IStructure
@@ -65,7 +66,7 @@ class DateTime implements IStructure
     }
 
     /**
-     * specifies the offset in minutes from UTC
+     * specifies the offset in seconds from UTC
      * @return int
      */
     public function tz_offset_seconds(): int
@@ -75,11 +76,9 @@ class DateTime implements IStructure
 
     public function __toString(): string
     {
-        $dt = \DateTime::createFromFormat('U', $this->seconds, new \DateTimeZone('UTC'));
-        $fraction = new \DateInterval('PT0S');
-        $fraction->f = $this->nanoseconds / 1000000000;
-        $dt->add($fraction);
-        $dt->setTimezone(new \DateTimeZone(sprintf('+%04d', $this->tz_offset_seconds / 3600 * 100)));
-        return $dt->format('Y-m-d\TH:i:s.uP');
+        $ts = bcsub(bcadd($this->seconds, bcdiv($this->nanoseconds, 1000000000, 6), 6), $this->tz_offset_seconds, 6);
+        return \DateTime::createFromFormat('U.u', $ts, new \DateTimeZone('UTC'))
+            ->setTimezone(new \DateTimeZone(sprintf('+%04d', $this->tz_offset_seconds / 3600 * 100)))
+            ->format('Y-m-d\TH:i:s.uP');
     }
 }

@@ -14,6 +14,7 @@ namespace Bolt\structures;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
+ * @link https://7687.org/packstream/packstream-specification-1.html#datetimezoneid---structure
  * @package Bolt\structures
  */
 class DateTimeZoneId implements IStructure
@@ -75,11 +76,8 @@ class DateTimeZoneId implements IStructure
 
     public function __toString(): string
     {
-        $dt = \DateTime::createFromFormat('U', $this->seconds, new \DateTimeZone('UTC'));
-        $fraction = new \DateInterval('PT0S');
-        $fraction->f = $this->nanoseconds / 1000000000;
-        $dt->add($fraction);
-        $dt->setTimezone(new \DateTimeZone($this->tz_id));
-        return $dt->format('Y-m-d\TH:i:s.uP');
+        return \DateTime::createFromFormat('U.u', bcadd($this->seconds, bcdiv($this->nanoseconds, 1000000000, 6), 6), new \DateTimeZone('UTC'))
+            ->setTimezone(new \DateTimeZone($this->tz_id))
+            ->format('Y-m-d\TH:i:s.uP[e]');
     }
 }
