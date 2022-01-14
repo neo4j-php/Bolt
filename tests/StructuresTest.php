@@ -52,8 +52,6 @@ class StructuresTest extends TestCase
 {
     public function testInit(): AProtocol
     {
-        Bolt::$debug = true;
-
         try {
             $conn = new \Bolt\connection\Socket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687, 3);
             $this->assertInstanceOf(\Bolt\connection\Socket::class, $conn);
@@ -78,20 +76,22 @@ class StructuresTest extends TestCase
     public function testDate(AProtocol $protocol)
     {
         try {
+            $date = date('Y-m-d');
+
             //unpack
             $protocol->run('RETURN date($date)', [
-                'date' => date('Y-m-d')
+                'date' => $date
             ]);
             $rows = $protocol->pull();
             $this->assertInstanceOf(Date::class, $rows[0][0]);
-            $this->assertEquals(date('Y-m-d'), (string)$rows[0][0]);
+            $this->assertEquals($date, (string)$rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($date)', [
                 'date' => $rows[0][0]
             ]);
             $rows = $protocol->pull();
-            $this->assertEquals(date('Y-m-d'), $rows[0][0]);
+            $this->assertEquals($date, $rows[0][0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -220,8 +220,8 @@ class StructuresTest extends TestCase
     public function testLocalTime(AProtocol $protocol)
     {
         try {
-            $dt = new \DateTime('now', new \DateTimeZone('UTC'));
-            $time = $dt->format('H:i:s.u');
+            $time = \DateTime::createFromFormat('U.u', bcadd(time(), 0.123456, 6))
+                ->format('H:i:s.u');
 
             //unpack
             $protocol->run('RETURN localtime($t)', [
