@@ -5,10 +5,6 @@ namespace Bolt\connection;
 use Bolt\Bolt;
 use Bolt\error\ConnectException;
 use Bolt\error\ConnectionTimeoutException;
-use function microtime;
-use function round;
-use function socket_get_status;
-use function socket_strerror;
 
 /**
  * Socket class

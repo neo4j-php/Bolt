@@ -11,7 +11,6 @@ use Bolt\error\MessageException;
 use Bolt\helpers\Auth;
 use Bolt\protocol\V4;
 use PHPUnit\Framework\TestCase;
-use function microtime;
 
 final class AConnectionTest extends TestCase
 {
