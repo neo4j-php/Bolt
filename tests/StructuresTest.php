@@ -435,7 +435,7 @@ class StructuresTest extends TestCase
             $end = new \DateTime('+3 years', $zone);
             return rand($start->getTimestamp(), $end->getTimestamp());
         } catch (Exception $e) {
-            return time();
+            return strtotime('now ' . $timezone);
         }
     }
 
