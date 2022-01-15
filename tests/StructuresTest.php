@@ -209,6 +209,7 @@ class StructuresTest extends TestCase
     public function testLocalDateTime(int $timestamp, AProtocol $protocol)
     {
         try {
+            $timestamp = bcadd($timestamp, fmod(microtime(true), 1), 6);
             $datetime = \DateTime::createFromFormat('U.u', $timestamp)
                 ->format('Y-m-d\TH:i:s.u');
 
