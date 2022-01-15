@@ -26,6 +26,7 @@ jobs:
       - uses: php-actions/phpunit@v3
         with:
           configuration: phpunit.xml.dist
+          version: 7.5
           php_version: ${{ matrix.php-version }}
           php_extensions: bcmath
           args: --testsuite "NoDatabase"
