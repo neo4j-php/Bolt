@@ -31,4 +31,6 @@ interface IConnection
     public function getPort(): int;
 
     public function getTimeout(): float;
+
+    public function setTimeout(float $timeout): void;
 }
