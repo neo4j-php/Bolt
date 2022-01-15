@@ -59,8 +59,9 @@ class Time implements IStructure
 
     public function __toString(): string
     {
-        return \DateTime::createFromFormat('U.u', bcsub(bcdiv($this->nanoseconds, 1000000000, 6), $this->tz_offset_seconds, 6), new \DateTimeZone('UTC'))
-            ->setTimezone(new \DateTimeZone(sprintf('+%04d', $this->tz_offset_seconds / 3600 * 100)))
+        $ts = bcsub(bcdiv($this->nanoseconds, 10e8, 6), $this->tz_offset_seconds, 6);
+        return \DateTime::createFromFormat('U.u', $ts, new \DateTimeZone('UTC'))
+            ->setTimezone(new \DateTimeZone(sprintf("%+'05d", $this->tz_offset_seconds / 3600 * 100)))
             ->format('H:i:s.uP');
     }
 }

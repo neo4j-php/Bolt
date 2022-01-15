@@ -56,7 +56,7 @@ class LocalDateTime implements IStructure
 
     public function __toString(): string
     {
-        return \DateTime::createFromFormat('U.u', bcadd($this->seconds, bcdiv($this->nanoseconds, 1000000000, 6), 6), new \DateTimeZone('UTC'))
+        return \DateTime::createFromFormat('U.u', bcadd($this->seconds, bcdiv($this->nanoseconds, 10e8, 6), 6))
             ->format('Y-m-d\TH:i:s.u');
     }
 

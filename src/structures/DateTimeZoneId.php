@@ -76,8 +76,8 @@ class DateTimeZoneId implements IStructure
 
     public function __toString(): string
     {
-        return \DateTime::createFromFormat('U.u', bcadd($this->seconds, bcdiv($this->nanoseconds, 1000000000, 6), 6), new \DateTimeZone('UTC'))
-            ->setTimezone(new \DateTimeZone($this->tz_id))
-            ->format('Y-m-d\TH:i:s.uP[e]');
+        $timestamp = bcadd($this->seconds(), bcdiv($this->nanoseconds, 10e8, 6), 6);
+        return \DateTime::createFromFormat('U.u', $timestamp, new \DateTimeZone($this->tz_id))
+                ->format('Y-m-d\TH:i:s.u') . '[' . $this->tz_id . ']';
     }
 }

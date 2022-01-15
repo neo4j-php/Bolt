@@ -76,9 +76,9 @@ class DateTime implements IStructure
 
     public function __toString(): string
     {
-        $ts = bcsub(bcadd($this->seconds, bcdiv($this->nanoseconds, 1000000000, 6), 6), $this->tz_offset_seconds, 6);
+        $ts = bcadd($this->seconds - $this->tz_offset_seconds, bcdiv($this->nanoseconds, 10e8, 6), 6);
         return \DateTime::createFromFormat('U.u', $ts, new \DateTimeZone('UTC'))
-            ->setTimezone(new \DateTimeZone(sprintf('+%04d', $this->tz_offset_seconds / 3600 * 100)))
+            ->setTimezone(new \DateTimeZone(sprintf("%+'05d", $this->tz_offset_seconds / 3600 * 100)))
             ->format('Y-m-d\TH:i:s.uP');
     }
 }

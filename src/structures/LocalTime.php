@@ -40,7 +40,7 @@ class LocalTime implements IStructure
 
     public function __toString(): string
     {
-        return \DateTime::createFromFormat('U.u', bcdiv($this->nanoseconds, 1000000000, 6), new \DateTimeZone("UTC"))
+        return \DateTime::createFromFormat('U.u', bcdiv($this->nanoseconds, 10e8, 6), new \DateTimeZone('UTC'))
             ->format('H:i:s.u');
     }
 }

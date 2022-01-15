@@ -50,6 +50,12 @@ use Exception;
  */
 class StructuresTest extends TestCase
 {
+    /**
+     * How many iterations do for each date/time test
+     * @var int
+     */
+    public static $iterations = 10;
+
     public function testInit(): AProtocol
     {
         try {
@@ -71,12 +77,13 @@ class StructuresTest extends TestCase
     }
 
     /**
-     * @depends testInit
+     * @depends      testInit
+     * @dataProvider providerTimestamp
      */
-    public function testDate(AProtocol $protocol)
+    public function testDate(int $timestamp, AProtocol $protocol)
     {
         try {
-            $date = date('Y-m-d');
+            $date = gmdate('Y-m-d', $timestamp);
 
             //unpack
             $protocol->run('RETURN date($date)', [
@@ -84,27 +91,28 @@ class StructuresTest extends TestCase
             ]);
             $rows = $protocol->pull();
             $this->assertInstanceOf(Date::class, $rows[0][0]);
-            $this->assertEquals($date, (string)$rows[0][0]);
+            $this->assertEquals($date, (string)$rows[0][0], 'unpack ' . $date . ' != ' . $rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($date)', [
                 'date' => $rows[0][0]
             ]);
             $rows = $protocol->pull();
-            $this->assertEquals($date, $rows[0][0]);
+            $this->assertEquals($date, $rows[0][0], 'pack ' . $date . ' != ' . $rows[0][0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
     }
 
     /**
-     * @depends testInit
+     * @depends      testInit
+     * @dataProvider providerTimestampTimezone
      */
-    public function testDateTime(AProtocol $protocol)
+    public function testDateTime(int $timestamp, string $timezone, AProtocol $protocol)
     {
         try {
-            $datetime = \DateTime::createFromFormat('U.u', bcadd(strtotime('2021-01-12 15:30:25+01:00'), 0.123456, 6), new \DateTimeZone('UTC'))
-                ->setTimezone(new \DateTimeZone('+0100'))
+            $timestamp = bcadd($timestamp, fmod(microtime(true), 1), 6);
+            $datetime = \DateTime::createFromFormat('U.u', $timestamp, new \DateTimeZone($timezone))
                 ->format('Y-m-d\TH:i:s.uP');
 
             //unpack
@@ -113,41 +121,49 @@ class StructuresTest extends TestCase
             ]);
             $rows = $protocol->pull();
             $this->assertInstanceOf(DateTime::class, $rows[0][0]);
-            $this->assertEquals($datetime, (string)$rows[0][0]);
+            $this->assertEquals($datetime, (string)$rows[0][0], 'unpack ' . $datetime . ' != ' . $rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($date)', [
                 'date' => $rows[0][0]
             ]);
             $rows = $protocol->pull();
-            $this->assertEquals($datetime, $rows[0][0]);
+            // neo4j returns fraction of seconds not padded with zeros ... zero timezone offset returns as Z
+            $datetime = preg_replace(["/\.?0+(.\d{2}:\d{2})$/", "/\+00:00$/"], ['$1', 'Z'], $datetime);
+            $this->assertEquals($datetime, $rows[0][0], 'pack ' . $datetime . ' != ' . $rows[0][0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
     }
 
     /**
-     * @depends testInit
+     * @depends      testInit
+     * @dataProvider providerTimestampTimezone
      */
-    public function testDateTimeZoneId(AProtocol $protocol)
+    public function testDateTimeZoneId(int $timestamp, string $timezone, AProtocol $protocol)
     {
         try {
+            $timestamp = bcadd($timestamp, fmod(microtime(true), 1), 6);
+            $datetime = \DateTime::createFromFormat('U.u', $timestamp, new \DateTimeZone($timezone))
+                    ->format('Y-m-d\TH:i:s.u') . '[' . $timezone . ']';
+
             //unpack
-            $protocol->run('RETURN datetime({
-              year: 1984, month: 11, day: 11,
-              hour: 12, minute: 31, second: 14, nanosecond: 645876123,
-              timezone: \'Europe/Stockholm\'
-            })');
+            $protocol->run('RETURN datetime($dt)', [
+                'dt' => $datetime
+            ]);
             $rows = $protocol->pull();
             $this->assertInstanceOf(DateTimeZoneId::class, $rows[0][0]);
-            $this->assertEquals('1984-11-11T13:31:14.645876+01:00[Europe/Stockholm]', (string)$rows[0][0]);
+            $this->assertEquals($datetime, (string)$rows[0][0], 'unpack ' . $datetime . ' != ' . $rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($dt)', [
                 'dt' => $rows[0][0]
             ]);
             $rows = $protocol->pull();
-            $this->assertEquals('1984-11-11T12:31:14.645876123+01:00[Europe/Stockholm]', $rows[0][0]);
+            // neo4j returns fraction of seconds not padded with zeros ... also contains timezone offset before timezone id
+            $datetime = preg_replace("/\.?0+\[/", '[', $datetime);
+            $rows[0][0] = preg_replace("/([+\-]\d{2}:\d{2}|Z)\[/", '[', $rows[0][0]);
+            $this->assertEquals($datetime, $rows[0][0], 'pack ' . $datetime . ' != ' . $rows[0][0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -172,14 +188,14 @@ class StructuresTest extends TestCase
                 $protocol->run('RETURN duration($d)', ['d' => $duration]);
                 $rows = $protocol->pull();
                 $this->assertInstanceOf(Duration::class, $rows[0][0]);
-                $this->assertEquals($duration, (string)$rows[0][0]);
+                $this->assertEquals($duration, (string)$rows[0][0], 'unpack ' . $duration . ' != ' . $rows[0][0]);
 
                 //pack
                 $protocol->run('RETURN toString($d)', [
                     'd' => $rows[0][0]
                 ]);
                 $rows = $protocol->pull();
-                $this->assertEquals($duration, $rows[0][0]);
+                $this->assertEquals($duration, $rows[0][0], 'pack ' . $duration . ' != ' . $rows[0][0]);
             }
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -187,12 +203,13 @@ class StructuresTest extends TestCase
     }
 
     /**
-     * @depends testInit
+     * @depends      testInit
+     * @dataProvider providerTimestamp
      */
-    public function testLocalDateTime(AProtocol $protocol)
+    public function testLocalDateTime(int $timestamp, AProtocol $protocol)
     {
         try {
-            $datetime = \DateTime::createFromFormat('U.u', bcadd(strtotime('2021-01-12 15:30:25+01:00'), 0.123456, 6))
+            $datetime = \DateTime::createFromFormat('U.u', $timestamp)
                 ->format('Y-m-d\TH:i:s.u');
 
             //unpack
@@ -201,26 +218,29 @@ class StructuresTest extends TestCase
             ]);
             $rows = $protocol->pull();
             $this->assertInstanceOf(LocalDateTime::class, $rows[0][0]);
-            $this->assertEquals($datetime, (string)$rows[0][0]);
+            $this->assertEquals($datetime, (string)$rows[0][0], 'unpack ' . $datetime . ' != ' . $rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($dt)', [
                 'dt' => $rows[0][0]
             ]);
             $rows = $protocol->pull();
-            $this->assertEquals($datetime, $rows[0][0]);
+            $datetime = rtrim($datetime, '.0');
+            $this->assertEquals($datetime, $rows[0][0], 'pack ' . $datetime . ' != ' . $rows[0][0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
     }
 
     /**
-     * @depends testInit
+     * @depends      testInit
+     * @dataProvider providerTimestamp
      */
-    public function testLocalTime(AProtocol $protocol)
+    public function testLocalTime(int $timestamp, AProtocol $protocol)
     {
         try {
-            $time = \DateTime::createFromFormat('U.u', bcadd(time(), 0.123456, 6))
+            $timestamp = bcadd($timestamp, fmod(microtime(true), 1), 6);
+            $time = \DateTime::createFromFormat('U.u', $timestamp)
                 ->format('H:i:s.u');
 
             //unpack
@@ -229,14 +249,15 @@ class StructuresTest extends TestCase
             ]);
             $rows = $protocol->pull();
             $this->assertInstanceOf(LocalTime::class, $rows[0][0]);
-            $this->assertEquals($time, (string)$rows[0][0]);
+            $this->assertEquals($time, (string)$rows[0][0], 'unpack ' . $time . ' != ' . $rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($t)', [
                 't' => $rows[0][0]
             ]);
             $rows = $protocol->pull();
-            $this->assertEquals($time, $rows[0][0]);
+            $time = rtrim($time, '.0');
+            $this->assertEquals($time, $rows[0][0], 'pack ' . $time . ' != ' . $rows[0][0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -353,31 +374,67 @@ class StructuresTest extends TestCase
     }
 
     /**
-     * @depends testInit
+     * @depends      testInit
+     * @dataProvider providerTimestampTimezone
      */
-    public function testTime(AProtocol $protocol)
+    public function testTime(int $timestamp, string $timezone, AProtocol $protocol)
     {
-        $time = \DateTime::createFromFormat('U.u', bcadd(strtotime('2021-01-12 15:30:25+01:00'), 0.123456, 6), new \DateTimeZone('UTC'))
-            ->setTimezone(new \DateTimeZone('+0100'))
-            ->format('H:i:s.uP');
-
         try {
+            $timestamp = bcadd($timestamp, fmod(microtime(true), 1), 6);
+            $time = \DateTime::createFromFormat('U.u', $timestamp, new \DateTimeZone($timezone))
+                ->format('H:i:s.uP');
+
             //unpack
             $protocol->run('RETURN time($t)', [
                 't' => $time
             ]);
             $rows = $protocol->pull();
             $this->assertInstanceOf(Time::class, $rows[0][0]);
-            $this->assertEquals($time, (string)$rows[0][0]);
+            $this->assertEquals($time, (string)$rows[0][0], 'unpack ' . $time . ' != ' . $rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($t)', [
                 't' => $rows[0][0]
             ]);
             $rows = $protocol->pull();
-            $this->assertEquals($time, $rows[0][0]);
+            // neo4j returns fraction of seconds not padded with zeros ... zero timezone offset returns as Z
+            $time = preg_replace(["/\.?0+(.\d{2}:\d{2})$/", "/\+00:00$/"], ['$1', 'Z'], $time);
+            $this->assertEquals($time, $rows[0][0], 'pack ' . $time . ' != ' . $rows[0][0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
+        }
+    }
+
+    public function providerTimestamp(): \Generator
+    {
+        for ($i = 0; $i < self::$iterations; $i++) {
+            $ts = $this->randomTimestamp();
+            yield 'ts: ' . $ts => [$ts];
+        }
+    }
+
+    public function providerTimestampTimezone(): \Generator
+    {
+        for ($i = 0; $i < self::$iterations; $i++) {
+            $tz = \DateTimeZone::listIdentifiers()[array_rand(\DateTimeZone::listIdentifiers())];
+            $ts = $this->randomTimestamp($tz);
+            yield 'ts: ' . $ts . ' tz: ' . $tz => [$ts, $tz];
+        }
+    }
+
+    /**
+     * @param string $timezone
+     * @return int
+     */
+    private function randomTimestamp(string $timezone = '+0000'): int
+    {
+        try {
+            $zone = new \DateTimeZone($timezone);
+            $start = new \DateTime('-3 years', $zone);
+            $end = new \DateTime('+3 years', $zone);
+            return rand($start->getTimestamp(), $end->getTimestamp());
+        } catch (Exception $e) {
+            return time();
         }
     }
 
