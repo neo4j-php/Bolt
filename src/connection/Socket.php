@@ -142,11 +142,10 @@ class Socket extends AConnection
     }
 
     /**
-     * @return mixed
      * @throws ConnectException
      * @throws ConnectionTimeoutException
      */
-    private function throwConnectException()
+    private function throwConnectException(): void
     {
         $code = socket_last_error($this->socket);
         if ($code === self::RESOURCE_UNAVAILABLE_CODE) {
