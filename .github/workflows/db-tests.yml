@@ -39,4 +39,4 @@ jobs:
           php_version: 7.1
           php_extensions: bcmath
           bootstrap: vendor/autoload.php
-          args: --testsuite "Integration"
+          args: --testsuite "Database"

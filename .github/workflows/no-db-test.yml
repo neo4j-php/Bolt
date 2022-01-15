@@ -28,4 +28,4 @@ jobs:
           php_version: ${{ matrix.php-version }}
           php_extensions: bcmath
           bootstrap: vendor/autoload.php
-          args: --testsuite "Unit"
+          args: --testsuite "NoDatabase"

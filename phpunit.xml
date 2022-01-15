@@ -9,7 +9,7 @@
 >
     <testsuites>
         <testsuite name="Database">
-            <directory>./tests/Integration</directory>
+            <directory>./tests/connection</directory>
             <file>./tests/BoltTest.php</file>
         </testsuite>
         <testsuite name="NoDatabase">
