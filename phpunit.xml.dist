@@ -11,6 +11,7 @@
         <testsuite name="Database">
             <directory>./tests/connection</directory>
             <file>./tests/BoltTest.php</file>
+            <file>./tests/StructuresTest.php</file>
         </testsuite>
         <testsuite name="NoDatabase">
             <directory>./tests/error</directory>
