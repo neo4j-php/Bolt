@@ -73,9 +73,8 @@ final class AConnectionTest extends TestCase
     public function testTimeoutRecoverAndReset(string $alias): void
     {
         $socket = $this->getConnection($alias);
-        /** @var V4 $protocol */
         $protocol = (new Bolt($socket))->build();
-        $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 
         $time = microtime(true);
         try {
@@ -95,7 +94,7 @@ final class AConnectionTest extends TestCase
         } catch (MessageException $e) {
             echo $e->getMessage();
             $protocol = (new Bolt($socket))->build();
-            $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+            $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         }
 
         $socket->setTimeout(1.0);
