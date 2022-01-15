@@ -42,11 +42,7 @@ class Socket extends AConnection
 
         socket_set_option($this->socket, SOL_TCP, TCP_NODELAY, 1);
         socket_set_option($this->socket, SOL_SOCKET, SO_KEEPALIVE, 1);
-        $timeoutSeconds = floor($this->timeout);
-        $microSeconds = floor(($this->timeout - $timeoutSeconds) * 1000000);
-        $timeoutOption = ['sec' => $timeoutSeconds, 'usec' => $microSeconds];
-        socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, $timeoutOption);
-        socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, $timeoutOption);
+        $this->configureTimeout();
 
         $conn = @socket_connect($this->socket, $this->ip, $this->port);
         if (!$conn) {
@@ -124,5 +120,23 @@ class Socket extends AConnection
             @socket_shutdown($this->socket);
             @socket_close($this->socket);
         }
+    }
+
+    public function setTimeout(float $timeout): void
+    {
+        parent::setTimeout($timeout);
+        $this->configureTimeout();
+    }
+
+    /**
+     * @return void
+     */
+    private function configureTimeout(): void
+    {
+        $timeoutSeconds = floor($this->timeout);
+        $microSeconds = floor(($this->timeout - $timeoutSeconds) * 1000000);
+        $timeoutOption = ['sec' => $timeoutSeconds, 'usec' => $microSeconds];
+        socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, $timeoutOption);
+        socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, $timeoutOption);
     }
 }
