@@ -17,8 +17,8 @@ final class AConnectionTest extends TestCase
     public function provideConnections(): array
     {
         return [
-            [StreamSocket::class],
-            [Socket::class],
+            StreamSocket::class => [StreamSocket::class],
+            Socket::class => [Socket::class],
         ];
     }
 
