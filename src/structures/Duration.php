@@ -102,7 +102,8 @@ class Duration implements IStructure
         if (!empty($minutes))
             $time .= $minutes . 'M';
 
-        $seconds = rtrim(bcadd($this->seconds % 3600 % 60, bcdiv($this->nanoseconds, 1e9, 6), 6), '0.');
+        $seconds = rtrim(sprintf("%d", $this->seconds % 3600 % 60)
+            . '.' . substr(sprintf("%09d", $this->nanoseconds), 0, 6), '0.');
         if (!empty($seconds))
             $time .= $seconds . 'S';
 

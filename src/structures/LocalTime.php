@@ -40,7 +40,13 @@ class LocalTime implements IStructure
 
     public function __toString(): string
     {
-        return \DateTime::createFromFormat('U.u', bcdiv($this->nanoseconds, 1e9, 6))
+        $value = sprintf("%09d", $this->nanoseconds);
+        $seconds = substr($value, 0, -9);
+        if (empty($seconds))
+            $seconds = '0';
+        $fraction = substr($value, -9, 6);
+
+        return \DateTime::createFromFormat('U.u', $seconds . '.' . $fraction)
             ->format('H:i:s.u');
     }
 }

@@ -59,8 +59,13 @@ class Time implements IStructure
 
     public function __toString(): string
     {
-        $ts = bcsub(bcdiv($this->nanoseconds, 1e9, 6), $this->tz_offset_seconds, 6);
-        return \DateTime::createFromFormat('U.u', $ts, new \DateTimeZone('UTC'))
+        $value = sprintf("%09d", $this->nanoseconds - $this->tz_offset_seconds * 1e9);
+        $seconds = substr($value, 0, -9);
+        if (empty($seconds))
+            $seconds = '0';
+        $fraction = substr($value, -9, 6);
+
+        return \DateTime::createFromFormat('U.u', $seconds . '.' . $fraction, new \DateTimeZone('UTC'))
             ->setTimezone(new \DateTimeZone(sprintf("%+'05d", $this->tz_offset_seconds / 3600 * 100)))
             ->format('H:i:s.uP');
     }
