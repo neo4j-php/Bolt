@@ -1,0 +1,43 @@
+name: Tests with a database
+
+on:
+  push:
+    branches: [ '**' ]
+  pull_request:
+    branches: ['**']
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    name: "Running Integration tests for PHP 7.1 on Neo4j ${{ matrix.neo4j-version }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        neo4j-version: ["3.5", "4.2", "4.3", "4.4"]
+
+    services:
+      neo4j:
+        image: neo4j:${{ matrix.neo4j-version }}
+        env:
+          NEO4J_AUTH: neo4j/nothing
+        ports:
+          - 7687:7687
+          - 7474:7474
+        options: >-
+          --health-cmd "wget http://localhost:7474 || exit 1"
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: php-actions/composer@v6
+        with:
+          progress: yes
+          php_version: 7.1
+          php_extensions: bcmath
+          version: 2
+      - uses: php-actions/phpunit@v3
+        with:
+          configuration: phpunit.xml.dist
+          php_version: 7.1
+          version: 7.5
+          php_extensions: bcmath
+          args: --testsuite "Database"
