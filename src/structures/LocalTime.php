@@ -10,6 +10,7 @@ namespace Bolt\structures;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
+ * @link https://7687.org/packstream/packstream-specification-1.html#localtime---structure
  * @package Bolt\structures
  */
 class LocalTime implements IStructure
@@ -39,6 +40,7 @@ class LocalTime implements IStructure
 
     public function __toString(): string
     {
-        return date('H:i:s', floor($this->nanoseconds / 1000000000)) . '.' . $this->nanoseconds % 1000000000;
+        return \DateTime::createFromFormat('U.u', bcdiv($this->nanoseconds, 10e8, 6))
+            ->format('H:i:s.u');
     }
 }

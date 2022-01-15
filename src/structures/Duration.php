@@ -10,6 +10,7 @@ namespace Bolt\structures;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
+ * @link https://7687.org/packstream/packstream-specification-1.html#duration---structure
  * @package Bolt\structures
  */
 class Duration implements IStructure
@@ -84,6 +85,30 @@ class Duration implements IStructure
 
     public function __toString(): string
     {
-        return 'P' . $this->months . 'M' . $this->days . 'DT' . ($this->seconds + $this->nanoseconds / 1000000000) . 'S';
+        $output = 'P';
+        $years = floor($this->months / 12);
+        if (!empty($years))
+            $output .= $years . 'Y';
+        if (!empty($this->months % 12))
+            $output .= ($this->months % 12) . 'M';
+        if (!empty($this->days))
+            $output .= $this->days . 'D';
+
+        $time = '';
+        $hours = floor($this->seconds / 3600);
+        if (!empty($hours))
+            $time .= $hours . 'H';
+        $minutes = floor($this->seconds % 3600 / 60);
+        if (!empty($minutes))
+            $time .= $minutes . 'M';
+
+        $seconds = rtrim(bcadd($this->seconds % 3600 % 60, bcdiv($this->nanoseconds, 10e8, 6), 6), '0.');
+        if (!empty($seconds))
+            $time .= $seconds . 'S';
+
+        if (!empty($time))
+            $output .= 'T' . $time;
+
+        return $output;
     }
 }

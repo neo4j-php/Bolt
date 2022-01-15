@@ -13,6 +13,7 @@ namespace Bolt\structures;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
+ * @link https://7687.org/packstream/packstream-specification-1.html#time---structure
  * @package Bolt\structures
  */
 class Time implements IStructure
@@ -58,12 +59,9 @@ class Time implements IStructure
 
     public function __toString(): string
     {
-        $tz = new \DateTimeZone(sprintf('+%04d', $this->tz_offset_seconds / 3600 * 100));
-        $dt = new \DateTime('today', $tz);
-        $dt->add(new \DateInterval('PT' . floor($this->nanoseconds / 1000000000) . 'S'));
-        $fraction = new \DateInterval('PT0S');
-        $fraction->f = $this->nanoseconds % 1000000000 / 1000000000;
-        $dt->add($fraction);
-        return $dt->format('H:i:s.uP');
+        $ts = bcsub(bcdiv($this->nanoseconds, 10e8, 6), $this->tz_offset_seconds, 6);
+        return \DateTime::createFromFormat('U.u', $ts, new \DateTimeZone('UTC'))
+            ->setTimezone(new \DateTimeZone(sprintf("%+'05d", $this->tz_offset_seconds / 3600 * 100)))
+            ->format('H:i:s.uP');
     }
 }

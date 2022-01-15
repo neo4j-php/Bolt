@@ -125,28 +125,6 @@ class BoltTest extends ATest
     /**
      * @depends testHello
      * @param AProtocol $protocol
-     */
-    public function testNode(AProtocol $protocol)
-    {
-        try {
-            $this->assertNotFalse($protocol->run('CREATE (a:Test) RETURN a, ID(a)'));
-
-            $created = $protocol->pullAll();
-            $this->assertIsArray($created);
-            $this->assertInstanceOf(\Bolt\structures\Node::class, $created[0][0]);
-
-            $this->assertNotFalse($protocol->run('MATCH (a:Test) WHERE ID(a) = ' . $this->formatParameter($protocol, 'a') . ' DELETE a', [
-                'a' => $created[0][1]
-            ]));
-            $this->assertEquals(1, $protocol->pullAll()[0]['stats']['nodes-deleted'] ?? 0);
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
-    }
-
-    /**
-     * @depends testHello
-     * @param AProtocol $protocol
      * @throws Exception
      */
     public function testTransaction(AProtocol $protocol)
