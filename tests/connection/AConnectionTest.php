@@ -6,7 +6,7 @@ use Bolt\Bolt;
 use Bolt\connection\IConnection;
 use Bolt\connection\Socket;
 use Bolt\connection\StreamSocket;
-use Bolt\error\ConnectException;
+use Bolt\error\ConnectionTimeoutException;
 use Bolt\error\MessageException;
 use Bolt\helpers\Auth;
 use Bolt\protocol\V4;
@@ -38,7 +38,7 @@ final class AConnectionTest extends TestCase
             $protocol->run('FOREACH ( i IN range(1,10000) | 
   MERGE (d:Day {day: i})
 )');
-        } catch (ConnectException $e) {
+        } catch (ConnectionTimeoutException $e) {
             $newTime = microtime(true);
 
             $this->assertEqualsWithDelta(1.5, $newTime - $time, 0.2);
@@ -62,7 +62,7 @@ final class AConnectionTest extends TestCase
   MERGE (d:Day {day: i})
 )');
             $this->fail('No timeout error triggered');
-        } catch (ConnectException $e) {
+        } catch (ConnectionTimeoutException $e) {
             $newTime = microtime(true);
 
             $this->assertEqualsWithDelta(1.0, $newTime - $time, 0.2);
@@ -86,7 +86,7 @@ final class AConnectionTest extends TestCase
                 MERGE (d:Day {day: i})
             )');
             $this->fail('No timeout error triggered');
-        } catch (ConnectException $e) {
+        } catch (ConnectionTimeoutException $e) {
             $newTime = microtime(true);
 
             $this->assertEqualsWithDelta(1.0, $newTime - $time, 0.2);
@@ -110,7 +110,7 @@ final class AConnectionTest extends TestCase
                 MERGE (d:Day {day: i})
             )');
             $this->fail('No timeout error triggered');
-        } catch (ConnectException $e) {
+        } catch (ConnectionTimeoutException $e) {
             $newTime = microtime(true);
 
             $this->assertEqualsWithDelta(1.0, $newTime - $time, 0.2);

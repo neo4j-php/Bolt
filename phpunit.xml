@@ -6,7 +6,7 @@
     </testsuites>
     <php>
         <var name="NEO_USER" value="neo4j"/>
-        <var name="NEO_PASS" value="nothing"/>
+        <var name="NEO_PASS" value="test"/>
     </php>
     <filter>
         <whitelist>

@@ -4,6 +4,11 @@ namespace Bolt\connection;
 
 use Bolt\Bolt;
 use Bolt\error\ConnectException;
+use Bolt\error\ConnectionTimeoutException;
+use function microtime;
+use function round;
+use function socket_get_status;
+use function socket_strerror;
 
 /**
  * Socket class
@@ -19,6 +24,10 @@ class Socket extends AConnection
      * @var resource|object|bool
      */
     private $socket = false;
+
+    private const RESOURCE_UNAVAILABLE_CODE = 11;
+    /** @var float|null */
+    private $timetAtTimeoutConfiguration;
 
     /**
      * Create socket connection
@@ -73,8 +82,7 @@ class Socket extends AConnection
         while (0 < $size) {
             $sent = socket_write($this->socket, $buffer, $size);
             if ($sent === false) {
-                $code = socket_last_error($this->socket);
-                throw new ConnectException(socket_strerror($code), $code);
+                $this->throwConnectException();
             }
 
             $buffer = mb_strcut($buffer, $sent, null, '8bit');
@@ -99,8 +107,7 @@ class Socket extends AConnection
         do {
             $readed = socket_read($this->socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
             if ($readed === false) {
-                $code = socket_last_error($this->socket);
-                throw new ConnectException(socket_strerror($code), $code);
+                $this->throwConnectException();
             }
             $output .= $readed;
         } while (mb_strlen($output, '8bit') < $length);
@@ -135,5 +142,23 @@ class Socket extends AConnection
         $timeoutOption = ['sec' => $timeoutSeconds, 'usec' => $microSeconds];
         socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, $timeoutOption);
         socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, $timeoutOption);
+        $this->timetAtTimeoutConfiguration = microtime(true);
+    }
+
+    /**
+     * @return mixed
+     * @throws ConnectException
+     * @throws ConnectionTimeoutException
+     */
+    private function throwConnectException()
+    {
+        $code = socket_last_error($this->socket);
+        if ($code === self::RESOURCE_UNAVAILABLE_CODE) {
+            $timediff = microtime(true) - $this->timetAtTimeoutConfiguration;
+            if ($timediff >= $this->timeout) {
+                throw ConnectionTimeoutException::createFromTimeout($this->timeout);
+            }
+        }
+        throw new ConnectException(socket_strerror($code), $code);
     }
 }

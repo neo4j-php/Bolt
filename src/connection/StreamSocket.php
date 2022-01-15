@@ -5,6 +5,7 @@ namespace Bolt\connection;
 
 use Bolt\Bolt;
 use Bolt\error\ConnectException;
+use Bolt\error\ConnectionTimeoutException;
 use function floor;
 use function stream_set_timeout;
 
@@ -99,7 +100,7 @@ class StreamSocket extends AConnection
         $res = stream_get_contents($this->stream, $length);
 
         if (stream_get_meta_data($this->stream)["timed_out"])
-            throw new ConnectException('Connection timeout reached after '.$this->timeout.' seconds.');
+            throw ConnectionTimeoutException::createFromTimeout($this->timeout);
 
         if (empty($res))
             throw new ConnectException('Read error');
