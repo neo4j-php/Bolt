@@ -37,13 +37,12 @@ final class AConnectionTest extends TestCase
             $protocol->run('FOREACH ( i IN range(1,10000) | 
   MERGE (d:Day {day: i})
 )');
+            $this->fail('No timeout error triggered');
         } catch (ConnectionTimeoutException $e) {
             $newTime = microtime(true);
 
             $this->assertEqualsWithDelta(1.5, $newTime - $time, 0.2);
         }
-
-        self::assertTrue(true);
     }
 
     /**
@@ -99,7 +98,6 @@ final class AConnectionTest extends TestCase
             $protocol = (new Bolt($streamSocket))->build();
             $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         }
-        $this->assertTrue(true);
 
         $streamSocket->setTimeout(1.0);
 
