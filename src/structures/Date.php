@@ -40,6 +40,6 @@ class Date implements IStructure
 
     public function __toString(): string
     {
-        return gmdate('Y-m-d', strtotime('+' . $this->days . ' days +0000', 0));
+        return gmdate('Y-m-d', strtotime(sprintf("%+d", $this->days) . ' days +0000', 0));
     }
 }

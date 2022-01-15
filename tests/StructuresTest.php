@@ -54,7 +54,7 @@ class StructuresTest extends TestCase
      * How many iterations do for each date/time test
      * @var int
      */
-    public static $iterations = 10;
+    public static $iterations = 50;
 
     public function testInit(): AProtocol
     {
@@ -111,7 +111,7 @@ class StructuresTest extends TestCase
     public function testDateTime(int $timestamp, string $timezone, AProtocol $protocol)
     {
         try {
-            $timestamp = bcadd($timestamp, sprintf('%.6f', fmod(microtime(true), 1)), 6);
+            $timestamp .= '.' . rand(0, 9e5);
             $datetime = \DateTime::createFromFormat('U.u', $timestamp, new \DateTimeZone($timezone))
                 ->format('Y-m-d\TH:i:s.uP');
 
@@ -143,7 +143,7 @@ class StructuresTest extends TestCase
     public function testDateTimeZoneId(int $timestamp, string $timezone, AProtocol $protocol)
     {
         try {
-            $timestamp = bcadd($timestamp, sprintf('%.6f', fmod(microtime(true), 1)), 6);
+            $timestamp .= '.' . rand(0, 9e5);
             $datetime = \DateTime::createFromFormat('U.u', $timestamp, new \DateTimeZone($timezone))
                     ->format('Y-m-d\TH:i:s.u') . '[' . $timezone . ']';
 
@@ -214,7 +214,7 @@ class StructuresTest extends TestCase
     public function testLocalDateTime(int $timestamp, AProtocol $protocol)
     {
         try {
-            $timestamp = bcadd($timestamp, sprintf('%.6f', fmod(microtime(true), 1)), 6);
+            $timestamp .= '.' . rand(0, 9e5);
             $datetime = \DateTime::createFromFormat('U.u', $timestamp)
                 ->format('Y-m-d\TH:i:s.u');
 
@@ -245,7 +245,7 @@ class StructuresTest extends TestCase
     public function testLocalTime(int $timestamp, AProtocol $protocol)
     {
         try {
-            $timestamp = bcadd($timestamp, sprintf('%.6f', fmod(microtime(true), 1)), 6);
+            $timestamp .= '.' . rand(0, 9e5);
             $time = \DateTime::createFromFormat('U.u', $timestamp)
                 ->format('H:i:s.u');
 
@@ -386,7 +386,7 @@ class StructuresTest extends TestCase
     public function testTime(int $timestamp, string $timezone, AProtocol $protocol)
     {
         try {
-            $timestamp = bcadd($timestamp, sprintf('%.6f', fmod(microtime(true), 1)), 6);
+            $timestamp .= '.' . rand(0, 9e5);
             $time = \DateTime::createFromFormat('U.u', $timestamp, new \DateTimeZone($timezone))
                 ->format('H:i:s.uP');
 
@@ -436,8 +436,8 @@ class StructuresTest extends TestCase
     {
         try {
             $zone = new \DateTimeZone($timezone);
-            $start = new \DateTime('-3 years', $zone);
-            $end = new \DateTime('+3 years', $zone);
+            $start = new \DateTime(date('Y-m-d H:i:s', strtotime('-10 years', 0)), $zone);
+            $end = new \DateTime(date('Y-m-d H:i:s', strtotime('+10 years', 0)), $zone);
             return rand($start->getTimestamp(), $end->getTimestamp());
         } catch (Exception $e) {
             return strtotime('now ' . $timezone);
