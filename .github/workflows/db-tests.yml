@@ -32,6 +32,7 @@ jobs:
         with:
           progress: yes
           php_version: 7.1
+          php_extensions: bcmath
           version: 2
       - uses: php-actions/phpunit@v3
         with:
