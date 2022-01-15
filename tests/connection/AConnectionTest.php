@@ -41,7 +41,7 @@ final class AConnectionTest extends TestCase
         } catch (ConnectionTimeoutException $e) {
             $newTime = microtime(true);
 
-            $this->assertEqualsWithDelta(1.5, $newTime - $time, 0.2);
+            $this->assertGreaterThanOrEqual(1.5, $newTime - $time);
         }
     }
 
@@ -63,7 +63,7 @@ final class AConnectionTest extends TestCase
         } catch (ConnectionTimeoutException $e) {
             $newTime = microtime(true);
 
-            $this->assertEqualsWithDelta(1.0, $newTime - $time, 0.2);
+            $this->assertGreaterThanOrEqual(1.0, $newTime - $time);
         }
     }
 
@@ -86,7 +86,7 @@ final class AConnectionTest extends TestCase
         } catch (ConnectionTimeoutException $e) {
             $newTime = microtime(true);
 
-            $this->assertEqualsWithDelta(1.0, $newTime - $time, 0.2);
+            $this->assertGreaterThanOrEqual(1.0, $newTime - $time);
         }
 
         $socket->setTimeout(100.0);
@@ -109,7 +109,7 @@ final class AConnectionTest extends TestCase
         } catch (ConnectionTimeoutException $e) {
             $newTime = microtime(true);
 
-            $this->assertEqualsWithDelta(1.0, $newTime - $time, 0.2);
+            $this->assertGreaterThanOrEqual(1.0, $newTime - $time);
         }
     }
 
