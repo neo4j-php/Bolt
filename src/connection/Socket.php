@@ -21,7 +21,7 @@ class Socket extends AConnection
      */
     private $socket = false;
 
-    private const RESOURCE_UNAVAILABLE_CODE = 11;
+    private const RESOURCE_UNAVAILABLE_CODE = [11, 10060];
     /** @var float|null */
     private $timetAtTimeoutConfiguration;
 
@@ -148,7 +148,7 @@ class Socket extends AConnection
     private function throwConnectException(): void
     {
         $code = socket_last_error($this->socket);
-        if ($code === self::RESOURCE_UNAVAILABLE_CODE) {
+        if (in_array($code, self::RESOURCE_UNAVAILABLE_CODE)) {
             $timediff = microtime(true) - $this->timetAtTimeoutConfiguration;
             if ($timediff >= $this->timeout) {
                 throw ConnectionTimeoutException::createFromTimeout($this->timeout);
