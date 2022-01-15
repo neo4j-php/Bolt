@@ -128,9 +128,6 @@ class Socket extends AConnection
         $this->configureTimeout();
     }
 
-    /**
-     * @return void
-     */
     private function configureTimeout(): void
     {
         $timeoutSeconds = floor($this->timeout);

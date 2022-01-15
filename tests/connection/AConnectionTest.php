@@ -3,25 +3,34 @@
 namespace Bolt\tests\connection;
 
 use Bolt\Bolt;
+use Bolt\connection\IConnection;
+use Bolt\connection\Socket;
 use Bolt\connection\StreamSocket;
 use Bolt\error\ConnectException;
 use Bolt\error\MessageException;
 use Bolt\helpers\Auth;
 use Bolt\protocol\V4;
-use Exception;
 use PHPUnit\Framework\TestCase;
 use function microtime;
 
-final class StreamSocketTest extends TestCase
+final class AConnectionTest extends TestCase
 {
-    /**
-     * @throws Exception
-     */
-    public function testMillisecondTimeout(): void
+    public function provideConnections(): array
     {
-        $socket = new StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', (int) ($GLOBALS['NEO_PORT'] ?? 7687), 1.5);
-        $bolt = new Bolt($socket);
-        $protocol = $bolt->build();
+        return [
+            [StreamSocket::class],
+            [Socket::class],
+        ];
+    }
+
+    /**
+     * @dataProvider provideConnections
+     */
+    public function testMillisecondTimeout(string $alias): void
+    {
+        $socket = $this->getConnection($alias);
+        $protocol = (new Bolt($socket))->build();
+        $socket->setTimeout(1.5);
         $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 
         $time = microtime(true);
@@ -39,13 +48,12 @@ final class StreamSocketTest extends TestCase
     }
 
     /**
-     * @throws Exception
+     * @dataProvider provideConnections
      */
-    public function testSecondsTimeout(): void
+    public function testSecondsTimeout(string $alias): void
     {
-        $socket = new StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', (int) ($GLOBALS['NEO_PORT'] ?? 7687), 1);
-        $bolt = new Bolt($socket);
-        $protocol = $bolt->build();
+        $socket = $this->getConnection($alias);
+        $protocol = (new Bolt($socket))->build();
         $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 
         $time = microtime(true);
@@ -61,8 +69,12 @@ final class StreamSocketTest extends TestCase
         }
     }
 
-    public function testTimeoutRecoverAndReset(): void
+    /**
+     * @dataProvider provideConnections
+     */
+    public function testTimeoutRecoverAndReset(string $alias): void
     {
+        $socket = $this->getConnection($alias);
         $streamSocket = new StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', (int) ($GLOBALS['NEO_PORT'] ?? 7687), 1);
         /** @var V4 $protocol */
         $protocol = (new Bolt($streamSocket))->build();
@@ -103,5 +115,10 @@ final class StreamSocketTest extends TestCase
 
             $this->assertEqualsWithDelta(1.0, $newTime - $time, 0.2);
         }
+    }
+
+    private function getConnection(string $class): IConnection
+    {
+        return new $class($GLOBALS['NEO_HOST'] ?? '127.0.0.1', (int) ($GLOBALS['NEO_PORT'] ?? 7687), 1);
     }
 }
