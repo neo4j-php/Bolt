@@ -73,9 +73,8 @@ final class AConnectionTest extends TestCase
     public function testTimeoutRecoverAndReset(string $alias): void
     {
         $socket = $this->getConnection($alias);
-        $streamSocket = new StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', (int) ($GLOBALS['NEO_PORT'] ?? 7687), 1);
         /** @var V4 $protocol */
-        $protocol = (new Bolt($streamSocket))->build();
+        $protocol = (new Bolt($socket))->build();
         $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 
         $time = microtime(true);
@@ -90,16 +89,16 @@ final class AConnectionTest extends TestCase
             $this->assertEqualsWithDelta(1.0, $newTime - $time, 0.2);
         }
 
-        $streamSocket->setTimeout(100.0);
+        $socket->setTimeout(100.0);
         try {
             $protocol->reset();
         } catch (MessageException $e) {
             echo $e->getMessage();
-            $protocol = (new Bolt($streamSocket))->build();
+            $protocol = (new Bolt($socket))->build();
             $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         }
 
-        $streamSocket->setTimeout(1.0);
+        $socket->setTimeout(1.0);
 
         $time = microtime(true);
         try {
