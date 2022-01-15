@@ -34,16 +34,16 @@ class Packer implements IPacker
     private const HUGE = 4294967295;
 
     private $structuresLt = [
-        Relationship::class => [0x52, 'packInteger', 'packInteger', 'packInteger', 'packString', 'packMap'],
-        Date::class => [0x44, 'packInteger'],
-        Time::class => [0x54, 'packInteger', 'packInteger'],
-        LocalTime::class => [0x74, 'packInteger'],
-        DateTime::class => [0x46, 'packInteger', 'packInteger', 'packInteger'],
-        DateTimeZoneId::class => [0x66, 'packInteger', 'packInteger', 'packString'],
-        LocalDateTime::class => [0x64, 'packInteger', 'packInteger'],
-        Duration::class => [0x45, 'packInteger', 'packInteger', 'packInteger', 'packInteger'],
-        Point2D::class => [0x58, 'packInteger', 'packFloat', 'packFloat'],
-        Point3D::class => [0x59, 'packInteger', 'packFloat', 'packFloat', 'packFloat']
+        Relationship::class => [0x52, 'id' => 'packInteger', 'startNodeId' => 'packInteger', 'endNodeId' => 'packInteger', 'type' => 'packString', 'properties' => 'packMap'],
+        Date::class => [0x44, 'days' => 'packInteger'],
+        Time::class => [0x54, 'nanoseconds' => 'packInteger', 'tz_offset_seconds' => 'packInteger'],
+        LocalTime::class => [0x74, 'nanoseconds' => 'packInteger'],
+        DateTime::class => [0x46, 'seconds' => 'packInteger', 'nanoseconds' => 'packInteger', 'tz_offset_seconds' => 'packInteger'],
+        DateTimeZoneId::class => [0x66, 'seconds' => 'packInteger', 'nanoseconds' => 'packInteger', 'tz_id' => 'packString'],
+        LocalDateTime::class => [0x64, 'seconds' => 'packInteger', 'nanoseconds' => 'packInteger'],
+        Duration::class => [0x45, 'months' => 'packInteger', 'days' => 'packInteger', 'seconds' => 'packInteger', 'nanoseconds' => 'packInteger'],
+        Point2D::class => [0x58, 'srid' => 'packInteger', 'x' => 'packFloat', 'y' => 'packFloat'],
+        Point3D::class => [0x59, 'srid' => 'packInteger', 'x' => 'packFloat', 'y' => 'packFloat', 'z' => 'packFloat']
     ];
 
     /**
@@ -257,24 +257,15 @@ class Packer implements IPacker
      */
     private function packStructure(IStructure $structure): string
     {
-        $reflection = new \ReflectionClass($structure);
-        $properties = $reflection->getProperties();
-        $cnt = count($properties);
-
         if (!array_key_exists(get_class($structure), $this->structuresLt)) {
             throw new PackException('Provided structure as parameter is not supported');
         }
 
         $arr = $this->structuresLt[get_class($structure)];
-        if (count($arr) != $cnt + 1) {
-            throw new PackException('Invalid amount of structure properties');
-        }
-
-        $output = pack('C', 0b10110000 | $cnt);
-        $output .= chr(array_shift($arr));
-        foreach ($arr as $i => $method) {
-            $properties[$i]->setAccessible(true);
-            $output .= $this->{$method}($properties[$i]->getValue($structure));
+        $signature = chr(array_shift($arr));
+        $output = pack('C', 0b10110000 | count($arr)) . $signature;
+        foreach ($arr as $structureMethod => $packerMethod) {
+            $output .= $this->{$packerMethod}($structure->{$structureMethod}());
         }
 
         return $output;

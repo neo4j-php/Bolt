@@ -111,7 +111,7 @@ class StructuresTest extends TestCase
     public function testDateTime(int $timestamp, string $timezone, AProtocol $protocol)
     {
         try {
-            $timestamp = bcadd($timestamp, fmod(microtime(true), 1), 6);
+            $timestamp = bcadd($timestamp, sprintf('%.6f', fmod(microtime(true), 1)), 6);
             $datetime = \DateTime::createFromFormat('U.u', $timestamp, new \DateTimeZone($timezone))
                 ->format('Y-m-d\TH:i:s.uP');
 
@@ -143,7 +143,7 @@ class StructuresTest extends TestCase
     public function testDateTimeZoneId(int $timestamp, string $timezone, AProtocol $protocol)
     {
         try {
-            $timestamp = bcadd($timestamp, fmod(microtime(true), 1), 6);
+            $timestamp = bcadd($timestamp, sprintf('%.6f', fmod(microtime(true), 1)), 6);
             $datetime = \DateTime::createFromFormat('U.u', $timestamp, new \DateTimeZone($timezone))
                     ->format('Y-m-d\TH:i:s.u') . '[' . $timezone . ']';
 
@@ -165,7 +165,12 @@ class StructuresTest extends TestCase
             $rows[0][0] = preg_replace("/([+\-]\d{2}:\d{2}|Z)\[/", '[', $rows[0][0]);
             $this->assertEquals($datetime, $rows[0][0], 'pack ' . $datetime . ' != ' . $rows[0][0]);
         } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
+            if (strpos($e->getMessage(), 'Invalid value for TimeZone: Text \'' . $timezone . '\'') === 0) {
+                $protocol->reset();
+                $this->markTestSkipped('Test skipped because Neo4j missing timezone ID ' . $timezone);
+            } else {
+                $this->markTestIncomplete($e->getMessage());
+            }
         }
     }
 
@@ -209,7 +214,7 @@ class StructuresTest extends TestCase
     public function testLocalDateTime(int $timestamp, AProtocol $protocol)
     {
         try {
-            $timestamp = bcadd($timestamp, fmod(microtime(true), 1), 6);
+            $timestamp = bcadd($timestamp, sprintf('%.6f', fmod(microtime(true), 1)), 6);
             $datetime = \DateTime::createFromFormat('U.u', $timestamp)
                 ->format('Y-m-d\TH:i:s.u');
 
@@ -240,7 +245,7 @@ class StructuresTest extends TestCase
     public function testLocalTime(int $timestamp, AProtocol $protocol)
     {
         try {
-            $timestamp = bcadd($timestamp, fmod(microtime(true), 1), 6);
+            $timestamp = bcadd($timestamp, sprintf('%.6f', fmod(microtime(true), 1)), 6);
             $time = \DateTime::createFromFormat('U.u', $timestamp)
                 ->format('H:i:s.u');
 
@@ -381,7 +386,7 @@ class StructuresTest extends TestCase
     public function testTime(int $timestamp, string $timezone, AProtocol $protocol)
     {
         try {
-            $timestamp = bcadd($timestamp, fmod(microtime(true), 1), 6);
+            $timestamp = bcadd($timestamp, sprintf('%.6f', fmod(microtime(true), 1)), 6);
             $time = \DateTime::createFromFormat('U.u', $timestamp, new \DateTimeZone($timezone))
                 ->format('H:i:s.uP');
 
