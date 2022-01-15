@@ -67,7 +67,7 @@ class StreamSocket extends AConnection
             }
         }
 
-        $this->setTimeoutOnStream();
+        $this->configureTimeout();
 
         return true;
     }
@@ -121,14 +121,14 @@ class StreamSocket extends AConnection
     public function setTimeout(float $timeout): void
     {
         parent::setTimeout($timeout);
-        $this->setTimeoutOnStream();
+        $this->configureTimeout();
     }
 
     /**
      * @return void
      * @throws ConnectException
      */
-    private function setTimeoutOnStream(): void
+    private function configureTimeout(): void
     {
         $timeout = (int)floor($this->timeout);
         if (!stream_set_timeout($this->stream, $timeout, (int)floor(($this->timeout - $timeout) * 1000000))) {
