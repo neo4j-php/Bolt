@@ -5,6 +5,8 @@ namespace Bolt\connection;
 
 use Bolt\Bolt;
 use Bolt\error\ConnectException;
+use function floor;
+use function stream_set_timeout;
 
 /**
  * Stream socket class
@@ -66,10 +68,7 @@ class StreamSocket extends AConnection
             }
         }
 
-        $timeout = (int) floor($this->timeout);
-        if (!stream_set_timeout($this->stream, $timeout, (int) floor(($this->timeout - $timeout) * 1000000))) {
-            throw new ConnectException('Cannot set timeout on stream');
-        }
+        $this->setTimeoutOnStream();
 
         return true;
     }
@@ -120,4 +119,21 @@ class StreamSocket extends AConnection
             stream_socket_shutdown($this->stream, STREAM_SHUT_RDWR);
     }
 
+    public function setTimeout(float $timeout): void
+    {
+        parent::setTimeout($timeout);
+        $this->setTimeoutOnStream();
+    }
+
+    /**
+     * @return void
+     * @throws ConnectException
+     */
+    private function setTimeoutOnStream(): void
+    {
+        $timeout = (int)floor($this->timeout);
+        if (!stream_set_timeout($this->stream, $timeout, (int)floor(($this->timeout - $timeout) * 1000000))) {
+            throw new ConnectException('Cannot set timeout on stream');
+        }
+    }
 }
