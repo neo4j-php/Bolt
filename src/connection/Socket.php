@@ -21,7 +21,7 @@ class Socket extends AConnection
      */
     private $socket = false;
 
-    private const RESOURCE_UNAVAILABLE_CODE = [11, 10060];
+    private const POSSIBLE_TIMEOUTS_CODES = [11, 10060];
     /** @var float|null */
     private $timetAtTimeoutConfiguration;
 
@@ -76,7 +76,7 @@ class Socket extends AConnection
             $this->printHex($buffer);
 
         while (0 < $size) {
-            $sent = socket_write($this->socket, $buffer, $size);
+            $sent = @socket_write($this->socket, $buffer, $size);
             if ($sent === false) {
                 $this->throwConnectException();
             }
@@ -101,7 +101,7 @@ class Socket extends AConnection
         }
 
         do {
-            $readed = socket_read($this->socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
+            $readed = @socket_read($this->socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
             if ($readed === false) {
                 $this->throwConnectException();
             }
@@ -148,7 +148,7 @@ class Socket extends AConnection
     private function throwConnectException(): void
     {
         $code = socket_last_error($this->socket);
-        if (in_array($code, self::RESOURCE_UNAVAILABLE_CODE)) {
+        if (in_array($code, self::POSSIBLE_TIMEOUTS_CODES)) {
             $timediff = microtime(true) - $this->timetAtTimeoutConfiguration;
             if ($timediff >= $this->timeout) {
                 throw ConnectionTimeoutException::createFromTimeout($this->timeout);
