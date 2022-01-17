@@ -32,12 +32,10 @@ jobs:
         with:
           progress: yes
           php_version: 7.1
-          php_extensions: bcmath
           version: 2
       - uses: php-actions/phpunit@v3
         with:
           configuration: phpunit.xml.dist
           php_version: 7.1
           version: 7.5
-          php_extensions: bcmath
           args: --testsuite "Database"

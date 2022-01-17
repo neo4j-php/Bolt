@@ -21,11 +21,9 @@ jobs:
         with:
           progress: yes
           php_version: ${{ matrix.php-version }}
-          php_extensions: bcmath
           version: 2
       - uses: php-actions/phpunit@v3
         with:
           configuration: phpunit.xml.dist
           php_version: ${{ matrix.php-version }}
-          php_extensions: bcmath
           args: --testsuite "NoDatabase"
