@@ -19,6 +19,7 @@ class Auth
 
     /**
      * None authorization
+     * @param string|null $userAgent
      * @return array
      */
     public static function none(?string $userAgent = null): array
@@ -33,6 +34,7 @@ class Auth
      * Basic authorization with username and password
      * @param string $username
      * @param string $password
+     * @param string|null $userAgent
      * @return array
      */
     public static function basic(string $username, string $password, ?string $userAgent = null): array
@@ -48,6 +50,7 @@ class Auth
     /**
      * OIDC authorization with token
      * @param string $token
+     * @param string|null $userAgent
      * @return array
      */
     public static function bearer(string $token, ?string $userAgent = null): array
@@ -62,6 +65,7 @@ class Auth
     /**
      * Kerberos authorization with token
      * @param string $token
+     * @param string|null $userAgent
      * @return array
      */
     public static function kerberos(string $token, ?string $userAgent = null): array
