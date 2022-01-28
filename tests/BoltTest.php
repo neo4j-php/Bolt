@@ -140,7 +140,9 @@ class BoltTest extends ATest
             $this->assertIsArray($created);
             $this->assertIsArray($protocol->rollback());
 
-            $this->assertIsArray($protocol->run('MATCH (a:Test) WHERE ID(a) = ' . $this->formatParameter($protocol, 'a') . ' RETURN COUNT(a)', [
+            $this->assertIsArray($protocol->run('MATCH (a:Test) WHERE ID(a) = '
+                . (version_compare($protocol->getVersion(), 4, '<') ? '{a}' : '$a')
+                . ' RETURN COUNT(a)', [
                 'a' => $created[0][1]
             ]));
             $res = $protocol->pullAll();
@@ -149,30 +151,6 @@ class BoltTest extends ATest
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
-    }
-
-    /**
-     * @var bool
-     */
-    private static $parameterType;
-
-    /**
-     * Because from Neo4j >= 4.0 is different placeholder for parameters
-     * @param AProtocol $protocol
-     * @param string $name
-     * @return string
-     * @throws Exception
-     */
-    private function formatParameter(AProtocol $protocol, string $name): string
-    {
-        if (self::$parameterType == null) {
-            $this->assertNotFalse($protocol->run('call dbms.components() yield versions unwind versions as version return version'));
-            $neo4jVersion = $protocol->pullAll()[0][0] ?? '';
-            $this->assertNotEmpty($neo4jVersion);
-            self::$parameterType = version_compare($neo4jVersion, '4') == -1;
-        }
-
-        return self::$parameterType ? ('{' . $name . '}') : ('$' . $name);
     }
 
     /**

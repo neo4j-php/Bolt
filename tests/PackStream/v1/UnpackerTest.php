@@ -33,7 +33,7 @@ class UnpackerTest extends \Bolt\tests\ATest
 
     /**
      * @depends test__construct
-     * @dataProvider packProvider
+     * @dataProvider packProvider It should be unpackProvider but the method name is used as directory name which is same as for PackerTest
      * @param string $bin
      * @param array $arr
      * @param Unpacker $unpacker
@@ -41,9 +41,8 @@ class UnpackerTest extends \Bolt\tests\ATest
      */
     public function testUnpack(string $bin, array $arr, Unpacker $unpacker)
     {
-        $signature = 0;
-        $this->assertEquals($arr, $unpacker->unpack(mb_substr($bin, 2), $signature));
-        $this->assertEquals(0x88, $signature);
+        $this->assertEquals($arr, $unpacker->unpack(mb_substr($bin, 2)));
+        $this->assertEquals(0x88, $unpacker->getSignature());
     }
 
     /**
@@ -67,7 +66,7 @@ class UnpackerTest extends \Bolt\tests\ATest
      */
     public function testUnpackInteger(string $bin, int $number, Unpacker $unpacker)
     {
-        $this->assertEquals($number, $this->invokeMethod($unpacker, $bin));
+        $this->assertEquals($number, $unpacker->unpack($bin));
     }
 
     /**
@@ -88,7 +87,7 @@ class UnpackerTest extends \Bolt\tests\ATest
      */
     public function testUnpackFloat(Unpacker $unpacker)
     {
-        $this->assertEquals(3.14159, $this->invokeMethod($unpacker, hex2bin('c1400921f9f01b866e')));
+        $this->assertEquals(3.14159, $unpacker->unpack(hex2bin('c1400921f9f01b866e')));
     }
 
     /**
@@ -98,7 +97,7 @@ class UnpackerTest extends \Bolt\tests\ATest
      */
     public function testUnpackNull(Unpacker $unpacker)
     {
-        $this->assertEquals(null, $this->invokeMethod($unpacker, hex2bin('c0')));
+        $this->assertEquals(null, $unpacker->unpack(hex2bin('c0')));
     }
 
     /**
@@ -108,8 +107,8 @@ class UnpackerTest extends \Bolt\tests\ATest
      */
     public function testUnpackBool(Unpacker $unpacker)
     {
-        $this->assertEquals(true, $this->invokeMethod($unpacker, hex2bin('c3')));
-        $this->assertEquals(false, $this->invokeMethod($unpacker, hex2bin('c2')));
+        $this->assertEquals(true, $unpacker->unpack(hex2bin('c3')));
+        $this->assertEquals(false, $unpacker->unpack(hex2bin('c2')));
     }
 
     /**
@@ -122,7 +121,7 @@ class UnpackerTest extends \Bolt\tests\ATest
      */
     public function testUnpackString(string $bin, string $str, Unpacker $unpacker)
     {
-        $this->assertEquals($str, $this->invokeMethod($unpacker, $bin));
+        $this->assertEquals($str, $unpacker->unpack($bin));
     }
 
     /**
@@ -143,7 +142,7 @@ class UnpackerTest extends \Bolt\tests\ATest
      */
     public function testUnpackArray(string $bin, array $arr, Unpacker $unpacker)
     {
-        $this->assertEquals($arr, $this->invokeMethod($unpacker, $bin));
+        $this->assertEquals($arr, $unpacker->unpack($bin));
     }
 
     /**
@@ -167,7 +166,7 @@ class UnpackerTest extends \Bolt\tests\ATest
      */
     public function testUnpackMap(string $bin, $obj, Unpacker $unpacker)
     {
-        $this->assertEquals($obj, $this->invokeMethod($unpacker, $bin));
+        $this->assertEquals($obj, $unpacker->unpack($bin));
     }
 
     /**
@@ -179,23 +178,6 @@ class UnpackerTest extends \Bolt\tests\ATest
         foreach ($data as &$entry)
             $entry[1] = json_decode($entry[1], true);
         return $data;
-    }
-
-    /**
-     * Get method from Packer as accessible
-     * @param Unpacker $unpacker
-     * @param string $message
-     * @return mixed
-     */
-    private function invokeMethod(Unpacker $unpacker, string $message)
-    {
-        $reflection = new \ReflectionClass(get_class($unpacker));
-        $method = $reflection->getMethod('u');
-        $method->setAccessible(true);
-        $property = $reflection->getProperty('message');
-        $property->setAccessible(true);
-        $property->setValue($unpacker, $message);
-        return $method->invoke($unpacker);
     }
 
     /**

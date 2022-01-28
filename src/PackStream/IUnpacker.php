@@ -12,9 +12,15 @@ namespace Bolt\PackStream;
 interface IUnpacker
 {
     /**
+     * Unpack message
      * @param string $msg
-     * @param int $signature
      * @return mixed
      */
-    public function unpack(string $msg, int &$signature);
+    public function unpack(string $msg);
+
+    /**
+     * Get unpacked message status signature
+     * @return int
+     */
+    public function getSignature(): int;
 }
