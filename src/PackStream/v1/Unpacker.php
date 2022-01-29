@@ -170,7 +170,7 @@ class Unpacker implements IUnpacker
 
         if (array_key_exists($signature, $this->structuresLt)) {
             if ($size + 1 !== count($this->structuresLt[$signature]))
-                trigger_error('Incorrect amount of structure fields', E_USER_ERROR);
+                throw new UnpackException('Incorrect amount of structure fields for ' . reset($this->structuresLt[$signature]));
             return $this->unpackSpecificStructure(...$this->structuresLt[$signature]);
         } else {
             $this->signature = $signature;
@@ -181,11 +181,11 @@ class Unpacker implements IUnpacker
     /**
      * Dynamic predefined specific structure unpacking
      * @param string $class
-     * @param mixed ...$methods
-     * @return mixed
+     * @param string ...$methods
+     * @return IStructure
      * @throws UnpackException
      */
-    private function unpackSpecificStructure(string $class, ...$methods)
+    private function unpackSpecificStructure(string $class, string ...$methods): IStructure
     {
         $values = [];
         foreach ($methods as $method) {

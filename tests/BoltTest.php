@@ -181,4 +181,41 @@ class BoltTest extends ATest
             $this->markTestIncomplete($e->getMessage());
         }
     }
+
+    /**
+     * @large
+     * @depends testHello
+     * @param AProtocol $protocol
+     * @throws Exception
+     */
+    public function testChunking(AProtocol $protocol)
+    {
+        Bolt::$debug = false;
+
+        $protocol->begin();
+        $protocol->run('CREATE (a:Test) RETURN ID(a)');
+        $result = $protocol->pull();
+
+        $data = [];
+        while (strlen(serialize($data)) < 65535 * 2) {
+            $data[base64_encode(random_bytes(32))] = base64_encode(random_bytes(128));
+            try {
+                $run = $protocol->run('MATCH (a:Test) WHERE ID(a) = $id SET a += $data RETURN a', [
+                    'id' => $result[0][0],
+                    'data' => (object)$data
+                ]);
+                $this->assertIsArray($run);
+
+                $pull = $protocol->pull();
+                $this->assertIsArray($pull);
+                $this->assertInstanceOf(\Bolt\structures\Node::class, $pull[0][0]);
+                $this->assertCount(count($data), $pull[0][0]->properties());
+            } catch (Exception $e) {
+                $this->markTestIncomplete();
+                break;
+            }
+        }
+
+        $protocol->rollback();
+    }
 }
