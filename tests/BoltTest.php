@@ -140,7 +140,9 @@ class BoltTest extends ATest
             $this->assertIsArray($created);
             $this->assertIsArray($protocol->rollback());
 
-            $this->assertIsArray($protocol->run('MATCH (a:Test) WHERE ID(a) = ' . $this->formatParameter($protocol, 'a') . ' RETURN COUNT(a)', [
+            $this->assertIsArray($protocol->run('MATCH (a:Test) WHERE ID(a) = '
+                . (version_compare($protocol->getVersion(), 4, '<') ? '{a}' : '$a')
+                . ' RETURN COUNT(a)', [
                 'a' => $created[0][1]
             ]));
             $res = $protocol->pullAll();
@@ -149,30 +151,6 @@ class BoltTest extends ATest
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
-    }
-
-    /**
-     * @var bool
-     */
-    private static $parameterType;
-
-    /**
-     * Because from Neo4j >= 4.0 is different placeholder for parameters
-     * @param AProtocol $protocol
-     * @param string $name
-     * @return string
-     * @throws Exception
-     */
-    private function formatParameter(AProtocol $protocol, string $name): string
-    {
-        if (self::$parameterType == null) {
-            $this->assertNotFalse($protocol->run('call dbms.components() yield versions unwind versions as version return version'));
-            $neo4jVersion = $protocol->pullAll()[0][0] ?? '';
-            $this->assertNotEmpty($neo4jVersion);
-            self::$parameterType = version_compare($neo4jVersion, '4') == -1;
-        }
-
-        return self::$parameterType ? ('{' . $name . '}') : ('$' . $name);
     }
 
     /**
@@ -202,5 +180,42 @@ class BoltTest extends ATest
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
+    }
+
+    /**
+     * @large
+     * @depends testHello
+     * @param AProtocol $protocol
+     * @throws Exception
+     */
+    public function testChunking(AProtocol $protocol)
+    {
+        Bolt::$debug = false;
+
+        $protocol->begin();
+        $protocol->run('CREATE (a:Test) RETURN ID(a)');
+        $result = $protocol->pull();
+
+        $data = [];
+        while (strlen(serialize($data)) < 65535 * 2) {
+            $data[base64_encode(random_bytes(32))] = base64_encode(random_bytes(128));
+            try {
+                $run = $protocol->run('MATCH (a:Test) WHERE ID(a) = $id SET a += $data RETURN a', [
+                    'id' => $result[0][0],
+                    'data' => (object)$data
+                ]);
+                $this->assertIsArray($run);
+
+                $pull = $protocol->pull();
+                $this->assertIsArray($pull);
+                $this->assertInstanceOf(\Bolt\structures\Node::class, $pull[0][0]);
+                $this->assertCount(count($data), $pull[0][0]->properties());
+            } catch (Exception $e) {
+                $this->markTestIncomplete();
+                break;
+            }
+        }
+
+        $protocol->rollback();
     }
 }

@@ -3,6 +3,7 @@
 namespace Bolt\PackStream\v1;
 
 use Bolt\structures\{
+    IStructure,
     Node,
     Relationship,
     UnboundRelationship,
@@ -34,6 +35,21 @@ class Unpacker implements IUnpacker
      */
     private $message;
 
+    /**
+     * @var int
+     */
+    private $offset;
+
+    /**
+     * @var bool
+     */
+    private $littleEndian;
+
+    /**
+     * @var int
+     */
+    private $signature;
+
     private $structuresLt = [
         0x4E => [Node::class, 'unpackInteger', 'unpackList', 'unpackMap'],
         0x52 => [Relationship::class, 'unpackInteger', 'unpackInteger', 'unpackInteger', 'unpackString', 'unpackMap'],
@@ -51,32 +67,28 @@ class Unpacker implements IUnpacker
     ];
 
     /**
-     * Unpack message
-     * @param string $msg
-     * @param int &$signature
-     * @return mixed
+     * @inheritDoc
      * @throws UnpackException
      */
-    public function unpack(string $msg, int &$signature)
+    public function unpack(string $msg)
     {
         if (empty($msg)) {
             return null;
         }
 
+        $this->littleEndian = unpack('S', "\x01\x00")[1] === 1;
+        $this->offset = 0;
         $this->message = $msg;
 
-        $size = 0;
-        $marker = ord($this->next(1));
-        if ($marker == 0xDC) { //STRUCT_8
-            $size = unpack('C', $this->next(1));
-        } elseif ($marker == 0xDD) { //STRUCT_16
-            $size = unpack('n', $this->next(2));
-        } elseif ($marker >> 4 == 0b1011) { //TINY_STRUCT
-            $size = 0b10110000 ^ $marker;
-        }
-
-        $signature = ord($this->next(1));
         return $this->u();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSignature(): int
+    {
+        return $this->signature;
     }
 
     /**
@@ -86,9 +98,9 @@ class Unpacker implements IUnpacker
      */
     private function next(int $length): string
     {
-        $output = mb_strcut($this->message, 0, $length, '8bit');
-        $this->message = mb_strcut($this->message, $length, null, '8bit');
-        return $output;
+        $str = mb_strcut($this->message, $this->offset, $length, '8bit');
+        $this->offset += mb_strlen($str, '8bit');
+        return $str;
     }
 
     /**
@@ -98,12 +110,6 @@ class Unpacker implements IUnpacker
     private function u()
     {
         $marker = ord($this->next(1));
-        $result = false;
-
-        $output = $this->unpackStruct($marker, $result);
-        if ($result) {
-            return $output;
-        }
 
         if ($marker == 0xC3) {
             return true;
@@ -115,24 +121,28 @@ class Unpacker implements IUnpacker
             return null;
         }
 
-        $output = $this->unpackFloat($marker, $result);
-        if ($result) {
+        $output = $this->unpackInteger($marker);
+        if ($output !== null) {
             return $output;
         }
-        $output = $this->unpackString($marker, $result);
-        if ($result) {
+        $output = $this->unpackFloat($marker);
+        if ($output !== null) {
             return $output;
         }
-        $output = $this->unpackList($marker, $result);
-        if ($result) {
+        $output = $this->unpackString($marker);
+        if ($output !== null) {
             return $output;
         }
-        $output = $this->unpackMap($marker, $result);
-        if ($result) {
+        $output = $this->unpackList($marker);
+        if ($output !== null) {
             return $output;
         }
-        $output = $this->unpackInteger($marker, $result);
-        if ($result) {
+        $output = $this->unpackMap($marker);
+        if ($output !== null) {
+            return $output;
+        }
+        $output = $this->unpackStruct($marker);
+        if ($output !== null) {
             return $output;
         }
 
@@ -141,193 +151,162 @@ class Unpacker implements IUnpacker
 
     /**
      * @param int $marker
-     * @param bool $result
-     * @return mixed|null
+     * @return array|IStructure|null
      * @throws UnpackException
      */
-    private function unpackStruct(int $marker, bool &$result = false)
+    private function unpackStruct(int $marker)
     {
-        $size = 0;
-        if ($marker == 0xDC) { //STRUCT_8
+        if ($marker >> 4 == 0b1011) { //TINY_STRUCT
+            $size = 0b10110000 ^ $marker;
+        } elseif ($marker == 0xDC) { //STRUCT_8
             $size = unpack('C', $this->next(1));
-            $result = true;
         } elseif ($marker == 0xDD) { //STRUCT_16
             $size = unpack('n', $this->next(2));
-            $result = true;
-        } elseif ($marker >> 4 == 0b1011) { //TINY_STRUCT
-            $size = 0b10110000 ^ $marker;
-            $result = true;
-        }
-
-        if (!$result) {
+        } else {
             return null;
         }
 
-        $marker = ord($this->next(1));
-        $result = false;
+        $signature = ord($this->next(1));
 
-        if (array_key_exists($marker, $this->structuresLt)) {
-            $output = $this->unpackSpecificStructure($result, ...$this->structuresLt[$marker]);
-            if ($result)
-                return $output;
+        if (array_key_exists($signature, $this->structuresLt)) {
+            if ($size + 1 !== count($this->structuresLt[$signature]))
+                throw new UnpackException('Incorrect amount of structure fields for ' . reset($this->structuresLt[$signature]));
+            return $this->unpackSpecificStructure(...$this->structuresLt[$signature]);
+        } else {
+            $this->signature = $signature;
+            return $this->u();
         }
-
-        return null;
     }
 
     /**
      * Dynamic predefined specific structure unpacking
-     * @param bool $result
      * @param string $class
-     * @param mixed ...$methods
-     * @return mixed
+     * @param string ...$methods
+     * @return IStructure
      * @throws UnpackException
      */
-    private function unpackSpecificStructure(bool &$result, string $class, ...$methods)
+    private function unpackSpecificStructure(string $class, string ...$methods): IStructure
     {
-        $output = [];
+        $values = [];
         foreach ($methods as $method) {
-            $result = false;
             $marker = ord($this->next(1));
-            $output[] = $this->{$method}($marker, $result);
-            if (!$result)
+            $value = $this->{$method}($marker);
+            if ($value === null)
                 throw new UnpackException('Structure call for method "' . $method . '" generated unpack error');
+            $values[] = $value;
         }
 
-        return new $class(...$output);
+        return new $class(...$values);
     }
 
     /**
      * @param int $marker
-     * @param bool $result
      * @return array
      * @throws UnpackException
      */
-    private function unpackMap(int $marker, bool &$result = false): array
+    private function unpackMap(int $marker): ?array
     {
-        $size = -1;
         if ($marker >> 4 == 0b1010) { //TINY_MAP
             $size = 0b10100000 ^ $marker;
         } elseif ($marker == 0xD8) { //MAP_8
-            $size = unpack('C', $this->next(1))[1] ?? $size;
+            $size = (int)unpack('C', $this->next(1))[1];
         } elseif ($marker == 0xD9) { //MAP_16
-            $size = unpack('n', $this->next(2))[1] ?? $size;
+            $size = (int)unpack('n', $this->next(2))[1];
         } elseif ($marker == 0xDA) { //MAP_32
-            $size = unpack('N', $this->next(4))[1] ?? $size;
+            $size = (int)unpack('N', $this->next(4))[1];
+        } else {
+            return null;
         }
 
         $output = [];
-        if ($size != -1) {
-            for ($i = 0; $i < $size; $i++) {
-                $output[$this->u()] = $this->u();
-            }
-            $result = true;
+        for ($i = 0; $i < $size; $i++) {
+            $output[$this->u()] = $this->u();
         }
-
         return $output;
     }
 
     /**
      * @param int $marker
-     * @param bool $result
      * @return string
      */
-    private function unpackString(int $marker, bool &$result = false): string
+    private function unpackString(int $marker): ?string
     {
-        $length = -1;
         if ($marker >> 4 == 0b1000) { //TINY_STRING
             $length = 0b10000000 ^ $marker;
         } elseif ($marker == 0xD0) { //STRING_8
-            $length = unpack('C', $this->next(1))[1] ?? $length;
+            $length = (int)unpack('C', $this->next(1))[1];
         } elseif ($marker == 0xD1) { //STRING_16
-            $length = unpack('n', $this->next(2))[1] ?? $length;
+            $length = (int)unpack('n', $this->next(2))[1];
         } elseif ($marker == 0xD2) { //STRING_32
-            $length = unpack('N', $this->next(4))[1] ?? $length;
+            $length = (int)unpack('N', $this->next(4))[1];
+        } else {
+            return null;
         }
 
-        $output = '';
-        if ($length != -1) {
-            $output = $this->next($length);
-            $result = true;
-        }
-
-        return $output;
+        return $this->next($length);
     }
 
     /**
      * @param int $marker
-     * @param bool $result
      * @return int
      */
-    private function unpackInteger(int $marker, bool &$result = false): int
+    private function unpackInteger(int $marker): ?int
     {
-        $output = null;
-        $tmp = unpack('S', "\x01\x00");
-        $little = $tmp[1] == 1;
-
         if ($marker >> 7 == 0b0) { //+TINY_INT
-            $output = $marker;
+            return $marker;
         } elseif ($marker >> 4 == 0b1111) { //-TINY_INT
-            $output = unpack('c', strrev(chr($marker)))[1] ?? 0;
+            return (int)unpack('c', strrev(chr($marker)))[1];
         } elseif ($marker == 0xC8) { //INT_8
-            $output = unpack('c', $this->next(1))[1] ?? 0;
+            return (int)unpack('c', $this->next(1))[1];
         } elseif ($marker == 0xC9) { //INT_16
             $value = $this->next(2);
-            $output = unpack('s', $little ? strrev($value) : $value)[1] ?? 0;
+            return (int)unpack('s', $this->littleEndian ? strrev($value) : $value)[1];
         } elseif ($marker == 0xCA) { //INT_32
             $value = $this->next(4);
-            $output = unpack('l', $little ? strrev($value) : $value)[1] ?? 0;
+            return (int)unpack('l', $this->littleEndian ? strrev($value) : $value)[1];
         } elseif ($marker == 0xCB) { //INT_64
             $value = $this->next(8);
-            $output = unpack("q", $little ? strrev($value) : $value)[1] ?? 0;
+            return (int)unpack("q", $this->littleEndian ? strrev($value) : $value)[1];
+        } else {
+            return null;
         }
-
-        if ($output !== null) {
-            $result = true;
-        }
-        return (int) $output;
     }
 
     /**
      * @param int $marker
-     * @param bool $result
      * @return float
      */
-    private function unpackFloat(int $marker, bool &$result = false): float
+    private function unpackFloat(int $marker): ?float
     {
-        $output = 0;
         if ($marker == 0xC1) {
-            $output = unpack('d', strrev($this->next(8)))[1] ?? 0;
-            $result = true;
+            return (float)unpack('d', strrev($this->next(8)))[1];
+        } else {
+            return null;
         }
-        return $output;
     }
 
     /**
      * @param int $marker
-     * @param bool $result
      * @return array
      * @throws UnpackException
      */
-    private function unpackList(int $marker, bool &$result = false): array
+    private function unpackList(int $marker): ?array
     {
-        $size = -1;
         if ($marker >> 4 == 0b1001) { //TINY_LIST
             $size = 0b10010000 ^ $marker;
         } elseif ($marker == 0xD4) { //LIST_8
-            $size = unpack('C', $this->next(1))[1] ?? $size;
+            $size = (int)unpack('C', $this->next(1))[1];
         } elseif ($marker == 0xD5) { //LIST_16
-            $size = unpack('n', $this->next(2))[1] ?? $size;
+            $size = (int)unpack('n', $this->next(2))[1];
         } elseif ($marker == 0xD6) { //LIST_32
-            $size = unpack('N', $this->next(4))[1] ?? $size;
+            $size = (int)unpack('N', $this->next(4))[1];
+        } else {
+            return null;
         }
 
         $output = [];
-        if ($size != -1) {
-            for ($i = 0; $i < $size; $i++) {
-                $output[] = $this->u();
-            }
-            $result = true;
+        for ($i = 0; $i < $size; $i++) {
+            $output[] = $this->u();
         }
 
         return $output;

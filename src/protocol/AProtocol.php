@@ -80,7 +80,8 @@ abstract class AProtocol
         $output = null;
         $signature = 0;
         if (!empty($msg)) {
-            $output = $this->unpacker->unpack($msg, $signature);
+            $output = $this->unpacker->unpack($msg);
+            $signature = $this->unpacker->getSignature();
         }
 
         return $output;
