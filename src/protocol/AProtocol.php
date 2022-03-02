@@ -71,7 +71,7 @@ abstract class AProtocol
         $msg = '';
         while (true) {
             $header = $this->connection->read(2);
-            if (ord($header[0]) == 0x00 && ord($header[1]) == 0x00)
+            if ($msg !== '' && ord($header[0]) == 0x00 && ord($header[1]) == 0x00)
                 break;
             $length = unpack('n', $header)[1] ?? 0;
             $msg .= $this->connection->read($length);

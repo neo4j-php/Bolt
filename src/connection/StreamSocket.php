@@ -100,9 +100,6 @@ class StreamSocket extends AConnection
         if (stream_get_meta_data($this->stream)["timed_out"])
             throw ConnectionTimeoutException::createFromTimeout($this->timeout);
 
-        if (empty($res))
-            throw new ConnectException('Read error');
-
         if (Bolt::$debug)
             $this->printHex($res, false);
 

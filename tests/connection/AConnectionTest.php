@@ -45,6 +45,22 @@ final class AConnectionTest extends TestCase
         }
     }
 
+
+    /**
+     * @dataProvider provideConnections
+     *
+     * @doesNotPerformAssertions
+     */
+    public function testLongNoTimeout(string $alias): void
+    {
+        $socket = $this->getConnection($alias);
+        $protocol = (new Bolt($socket))->build();
+        $socket->setTimeout(200);
+        $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+
+        $protocol->run('CALL apoc.util.sleep(150000)', [], ['tx_timeout' => 150000]);
+    }
+
     /**
      * @dataProvider provideConnections
      */
