@@ -20,6 +20,7 @@ jobs:
         image: neo4j:${{ matrix.neo4j-version }}
         env:
           NEO4J_AUTH: neo4j/nothing
+          NEO4JLABS_PLUGINS: '["apoc"]'
         ports:
           - 7687:7687
           - 7474:7474
