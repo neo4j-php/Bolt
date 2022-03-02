@@ -153,7 +153,8 @@ class Socket extends AConnection
             if ($timediff >= $this->timeout) {
                 throw ConnectionTimeoutException::createFromTimeout($this->timeout);
             }
+        } else if ($code !== 0) {
+            throw new ConnectException(socket_strerror($code), $code);
         }
-        throw new ConnectException(socket_strerror($code), $code);
     }
 }
