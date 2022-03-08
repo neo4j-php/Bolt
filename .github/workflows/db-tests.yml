@@ -37,6 +37,7 @@ jobs:
           php-version: '7.1'
           extensions: mbstring, sockets
           coverage: xdebug2
+          ini-values: max_execution_time=0
 
       - name: Install dependencies
         run: composer install --no-progress

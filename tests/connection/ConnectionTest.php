@@ -63,7 +63,7 @@ final class ConnectionTest extends TestCase
         $protocol = (new Bolt($conn))->build();
         $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 
-        $protocol->run('SHOW ALL FUNCTIONS YIELD * WHERE name STARTS WITH "apoc." RETURN count(*)');
+        $protocol->run('SHOW FUNCTIONS YIELD name WHERE name STARTS WITH "apoc." RETURN count(*)');
         $res = $protocol->pull();
         if ($res[0][0] == 0)
             $this->markTestSkipped('APOC not intalled');
