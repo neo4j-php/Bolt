@@ -2,9 +2,9 @@ name: Tests without a database PHP8
 
 on:
   push:
-    branches: ['master']
+    branches: [ master ]
   pull_request:
-    branches: ['master']
+    branches: [ master ]
 
 jobs:
   tests:
@@ -16,7 +16,8 @@ jobs:
         php-version: ['8.0', '8.1']
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - run: composer validate --strict
       - uses: php-actions/composer@v6
         with:
           progress: yes
@@ -24,6 +25,6 @@ jobs:
           version: 2
       - uses: php-actions/phpunit@v3
         with:
-          configuration: phpunit.xml.dist
+          configuration: phpunit.xml
           php_version: ${{ matrix.php-version }}
           args: --testsuite "NoDatabase"

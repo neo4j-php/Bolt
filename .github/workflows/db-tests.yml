@@ -2,9 +2,9 @@ name: Tests with a database
 
 on:
   push:
-    branches: ['master']
+    branches: [ master ]
   pull_request:
-    branches: ['master']
+    branches: [ master ]
 
 jobs:
   tests:
@@ -28,7 +28,8 @@ jobs:
           --health-cmd "wget http://localhost:7474 || exit 1"
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - run: composer validate --strict
       - uses: php-actions/composer@v6
         with:
           progress: yes
@@ -36,7 +37,7 @@ jobs:
           version: 2
       - uses: php-actions/phpunit@v3
         with:
-          configuration: phpunit.xml.dist
+          configuration: phpunit.xml
           php_version: 7.1
-          version: 7.5
+          version: 7
           args: --testsuite "Database"
