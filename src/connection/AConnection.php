@@ -71,7 +71,7 @@ abstract class AConnection implements IConnection
         return $this->timeout;
     }
 
-    public function setTimeout(float $timeout): void
+    public function setTimeout(float $timeout)
     {
         $this->timeout = $timeout;
     }

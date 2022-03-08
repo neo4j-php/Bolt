@@ -8,7 +8,7 @@ on:
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     name: "Running Integration tests for PHP 7.1 on Neo4j ${{ matrix.neo4j-version }}"
     strategy:
       fail-fast: false
@@ -28,16 +28,18 @@ jobs:
           --health-cmd "wget http://localhost:7474 || exit 1"
 
     steps:
-      - uses: actions/checkout@v3
-      - run: composer validate --strict
-      - uses: php-actions/composer@v6
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          progress: yes
-          php_version: '7.1'
-          version: 2
-      - uses: php-actions/phpunit@v3
-        with:
-          configuration: phpunit.xml
-          php_version: '7.1'
-          version: 7
-          args: --testsuite "Database" -v --debug
+          php-version: '7.1'
+          extensions: mbstring, sockets
+          coverage: xdebug2
+
+      - name: Install dependencies
+        run: composer install --no-progress
+
+      - name: Test with phpunit
+        run: vendor/bin/phpunit --configuration phpunit.xml --testsuite "Database"

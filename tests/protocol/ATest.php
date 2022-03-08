@@ -46,7 +46,6 @@ abstract class ATest extends TestCase
             ->method('write')
             ->with(
                 $this->callback(function ($buffer) {
-                    var_dump(bin2hex($buffer));
                     if (bin2hex($buffer) == '0000')
                         return true;
 

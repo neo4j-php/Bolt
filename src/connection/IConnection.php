@@ -32,5 +32,5 @@ interface IConnection
 
     public function getTimeout(): float;
 
-    public function setTimeout(float $timeout): void;
+    public function setTimeout(float $timeout);
 }

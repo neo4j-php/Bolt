@@ -8,7 +8,7 @@ on:
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     name: "Running Tests for PHP ${{ matrix.php-version }}"
     strategy:
       fail-fast: false
@@ -16,16 +16,18 @@ jobs:
         php-version: ['7.1', '7.2', '7.3', '7.4']
 
     steps:
-      - uses: actions/checkout@v3
-      - run: composer validate --strict
-      - uses: php-actions/composer@v6
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          progress: yes
-          php_version: ${{ matrix.php-version }}
-          version: 2
-      - uses: php-actions/phpunit@v3
-        with:
-          configuration: phpunit.xml
-          version: 7
-          php_version: ${{ matrix.php-version }}
-          args: --testsuite "NoDatabase" -v --debug
+          php-version: ${{ matrix.php-version }}
+          extensions: mbstring, sockets
+          coverage: xdebug
+
+      - name: Install dependencies
+        run: composer install --no-progress
+
+      - name: Test with phpunit
+        run: vendor/bin/phpunit --configuration phpunit.xml --testsuite "NoDatabase"

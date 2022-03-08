@@ -156,12 +156,12 @@ class UnpackerTest extends TestCase
 
     public function dictionaryProvider(): \Generator
     {
-        foreach ([0, 10, 200, 60000, 70000] as $size) {
+        foreach ([0, 10, 200, 20000, 70000] as $size) {
             $values = [];
             $toString = [];
             for ($i = 0; $i <= $size; $i++) {
-                $values['a' . $i] = 1;
-                $toString[] = 'a' . $i . ':1';
+                $values['a' . $i] = true;
+                $toString[] = 'a' . $i . ':true';
             }
             yield 'dictionary size: ' . $size => [$values, implode(',', $toString)];
         }

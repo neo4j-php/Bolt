@@ -3,11 +3,15 @@
 namespace Bolt\tests\connection;
 
 use Bolt\Bolt;
-use Bolt\connection\IConnection;
-use Bolt\connection\Socket;
-use Bolt\connection\StreamSocket;
-use Bolt\error\ConnectionTimeoutException;
-use Bolt\error\MessageException;
+use Bolt\connection\{
+    IConnection,
+    Socket,
+    StreamSocket
+};
+use Bolt\error\{
+    ConnectionTimeoutException,
+    MessageException
+};
 use Bolt\helpers\Auth;
 use PHPUnit\Framework\TestCase;
 
@@ -36,36 +40,27 @@ final class ConnectionTest extends TestCase
 
     /**
      * @dataProvider provideConnections
+     * @param string $alias
      */
-    public function testMillisecondTimeout(string $alias): void
+    public function testMillisecondTimeout(string $alias)
     {
-        $socket = $this->getConnection($alias);
-        $protocol = (new Bolt($socket))->build();
-        $socket->setTimeout(1.5);
+        $conn = $this->getConnection($alias);
+        $conn->setTimeout(1.5);
+        $protocol = (new Bolt($conn))->build();
         $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
-
-        $time = microtime(true);
-        try {
-            $protocol->run('FOREACH ( i IN range(1,10000) | 
-  MERGE (d:Day {day: i})
-)');
-            $this->fail('No timeout error triggered');
-        } catch (ConnectionTimeoutException $e) {
-            $newTime = microtime(true);
-
-            $this->assertGreaterThanOrEqual(1.5, $newTime - $time);
-        }
+        $this->expectException(ConnectionTimeoutException::class);
+        $protocol->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )');
     }
-
 
     /**
      * @dataProvider provideConnections
+     * @param string $alias
      * @doesNotPerformAssertions
      */
-    public function testLongNoTimeout(string $alias): void
+    public function testLongNoTimeout(string $alias)
     {
-        $socket = $this->getConnection($alias);
-        $protocol = (new Bolt($socket))->build();
+        $conn = $this->getConnection($alias);
+        $protocol = (new Bolt($conn))->build();
         $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 
         $protocol->run('SHOW ALL FUNCTIONS YIELD * WHERE name STARTS WITH "apoc." RETURN count(*)');
@@ -73,79 +68,65 @@ final class ConnectionTest extends TestCase
         if ($res[0][0] == 0)
             $this->markTestSkipped('APOC not intalled');
 
-        $socket->setTimeout(200);
+        $conn->setTimeout(200);
         $protocol->run('CALL apoc.util.sleep(150000)', [], ['tx_timeout' => 150000]);
     }
 
     /**
      * @dataProvider provideConnections
+     * @param string $alias
      */
-    public function testSecondsTimeout(string $alias): void
+    public function testSecondsTimeout(string $alias)
     {
-        $socket = $this->getConnection($alias);
-        $protocol = (new Bolt($socket))->build();
+        $conn = $this->getConnection($alias);
+        $conn->setTimeout(1);
+        $protocol = (new Bolt($conn))->build();
         $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
-
-        $time = microtime(true);
-        try {
-            $protocol->run('FOREACH ( i IN range(1,10000) | 
-  MERGE (d:Day {day: i})
-)');
-            $this->fail('No timeout error triggered');
-        } catch (ConnectionTimeoutException $e) {
-            $newTime = microtime(true);
-
-            $this->assertGreaterThanOrEqual(1.0, $newTime - $time);
-        }
+        $this->expectException(ConnectionTimeoutException::class);
+        $protocol->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )');
     }
 
     /**
      * @dataProvider provideConnections
+     * @param string $alias
      */
-    public function testTimeoutRecoverAndReset(string $alias): void
+    public function testTimeoutRecoverAndReset(string $alias)
     {
-        $socket = $this->getConnection($alias);
-        $protocol = (new Bolt($socket))->build();
+        $conn = $this->getConnection($alias);
+        $protocol = (new Bolt($conn))->build();
         $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 
+        $conn->setTimeout(1.5);
         $time = microtime(true);
         try {
-            $protocol->run('FOREACH ( i IN range(1,10000) | 
-                MERGE (d:Day {day: i})
-            )');
+            $protocol->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )');
             $this->fail('No timeout error triggered');
         } catch (ConnectionTimeoutException $e) {
             $newTime = microtime(true);
-
             $this->assertGreaterThanOrEqual(1.0, $newTime - $time);
         }
 
-        $socket->setTimeout(100.0);
+        $conn->setTimeout(15.0);
         try {
             $protocol->reset();
         } catch (MessageException $e) {
-            echo $e->getMessage();
-            $protocol = (new Bolt($socket))->build();
+            $protocol = (new Bolt($conn))->build();
             $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         }
 
-        $socket->setTimeout(1.0);
-
+        $conn->setTimeout(1.5);
         $time = microtime(true);
         try {
-            $protocol->run('FOREACH ( i IN range(1,10000) | 
-                MERGE (d:Day {day: i})
-            )');
+            $protocol->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )');
             $this->fail('No timeout error triggered');
         } catch (ConnectionTimeoutException $e) {
             $newTime = microtime(true);
-
             $this->assertGreaterThanOrEqual(1.0, $newTime - $time);
         }
     }
 
     private function getConnection(string $class): IConnection
     {
-        return new $class($GLOBALS['NEO_HOST'] ?? '127.0.0.1', (int) ($GLOBALS['NEO_PORT'] ?? 7687), 1);
+        return new $class($GLOBALS['NEO_HOST'] ?? '127.0.0.1', (int)($GLOBALS['NEO_PORT'] ?? 7687), 1);
     }
 }

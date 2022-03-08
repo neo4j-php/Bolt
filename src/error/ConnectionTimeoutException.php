@@ -2,10 +2,13 @@
 
 namespace Bolt\error;
 
+/**
+ * Class ConnectionTimeoutException
+ *
+ * @link https://github.com/neo4j-php/Bolt
+ * @package Bolt\error
+ */
 class ConnectionTimeoutException extends ConnectException
 {
-    public static function createFromTimeout(float $timeout): self
-    {
-        return new self('Connection timeout reached after '.$timeout.' seconds.');
-    }
+
 }
