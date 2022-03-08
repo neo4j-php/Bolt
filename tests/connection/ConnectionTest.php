@@ -63,7 +63,7 @@ final class ConnectionTest extends TestCase
         $protocol = (new Bolt($conn))->build();
         $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         $conn->setTimeout(200);
-        $protocol->run('CALL apoc.util.sleep(150000)', [], ['tx_timeout' => 150000]);
+        $protocol->run('CALL apoc.util.sleep(150000)', [], ['mode' => 'r', 'tx_timeout' => 120000]);
     }
 
     /**

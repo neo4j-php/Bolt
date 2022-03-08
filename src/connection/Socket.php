@@ -142,7 +142,7 @@ class Socket extends AConnection
         $code = socket_last_error($this->socket);
         if (in_array($code, self::POSSIBLE_TIMEOUTS_CODES)) {
             throw new ConnectionTimeoutException('Connection timeout reached after ' . $this->timeout . ' seconds.');
-        } else {
+        } elseif ($code !== 0) {
             throw new ConnectException(socket_strerror($code), $code);
         }
     }

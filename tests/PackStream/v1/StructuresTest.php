@@ -88,7 +88,7 @@ class StructuresTest extends TestCase
             //unpack
             $protocol->run('RETURN date($date)', [
                 'date' => $date
-            ]);
+            ], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $this->assertInstanceOf(Date::class, $rows[0][0]);
             $this->assertEquals($date, (string)$rows[0][0], 'unpack ' . $date . ' != ' . $rows[0][0]);
@@ -96,7 +96,7 @@ class StructuresTest extends TestCase
             //pack
             $protocol->run('RETURN toString($date)', [
                 'date' => $rows[0][0]
-            ]);
+            ], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $this->assertEquals($date, $rows[0][0], 'pack ' . $date . ' != ' . $rows[0][0]);
         } catch (Exception $e) {
@@ -118,7 +118,7 @@ class StructuresTest extends TestCase
             //unpack
             $protocol->run('RETURN datetime($date)', [
                 'date' => $datetime
-            ]);
+            ], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $this->assertInstanceOf(DateTime::class, $rows[0][0]);
             $this->assertEquals($datetime, (string)$rows[0][0], 'unpack ' . $datetime . ' != ' . $rows[0][0]);
@@ -126,7 +126,7 @@ class StructuresTest extends TestCase
             //pack
             $protocol->run('RETURN toString($date)', [
                 'date' => $rows[0][0]
-            ]);
+            ], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             // neo4j returns fraction of seconds not padded with zeros ... zero timezone offset returns as Z
             $datetime = preg_replace(["/\.?0+(.\d{2}:\d{2})$/", "/\+00:00$/"], ['$1', 'Z'], $datetime);
@@ -150,7 +150,7 @@ class StructuresTest extends TestCase
             //unpack
             $protocol->run('RETURN datetime($dt)', [
                 'dt' => $datetime
-            ]);
+            ], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $this->assertInstanceOf(DateTimeZoneId::class, $rows[0][0]);
             $this->assertEquals($datetime, (string)$rows[0][0], 'unpack ' . $datetime . ' != ' . $rows[0][0]);
@@ -158,7 +158,7 @@ class StructuresTest extends TestCase
             //pack
             $protocol->run('RETURN toString($dt)', [
                 'dt' => $rows[0][0]
-            ]);
+            ], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             // neo4j returns fraction of seconds not padded with zeros ... also contains timezone offset before timezone id
             $datetime = preg_replace("/\.?0+\[/", '[', $datetime);
@@ -184,7 +184,7 @@ class StructuresTest extends TestCase
     {
         try {
             //unpack
-            $protocol->run('RETURN duration($d)', ['d' => $duration]);
+            $protocol->run('RETURN duration($d)', ['d' => $duration], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $this->assertInstanceOf(Duration::class, $rows[0][0]);
             $this->assertEquals($duration, (string)$rows[0][0], 'unpack ' . $duration . ' != ' . $rows[0][0]);
@@ -192,7 +192,7 @@ class StructuresTest extends TestCase
             //pack
             $protocol->run('RETURN toString($d)', [
                 'd' => $rows[0][0]
-            ]);
+            ], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $this->assertEquals($duration, $rows[0][0], 'pack ' . $duration . ' != ' . $rows[0][0]);
         } catch (Exception $e) {
@@ -228,7 +228,7 @@ class StructuresTest extends TestCase
             //unpack
             $protocol->run('RETURN localdatetime($dt)', [
                 'dt' => $datetime
-            ]);
+            ], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $this->assertInstanceOf(LocalDateTime::class, $rows[0][0]);
             $this->assertEquals($datetime, (string)$rows[0][0], 'unpack ' . $datetime . ' != ' . $rows[0][0]);
@@ -236,7 +236,7 @@ class StructuresTest extends TestCase
             //pack
             $protocol->run('RETURN toString($dt)', [
                 'dt' => $rows[0][0]
-            ]);
+            ], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $datetime = rtrim($datetime, '.0');
             $this->assertEquals($datetime, $rows[0][0], 'pack ' . $datetime . ' != ' . $rows[0][0]);
@@ -259,7 +259,7 @@ class StructuresTest extends TestCase
             //unpack
             $protocol->run('RETURN localtime($t)', [
                 't' => $time
-            ]);
+            ], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $this->assertInstanceOf(LocalTime::class, $rows[0][0]);
             $this->assertEquals($time, (string)$rows[0][0], 'unpack ' . $time . ' != ' . $rows[0][0]);
@@ -267,7 +267,7 @@ class StructuresTest extends TestCase
             //pack
             $protocol->run('RETURN toString($t)', [
                 't' => $rows[0][0]
-            ]);
+            ], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $time = rtrim($time, '.0');
             $this->assertEquals($time, $rows[0][0], 'pack ' . $time . ' != ' . $rows[0][0]);
@@ -285,7 +285,7 @@ class StructuresTest extends TestCase
             $protocol->begin();
 
             //unpack
-            $protocol->run('CREATE (a:Test) RETURN a');
+            $protocol->run('CREATE (a:Test) RETURN a', [], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $this->assertInstanceOf(Node::class, $rows[0][0]);
 
@@ -306,7 +306,7 @@ class StructuresTest extends TestCase
             $protocol->begin();
 
             //unpack
-            $protocol->run('CREATE p=(:Test)-[:HAS]->(:Test) RETURN p');
+            $protocol->run('CREATE p=(:Test)-[:HAS]->(:Test) RETURN p', [], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $this->assertInstanceOf(Path::class, $rows[0][0]);
 
@@ -328,14 +328,14 @@ class StructuresTest extends TestCase
     {
         try {
             //unpack
-            $protocol->run('RETURN point({ latitude: 13.43, longitude: 56.21 })');
+            $protocol->run('RETURN point({ latitude: 13.43, longitude: 56.21 })', [], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $this->assertInstanceOf(Point2D::class, $rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($p)', [
                 'p' => $rows[0][0]
-            ]);
+            ], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $this->assertStringStartsWith('point(', $rows[0][0]);
         } catch (Exception $e) {
@@ -350,14 +350,14 @@ class StructuresTest extends TestCase
     {
         try {
             //unpack
-            $protocol->run('RETURN point({ x: 0, y: 4, z: 1 })');
+            $protocol->run('RETURN point({ x: 0, y: 4, z: 1 })', [], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $this->assertInstanceOf(Point3D::class, $rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($p)', [
                 'p' => $rows[0][0]
-            ]);
+            ], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $this->assertStringStartsWith('point(', $rows[0][0]);
         } catch (Exception $e) {
@@ -374,7 +374,7 @@ class StructuresTest extends TestCase
             $protocol->begin();
 
             //unpack
-            $protocol->run('CREATE (:Test)-[rel:HAS]->(:Test) RETURN rel');
+            $protocol->run('CREATE (:Test)-[rel:HAS]->(:Test) RETURN rel', [], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $this->assertInstanceOf(Relationship::class, $rows[0][0]);
 
@@ -400,7 +400,7 @@ class StructuresTest extends TestCase
             //unpack
             $protocol->run('RETURN time($t)', [
                 't' => $time
-            ]);
+            ], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             $this->assertInstanceOf(Time::class, $rows[0][0]);
             $this->assertEquals($time, (string)$rows[0][0], 'unpack ' . $time . ' != ' . $rows[0][0]);
@@ -408,7 +408,7 @@ class StructuresTest extends TestCase
             //pack
             $protocol->run('RETURN toString($t)', [
                 't' => $rows[0][0]
-            ]);
+            ], ['mode' => 'r']);
             $rows = $protocol->pullAll();
             // neo4j returns fraction of seconds not padded with zeros ... zero timezone offset returns as Z
             $time = preg_replace(["/\.?0+(.\d{2}:\d{2})$/", "/\+00:00$/"], ['$1', 'Z'], $time);

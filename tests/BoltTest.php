@@ -93,7 +93,7 @@ class BoltTest extends TestCase
     public function testPull(AProtocol $protocol)
     {
         try {
-            $res = $protocol->run('RETURN 1 AS num, 2 AS cnt');
+            $res = $protocol->run('RETURN 1 AS num, 2 AS cnt', [], ['mode' => 'r']);
             $this->assertIsArray($res);
             $this->assertArrayHasKey('fields', $res);
 
@@ -112,7 +112,7 @@ class BoltTest extends TestCase
     public function testDiscard(AProtocol $protocol)
     {
         try {
-            $this->assertNotFalse($protocol->run('MATCH (a:Test) RETURN *'));
+            $this->assertNotFalse($protocol->run('MATCH (a:Test) RETURN *', [], ['mode' => 'r']));
             $this->assertIsArray($protocol->discardAll());
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
