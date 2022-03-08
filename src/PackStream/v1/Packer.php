@@ -39,7 +39,6 @@ class Packer implements IPacker
     private $littleEndian;
 
     private $structuresLt = [
-        Relationship::class => [0x52, 'id' => 'packInteger', 'startNodeId' => 'packInteger', 'endNodeId' => 'packInteger', 'type' => 'packString', 'properties' => 'packMap'],
         Date::class => [0x44, 'days' => 'packInteger'],
         Time::class => [0x54, 'nanoseconds' => 'packInteger', 'tz_offset_seconds' => 'packInteger'],
         LocalTime::class => [0x74, 'nanoseconds' => 'packInteger'],

@@ -109,7 +109,7 @@ class Socket extends AConnection
         } while (mb_strlen($output, '8bit') < $length);
 
         if (Bolt::$debug)
-            $this->printHex($output, false);
+            $this->printHex($output, 'S: ');
 
         return $output;
     }

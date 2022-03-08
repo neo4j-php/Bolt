@@ -43,13 +43,12 @@ abstract class AConnection implements IConnection
     /**
      * Print buffer as HEX
      * @param string $str
-     * @param bool $write
+     * @param string $prefix
      */
-    protected function printHex(string $str, bool $write = true)
+    protected function printHex(string $str, string $prefix = 'C: ')
     {
         $str = implode(unpack('H*', $str));
-        echo '<pre>';
-        echo $write ? '> ' : '< ';
+        echo '<pre>' . $prefix;
         foreach (str_split($str, 8) as $chunk) {
             echo implode(' ', str_split($chunk, 2));
             echo '    ';

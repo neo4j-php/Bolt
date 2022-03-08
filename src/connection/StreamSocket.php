@@ -101,7 +101,7 @@ class StreamSocket extends AConnection
             throw ConnectionTimeoutException::createFromTimeout($this->timeout);
 
         if (Bolt::$debug)
-            $this->printHex($res, false);
+            $this->printHex($res, 'S: ');
 
         return (string)$res;
     }
