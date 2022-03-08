@@ -2,9 +2,9 @@ name: Tests with a database
 
 on:
   push:
-    branches: [ '**' ]
+    branches: ['master']
   pull_request:
-    branches: ['**']
+    branches: ['master']
 
 jobs:
   tests:

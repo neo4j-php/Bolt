@@ -5,6 +5,7 @@ namespace Bolt\tests;
 use Bolt\Bolt;
 use Bolt\protocol\AProtocol;
 use Exception;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class BoltTest
@@ -33,15 +34,13 @@ use Exception;
  * @requires extension sockets
  * @requires extension mbstring
  */
-class BoltTest extends ATest
+class BoltTest extends TestCase
 {
 
     public function testSockets()
     {
         if (!extension_loaded('sockets'))
             $this->markTestSkipped('Sockets extension not available');
-
-        Bolt::$debug = true;
 
         try {
             $conn = new \Bolt\connection\Socket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687, 3);
@@ -69,8 +68,6 @@ class BoltTest extends ATest
      */
     public function testHello(): AProtocol
     {
-        Bolt::$debug = true;
-
         try {
             $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
             $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
@@ -190,8 +187,6 @@ class BoltTest extends ATest
      */
     public function testChunking(AProtocol $protocol)
     {
-        Bolt::$debug = false;
-
         $protocol->begin();
         $protocol->run('CREATE (a:Test) RETURN ID(a)');
         $result = $protocol->pull();
@@ -212,7 +207,6 @@ class BoltTest extends ATest
                 $this->assertCount(count($data), $pull[0][0]->properties());
             } catch (Exception $e) {
                 $this->markTestIncomplete();
-                break;
             }
         }
 

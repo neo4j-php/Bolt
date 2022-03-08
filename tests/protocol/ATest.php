@@ -1,6 +1,6 @@
 <?php
 
-namespace Bolt\tests;
+namespace Bolt\tests\protocol;
 
 use PHPUnit\Framework\TestCase;
 use Bolt\connection\AConnection;
@@ -13,7 +13,6 @@ use Bolt\connection\AConnection;
  */
 abstract class ATest extends TestCase
 {
-
     /**
      * @var int Internal pointer for "readArray"
      */

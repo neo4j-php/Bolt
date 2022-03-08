@@ -53,7 +53,7 @@ abstract class AConnection implements IConnection
             echo implode(' ', str_split($chunk, 2));
             echo '    ';
         }
-        echo '</pre>';
+        echo '</pre>' . PHP_EOL;
     }
 
     public function getIp(): string

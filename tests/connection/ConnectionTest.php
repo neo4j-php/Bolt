@@ -9,10 +9,22 @@ use Bolt\connection\StreamSocket;
 use Bolt\error\ConnectionTimeoutException;
 use Bolt\error\MessageException;
 use Bolt\helpers\Auth;
-use Bolt\protocol\V4;
 use PHPUnit\Framework\TestCase;
 
-final class AConnectionTest extends TestCase
+/**
+ * Class ConnectionTest
+ *
+ * @link https://github.com/neo4j-php/Bolt
+ *
+ * @covers \Bolt\connection\AConnection
+ * @covers \Bolt\connection\Socket
+ * @covers \Bolt\connection\StreamSocket
+ *
+ * @package Bolt\tests\connection
+ * @requires PHP >= 7.1
+ * @requires extension sockets
+ */
+final class ConnectionTest extends TestCase
 {
     public function provideConnections(): array
     {
@@ -48,16 +60,20 @@ final class AConnectionTest extends TestCase
 
     /**
      * @dataProvider provideConnections
-     *
      * @doesNotPerformAssertions
      */
     public function testLongNoTimeout(string $alias): void
     {
         $socket = $this->getConnection($alias);
         $protocol = (new Bolt($socket))->build();
-        $socket->setTimeout(200);
         $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 
+        $protocol->run('SHOW ALL FUNCTIONS YIELD * WHERE name STARTS WITH "apoc." RETURN count(*)');
+        $res = $protocol->pull();
+        if ($res[0][0] == 0)
+            $this->markTestSkipped('APOC not intalled');
+
+        $socket->setTimeout(200);
         $protocol->run('CALL apoc.util.sleep(150000)', [], ['tx_timeout' => 150000]);
     }
 

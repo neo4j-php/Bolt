@@ -2,7 +2,7 @@
 
 namespace Bolt\tests\error;
 
-use Bolt\tests\ATest;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class ErrorsTest
@@ -20,7 +20,7 @@ use Bolt\tests\ATest;
  * @requires extension sockets
  * @requires extension mbstring
  */
-class ErrorsTest extends ATest
+class ErrorsTest extends TestCase
 {
     public function testConnectException()
     {

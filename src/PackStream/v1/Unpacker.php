@@ -252,10 +252,8 @@ class Unpacker implements IUnpacker
      */
     private function unpackInteger(int $marker): ?int
     {
-        if ($marker >> 7 == 0b0) { //+TINY_INT
-            return $marker;
-        } elseif ($marker >> 4 == 0b1111) { //-TINY_INT
-            return (int)unpack('c', strrev(chr($marker)))[1];
+        if ($marker >> 4 >= 0xF || $marker >> 4 <= 0x7) { //TINY_INT
+            return (int)unpack('c', chr($marker))[1];
         } elseif ($marker == 0xC8) { //INT_8
             return (int)unpack('c', $this->next(1))[1];
         } elseif ($marker == 0xC9) { //INT_16
@@ -266,7 +264,7 @@ class Unpacker implements IUnpacker
             return (int)unpack('l', $this->littleEndian ? strrev($value) : $value)[1];
         } elseif ($marker == 0xCB) { //INT_64
             $value = $this->next(8);
-            return (int)unpack("q", $this->littleEndian ? strrev($value) : $value)[1];
+            return (int)unpack('q', $this->littleEndian ? strrev($value) : $value)[1];
         } else {
             return null;
         }
@@ -279,7 +277,8 @@ class Unpacker implements IUnpacker
     private function unpackFloat(int $marker): ?float
     {
         if ($marker == 0xC1) {
-            return (float)unpack('d', strrev($this->next(8)))[1];
+            $value = $this->next(8);
+            return (float)unpack('d', $this->littleEndian ? strrev($value) : $value)[1];
         } else {
             return null;
         }

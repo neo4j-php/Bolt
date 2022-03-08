@@ -16,7 +16,7 @@ use Bolt\protocol\V2;
  * @package Bolt\tests\protocol
  * @requires PHP >= 7.1
  */
-class V2Test extends \Bolt\tests\ATest
+class V2Test extends ATest
 {
     /**
      * @return V2

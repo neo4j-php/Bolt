@@ -2,9 +2,9 @@ name: Tests without a database PHP8
 
 on:
   push:
-    branches: [ '**' ]
+    branches: ['master']
   pull_request:
-    branches: ['**']
+    branches: ['master']
 
 jobs:
   tests:

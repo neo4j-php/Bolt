@@ -7,7 +7,6 @@ use Bolt\error\PackException;
 use Generator;
 use Bolt\structures\{
     IStructure,
-    Relationship,
     Date,
     Time,
     LocalTime,
@@ -158,7 +157,8 @@ class Packer implements IPacker
      */
     private function packFloat(float $value): string
     {
-        return chr(0xC1) . strrev(pack('d', $value));
+        $packed = pack('d', $value);
+        return chr(0xC1) . ($this->littleEndian ? strrev($packed) : $packed);
     }
 
     /**
@@ -168,15 +168,10 @@ class Packer implements IPacker
      */
     private function packInteger(int $value): string
     {
-        if ($value >= 0 && $value <= 127) { //+TINY_INT
-            $packed = pack('C', 0b00000000 | $value);
-            return $this->littleEndian ? strrev($packed) : $packed;
-        } elseif ($value >= -16 && $value < 0) { //-TINY_INT
-            $packed = pack('c', 0b11110000 | $value);
-            return $this->littleEndian ? strrev($packed) : $packed;
+        if ($value >= -16 && $value <= 127) { //TINY_INT
+            return pack('c', $value);
         } elseif ($value >= -128 && $value <= -17) { //INT_8
-            $packed = pack('c', $value);
-            return chr(0xC8) . ($this->littleEndian ? strrev($packed) : $packed);
+            return chr(0xC8) . pack('c', $value);
         } elseif (($value >= 128 && $value <= 32767) || ($value >= -32768 && $value <= -129)) { //INT_16
             $packed = pack('s', $value);
             return chr(0xC9) . ($this->littleEndian ? strrev($packed) : $packed);

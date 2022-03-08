@@ -1,6 +1,6 @@
 <?php
 
-namespace Bolt\tests;
+namespace Bolt\tests\PackStream\v1;
 
 use Bolt\Bolt;
 use Bolt\protocol\AProtocol;
@@ -59,8 +59,8 @@ class StructuresTest extends TestCase
     public function testInit(): AProtocol
     {
         try {
-            $conn = new \Bolt\connection\Socket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687, 3);
-            $this->assertInstanceOf(\Bolt\connection\Socket::class, $conn);
+            $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687, 3);
+            $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
 
             $bolt = new Bolt($conn);
             $this->assertInstanceOf(Bolt::class, $bolt);
@@ -175,36 +175,43 @@ class StructuresTest extends TestCase
     }
 
     /**
-     * @depends testInit
+     * @depends      testInit
+     * @dataProvider durationProvider
+     * @param string $duration
+     * @param AProtocol $protocol
      */
-    public function testDuration(AProtocol $protocol)
+    public function testDuration(string $duration, AProtocol $protocol)
     {
         try {
-            foreach ([
-                         'P1Y',
-                         'P1M',
-                         'P1D',
-                         'PT1H',
-                         'PT1M',
-                         'PT1S',
-                         'P1Y2M14DT16H12M35.765S'
-                     ] as $duration) {
-                //unpack
-                $protocol->run('RETURN duration($d)', ['d' => $duration]);
-                $rows = $protocol->pull();
-                $this->assertInstanceOf(Duration::class, $rows[0][0]);
-                $this->assertEquals($duration, (string)$rows[0][0], 'unpack ' . $duration . ' != ' . $rows[0][0]);
+            //unpack
+            $protocol->run('RETURN duration($d)', ['d' => $duration]);
+            $rows = $protocol->pull();
+            $this->assertInstanceOf(Duration::class, $rows[0][0]);
+            $this->assertEquals($duration, (string)$rows[0][0], 'unpack ' . $duration . ' != ' . $rows[0][0]);
 
-                //pack
-                $protocol->run('RETURN toString($d)', [
-                    'd' => $rows[0][0]
-                ]);
-                $rows = $protocol->pull();
-                $this->assertEquals($duration, $rows[0][0], 'pack ' . $duration . ' != ' . $rows[0][0]);
-            }
+            //pack
+            $protocol->run('RETURN toString($d)', [
+                'd' => $rows[0][0]
+            ]);
+            $rows = $protocol->pull();
+            $this->assertEquals($duration, $rows[0][0], 'pack ' . $duration . ' != ' . $rows[0][0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
+    }
+
+    public function durationProvider(): \Generator
+    {
+        foreach ([
+                     'P1Y',
+                     'P1M',
+                     'P1D',
+                     'PT1H',
+                     'PT1M',
+                     'PT1S',
+                     'P1Y2M14DT16H12M35.765S'
+                 ] as $duration)
+            yield $duration => [$duration];
     }
 
     /**
