@@ -189,7 +189,7 @@ class BoltTest extends TestCase
     {
         $protocol->begin();
         $protocol->run('CREATE (a:Test) RETURN ID(a)');
-        $result = $protocol->pull();
+        $result = $protocol->pullAll();
 
         $data = [];
         while (strlen(serialize($data)) < 65535 * 2) {
@@ -201,7 +201,7 @@ class BoltTest extends TestCase
                 ]);
                 $this->assertIsArray($run);
 
-                $pull = $protocol->pull();
+                $pull = $protocol->pullAll();
                 $this->assertIsArray($pull);
                 $this->assertInstanceOf(\Bolt\structures\Node::class, $pull[0][0]);
                 $this->assertCount(count($data), $pull[0][0]->properties());

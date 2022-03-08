@@ -52,7 +52,7 @@ class PackerTest extends TestCase
     public function testNull(AProtocol $protocol)
     {
         $protocol->run('RETURN $n IS NULL', ['n' => null]);
-        $res = $protocol->pull();
+        $res = $protocol->pullAll();
         $this->assertTrue($res[0][0]);
     }
 
@@ -63,11 +63,11 @@ class PackerTest extends TestCase
     public function testBoolean(AProtocol $protocol)
     {
         $protocol->run('RETURN $b = true', ['b' => true]);
-        $res = $protocol->pull();
+        $res = $protocol->pullAll();
         $this->assertTrue($res[0][0]);
 
         $protocol->run('RETURN $b = false', ['b' => false]);
-        $res = $protocol->pull();
+        $res = $protocol->pullAll();
         $this->assertTrue($res[0][0]);
     }
 
@@ -84,7 +84,7 @@ class PackerTest extends TestCase
         $protocol->run('RETURN ' . implode(', ', array_map(function (int $key, int $value) {
                 return '$' . $key . ' = ' . $value;
             }, array_keys($arr), $arr)), $arr);
-        $res = $protocol->pull();
+        $res = $protocol->pullAll();
 
         foreach ($arr as $i => $_) {
             $this->assertTrue($res[0][$i]);
@@ -100,7 +100,7 @@ class PackerTest extends TestCase
         for ($i = 0; $i < 10; $i++) {
             $num = mt_rand(-mt_getrandmax(), mt_getrandmax()) / mt_getrandmax();
             $protocol->run('RETURN ' . $num . ' + 0.000001 > $n > ' . $num . ' - 0.000001', ['n' => $num]); //epsilon comparison
-            $res = $protocol->pull();
+            $res = $protocol->pullAll();
             $this->assertTrue($res[0][0]);
         }
     }
@@ -121,7 +121,7 @@ class PackerTest extends TestCase
         foreach ([0, 10, 200, 60000, 200000] as $length) {
             $str = $randomString($length);
             $protocol->run('RETURN $s = "' . str_replace(['\\', '"'], ['\\\\', '\\"'], $str) . '"', ['s' => $str]);
-            $res = $protocol->pull();
+            $res = $protocol->pullAll();
             $this->assertTrue($res[0][0]);
         }
     }
@@ -135,7 +135,7 @@ class PackerTest extends TestCase
         foreach ([0, 10, 200, 60000, 200000] as $size) {
             $arr = $this->randomArray($size);
             $protocol->run('RETURN size($arr) = ' . count($arr), ['arr' => $arr]);
-            $res = $protocol->pull();
+            $res = $protocol->pullAll();
             $this->assertTrue($res[0][0]);
         }
     }
@@ -158,7 +158,7 @@ class PackerTest extends TestCase
         foreach ([0, 10, 200, 60000, 200000] as $size) {
             $arr = $this->randomArray($size);
             $protocol->run('RETURN size(keys($arr)) = ' . count($arr), ['arr' => (object)$arr]);
-            $res = $protocol->pull();
+            $res = $protocol->pullAll();
             $this->assertTrue($res[0][0]);
         }
     }
