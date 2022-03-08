@@ -62,12 +62,6 @@ final class ConnectionTest extends TestCase
         $conn = $this->getConnection($alias);
         $protocol = (new Bolt($conn))->build();
         $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
-
-        $protocol->run('SHOW FUNCTIONS YIELD name WHERE name STARTS WITH "apoc." RETURN count(*)');
-        $res = $protocol->pull();
-        if ($res[0][0] == 0)
-            $this->markTestSkipped('APOC not intalled');
-
         $conn->setTimeout(200);
         $protocol->run('CALL apoc.util.sleep(150000)', [], ['tx_timeout' => 150000]);
     }
