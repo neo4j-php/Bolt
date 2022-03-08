@@ -36,7 +36,7 @@ jobs:
         with:
           php-version: '7.1'
           extensions: mbstring, sockets
-          coverage: xdebug2
+          coverage: xdebug
           ini-values: max_execution_time=0
 
       - name: Install dependencies
