@@ -5,6 +5,7 @@ namespace Bolt\tests;
 use Bolt\Bolt;
 use Bolt\protocol\AProtocol;
 use Exception;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class BoltTest
@@ -33,15 +34,13 @@ use Exception;
  * @requires extension sockets
  * @requires extension mbstring
  */
-class BoltTest extends ATest
+class BoltTest extends TestCase
 {
 
     public function testSockets()
     {
         if (!extension_loaded('sockets'))
             $this->markTestSkipped('Sockets extension not available');
-
-        Bolt::$debug = true;
 
         try {
             $conn = new \Bolt\connection\Socket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687, 3);
@@ -69,8 +68,6 @@ class BoltTest extends ATest
      */
     public function testHello(): AProtocol
     {
-        Bolt::$debug = true;
-
         try {
             $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
             $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
@@ -96,7 +93,7 @@ class BoltTest extends ATest
     public function testPull(AProtocol $protocol)
     {
         try {
-            $res = $protocol->run('RETURN 1 AS num, 2 AS cnt');
+            $res = $protocol->run('RETURN 1 AS num, 2 AS cnt', [], ['mode' => 'r']);
             $this->assertIsArray($res);
             $this->assertArrayHasKey('fields', $res);
 
@@ -115,7 +112,7 @@ class BoltTest extends ATest
     public function testDiscard(AProtocol $protocol)
     {
         try {
-            $this->assertNotFalse($protocol->run('MATCH (a:Test) RETURN *'));
+            $this->assertNotFalse($protocol->run('MATCH (a:Test) RETURN *', [], ['mode' => 'r']));
             $this->assertIsArray($protocol->discardAll());
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -190,11 +187,9 @@ class BoltTest extends ATest
      */
     public function testChunking(AProtocol $protocol)
     {
-        Bolt::$debug = false;
-
         $protocol->begin();
         $protocol->run('CREATE (a:Test) RETURN ID(a)');
-        $result = $protocol->pull();
+        $result = $protocol->pullAll();
 
         $data = [];
         while (strlen(serialize($data)) < 65535 * 2) {
@@ -206,13 +201,12 @@ class BoltTest extends ATest
                 ]);
                 $this->assertIsArray($run);
 
-                $pull = $protocol->pull();
+                $pull = $protocol->pullAll();
                 $this->assertIsArray($pull);
                 $this->assertInstanceOf(\Bolt\structures\Node::class, $pull[0][0]);
                 $this->assertCount(count($data), $pull[0][0]->properties());
             } catch (Exception $e) {
                 $this->markTestIncomplete();
-                break;
             }
         }
 

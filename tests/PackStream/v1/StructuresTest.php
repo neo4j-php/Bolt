@@ -1,6 +1,6 @@
 <?php
 
-namespace Bolt\tests;
+namespace Bolt\tests\PackStream\v1;
 
 use Bolt\Bolt;
 use Bolt\protocol\AProtocol;
@@ -59,8 +59,8 @@ class StructuresTest extends TestCase
     public function testInit(): AProtocol
     {
         try {
-            $conn = new \Bolt\connection\Socket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687, 3);
-            $this->assertInstanceOf(\Bolt\connection\Socket::class, $conn);
+            $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
+            $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
 
             $bolt = new Bolt($conn);
             $this->assertInstanceOf(Bolt::class, $bolt);
@@ -88,16 +88,16 @@ class StructuresTest extends TestCase
             //unpack
             $protocol->run('RETURN date($date)', [
                 'date' => $date
-            ]);
-            $rows = $protocol->pull();
+            ], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             $this->assertInstanceOf(Date::class, $rows[0][0]);
             $this->assertEquals($date, (string)$rows[0][0], 'unpack ' . $date . ' != ' . $rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($date)', [
                 'date' => $rows[0][0]
-            ]);
-            $rows = $protocol->pull();
+            ], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             $this->assertEquals($date, $rows[0][0], 'pack ' . $date . ' != ' . $rows[0][0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -118,16 +118,16 @@ class StructuresTest extends TestCase
             //unpack
             $protocol->run('RETURN datetime($date)', [
                 'date' => $datetime
-            ]);
-            $rows = $protocol->pull();
+            ], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             $this->assertInstanceOf(DateTime::class, $rows[0][0]);
             $this->assertEquals($datetime, (string)$rows[0][0], 'unpack ' . $datetime . ' != ' . $rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($date)', [
                 'date' => $rows[0][0]
-            ]);
-            $rows = $protocol->pull();
+            ], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             // neo4j returns fraction of seconds not padded with zeros ... zero timezone offset returns as Z
             $datetime = preg_replace(["/\.?0+(.\d{2}:\d{2})$/", "/\+00:00$/"], ['$1', 'Z'], $datetime);
             $this->assertEquals($datetime, $rows[0][0], 'pack ' . $datetime . ' != ' . $rows[0][0]);
@@ -150,16 +150,16 @@ class StructuresTest extends TestCase
             //unpack
             $protocol->run('RETURN datetime($dt)', [
                 'dt' => $datetime
-            ]);
-            $rows = $protocol->pull();
+            ], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             $this->assertInstanceOf(DateTimeZoneId::class, $rows[0][0]);
             $this->assertEquals($datetime, (string)$rows[0][0], 'unpack ' . $datetime . ' != ' . $rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($dt)', [
                 'dt' => $rows[0][0]
-            ]);
-            $rows = $protocol->pull();
+            ], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             // neo4j returns fraction of seconds not padded with zeros ... also contains timezone offset before timezone id
             $datetime = preg_replace("/\.?0+\[/", '[', $datetime);
             $rows[0][0] = preg_replace("/([+\-]\d{2}:\d{2}|Z)\[/", '[', $rows[0][0]);
@@ -175,36 +175,43 @@ class StructuresTest extends TestCase
     }
 
     /**
-     * @depends testInit
+     * @depends      testInit
+     * @dataProvider durationProvider
+     * @param string $duration
+     * @param AProtocol $protocol
      */
-    public function testDuration(AProtocol $protocol)
+    public function testDuration(string $duration, AProtocol $protocol)
     {
         try {
-            foreach ([
-                         'P1Y',
-                         'P1M',
-                         'P1D',
-                         'PT1H',
-                         'PT1M',
-                         'PT1S',
-                         'P1Y2M14DT16H12M35.765S'
-                     ] as $duration) {
-                //unpack
-                $protocol->run('RETURN duration($d)', ['d' => $duration]);
-                $rows = $protocol->pull();
-                $this->assertInstanceOf(Duration::class, $rows[0][0]);
-                $this->assertEquals($duration, (string)$rows[0][0], 'unpack ' . $duration . ' != ' . $rows[0][0]);
+            //unpack
+            $protocol->run('RETURN duration($d)', ['d' => $duration], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
+            $this->assertInstanceOf(Duration::class, $rows[0][0]);
+            $this->assertEquals($duration, (string)$rows[0][0], 'unpack ' . $duration . ' != ' . $rows[0][0]);
 
-                //pack
-                $protocol->run('RETURN toString($d)', [
-                    'd' => $rows[0][0]
-                ]);
-                $rows = $protocol->pull();
-                $this->assertEquals($duration, $rows[0][0], 'pack ' . $duration . ' != ' . $rows[0][0]);
-            }
+            //pack
+            $protocol->run('RETURN toString($d)', [
+                'd' => $rows[0][0]
+            ], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
+            $this->assertEquals($duration, $rows[0][0], 'pack ' . $duration . ' != ' . $rows[0][0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
+    }
+
+    public function durationProvider(): \Generator
+    {
+        foreach ([
+                     'P1Y',
+                     'P1M',
+                     'P1D',
+                     'PT1H',
+                     'PT1M',
+                     'PT1S',
+                     'P1Y2M14DT16H12M35.765S'
+                 ] as $duration)
+            yield $duration => [$duration];
     }
 
     /**
@@ -221,16 +228,16 @@ class StructuresTest extends TestCase
             //unpack
             $protocol->run('RETURN localdatetime($dt)', [
                 'dt' => $datetime
-            ]);
-            $rows = $protocol->pull();
+            ], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             $this->assertInstanceOf(LocalDateTime::class, $rows[0][0]);
             $this->assertEquals($datetime, (string)$rows[0][0], 'unpack ' . $datetime . ' != ' . $rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($dt)', [
                 'dt' => $rows[0][0]
-            ]);
-            $rows = $protocol->pull();
+            ], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             $datetime = rtrim($datetime, '.0');
             $this->assertEquals($datetime, $rows[0][0], 'pack ' . $datetime . ' != ' . $rows[0][0]);
         } catch (Exception $e) {
@@ -252,16 +259,16 @@ class StructuresTest extends TestCase
             //unpack
             $protocol->run('RETURN localtime($t)', [
                 't' => $time
-            ]);
-            $rows = $protocol->pull();
+            ], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             $this->assertInstanceOf(LocalTime::class, $rows[0][0]);
             $this->assertEquals($time, (string)$rows[0][0], 'unpack ' . $time . ' != ' . $rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($t)', [
                 't' => $rows[0][0]
-            ]);
-            $rows = $protocol->pull();
+            ], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             $time = rtrim($time, '.0');
             $this->assertEquals($time, $rows[0][0], 'pack ' . $time . ' != ' . $rows[0][0]);
         } catch (Exception $e) {
@@ -278,8 +285,8 @@ class StructuresTest extends TestCase
             $protocol->begin();
 
             //unpack
-            $protocol->run('CREATE (a:Test) RETURN a');
-            $rows = $protocol->pull();
+            $protocol->run('CREATE (a:Test) RETURN a', [], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             $this->assertInstanceOf(Node::class, $rows[0][0]);
 
             //pack not supported
@@ -299,8 +306,8 @@ class StructuresTest extends TestCase
             $protocol->begin();
 
             //unpack
-            $protocol->run('CREATE p=(:Test)-[:HAS]->(:Test) RETURN p');
-            $rows = $protocol->pull();
+            $protocol->run('CREATE p=(:Test)-[:HAS]->(:Test) RETURN p', [], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             $this->assertInstanceOf(Path::class, $rows[0][0]);
 
             foreach ($rows[0][0]->rels() as $rel)
@@ -321,15 +328,15 @@ class StructuresTest extends TestCase
     {
         try {
             //unpack
-            $protocol->run('RETURN point({ latitude: 13.43, longitude: 56.21 })');
-            $rows = $protocol->pull();
+            $protocol->run('RETURN point({ latitude: 13.43, longitude: 56.21 })', [], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             $this->assertInstanceOf(Point2D::class, $rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($p)', [
                 'p' => $rows[0][0]
-            ]);
-            $rows = $protocol->pull();
+            ], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             $this->assertStringStartsWith('point(', $rows[0][0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -343,15 +350,15 @@ class StructuresTest extends TestCase
     {
         try {
             //unpack
-            $protocol->run('RETURN point({ x: 0, y: 4, z: 1 })');
-            $rows = $protocol->pull();
+            $protocol->run('RETURN point({ x: 0, y: 4, z: 1 })', [], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             $this->assertInstanceOf(Point3D::class, $rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($p)', [
                 'p' => $rows[0][0]
-            ]);
-            $rows = $protocol->pull();
+            ], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             $this->assertStringStartsWith('point(', $rows[0][0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -367,8 +374,8 @@ class StructuresTest extends TestCase
             $protocol->begin();
 
             //unpack
-            $protocol->run('CREATE (:Test)-[rel:HAS]->(:Test) RETURN rel');
-            $rows = $protocol->pull();
+            $protocol->run('CREATE (:Test)-[rel:HAS]->(:Test) RETURN rel', [], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             $this->assertInstanceOf(Relationship::class, $rows[0][0]);
 
             //pack not supported
@@ -393,16 +400,16 @@ class StructuresTest extends TestCase
             //unpack
             $protocol->run('RETURN time($t)', [
                 't' => $time
-            ]);
-            $rows = $protocol->pull();
+            ], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             $this->assertInstanceOf(Time::class, $rows[0][0]);
             $this->assertEquals($time, (string)$rows[0][0], 'unpack ' . $time . ' != ' . $rows[0][0]);
 
             //pack
             $protocol->run('RETURN toString($t)', [
                 't' => $rows[0][0]
-            ]);
-            $rows = $protocol->pull();
+            ], ['mode' => 'r']);
+            $rows = $protocol->pullAll();
             // neo4j returns fraction of seconds not padded with zeros ... zero timezone offset returns as Z
             $time = preg_replace(["/\.?0+(.\d{2}:\d{2})$/", "/\+00:00$/"], ['$1', 'Z'], $time);
             $this->assertEquals($time, $rows[0][0], 'pack ' . $time . ' != ' . $rows[0][0]);

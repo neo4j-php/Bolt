@@ -53,7 +53,7 @@ abstract class AConnection implements IConnection
             echo implode(' ', str_split($chunk, 2));
             echo '    ';
         }
-        echo '</pre>';
+        echo '</pre>' . PHP_EOL;
     }
 
     public function getIp(): string
@@ -71,7 +71,7 @@ abstract class AConnection implements IConnection
         return $this->timeout;
     }
 
-    public function setTimeout(float $timeout): void
+    public function setTimeout(float $timeout)
     {
         $this->timeout = $timeout;
     }

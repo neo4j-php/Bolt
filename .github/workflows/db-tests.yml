@@ -2,13 +2,13 @@ name: Tests with a database
 
 on:
   push:
-    branches: [ '**' ]
+    branches: [ master ]
   pull_request:
-    branches: ['**']
+    branches: [ master ]
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     name: "Running Integration tests for PHP 7.1 on Neo4j ${{ matrix.neo4j-version }}"
     strategy:
       fail-fast: false
@@ -28,15 +28,19 @@ jobs:
           --health-cmd "wget http://localhost:7474 || exit 1"
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: php-actions/composer@v6
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          progress: yes
-          php_version: 7.1
-          version: 2
-      - uses: php-actions/phpunit@v3
-        with:
-          configuration: phpunit.xml.dist
-          php_version: 7.1
-          version: 7.5
-          args: --testsuite "Database"
+          php-version: '7.1'
+          extensions: mbstring, sockets
+          coverage: xdebug2
+          ini-values: max_execution_time=0
+
+      - name: Install dependencies
+        run: composer install --no-progress
+
+      - name: Test with phpunit
+        run: vendor/bin/phpunit --configuration phpunit.xml --testsuite "Database"
