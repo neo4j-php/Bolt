@@ -28,7 +28,7 @@ class PackerTest extends TestCase
     public function testInit(): AProtocol
     {
         try {
-            $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687, 15);
+            $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
             $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
 
             $bolt = new Bolt($conn);

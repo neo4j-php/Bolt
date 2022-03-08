@@ -33,11 +33,11 @@ jobs:
       - uses: php-actions/composer@v6
         with:
           progress: yes
-          php_version: 7.1
+          php_version: '7.1'
           version: 2
       - uses: php-actions/phpunit@v3
         with:
           configuration: phpunit.xml
-          php_version: 7.1
+          php_version: '7.1'
           version: 7
-          args: --testsuite "Database"
+          args: --testsuite "Database" -v --debug

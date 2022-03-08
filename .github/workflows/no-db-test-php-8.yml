@@ -27,4 +27,4 @@ jobs:
         with:
           configuration: phpunit.xml
           php_version: ${{ matrix.php-version }}
-          args: --testsuite "NoDatabase"
+          args: --testsuite "NoDatabase" -v --debug
