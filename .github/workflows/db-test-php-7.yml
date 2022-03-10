@@ -9,11 +9,12 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-18.04
-    name: "Running Integration tests for PHP 7.4 on Neo4j ${{ matrix.neo4j-version }}"
+    name: "Running Integration tests for PHP ${{ matrix.php-version }} on Neo4j ${{ matrix.neo4j-version }}"
     strategy:
       fail-fast: false
       matrix:
         neo4j-version: ["3.5", "4.2", "4.3", "4.4"]
+        php-version: ['7.4']
 
     services:
       neo4j:
@@ -34,7 +35,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.4'
+          php-version: ${{ matrix.php-version }}
           extensions: mbstring, sockets
           coverage: xdebug
           ini-values: max_execution_time=0
