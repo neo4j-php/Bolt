@@ -19,31 +19,11 @@ use Bolt\connection\IConnection;
  */
 final class Bolt
 {
-    /**
-     * @var IPacker
-     */
-    private $packer;
-
-    /**
-     * @var IUnpacker
-     */
-    private $unpacker;
-
-    /**
-     * @var IConnection
-     */
-    private $connection;
-
-    /**
-     * @var array
-     */
-    private $versions = [4.4, 4.3, 4.2, 3];
-
-    /**
-     * Print debug info
-     * @var bool
-     */
-    public static $debug = false;
+    private IPacker $packer;
+    private IUnpacker $unpacker;
+    private IConnection $connection;
+    private array $versions = [4.4, 4.3, 4.2, 3];
+    public static bool $debug = false;
 
     /**
      * Bolt constructor

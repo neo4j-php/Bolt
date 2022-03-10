@@ -16,11 +16,7 @@ use Bolt\error\ConnectionTimeoutException;
  */
 class StreamSocket extends AConnection
 {
-
-    /**
-     * @var array
-     */
-    private $sslContextOptions = [];
+    private array $sslContextOptions = [];
 
     /**
      * @var resource

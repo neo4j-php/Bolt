@@ -15,10 +15,7 @@ namespace Bolt\structures;
  */
 class Date implements IStructure
 {
-    /**
-     * @var int
-     */
-    private $days;
+    private int $days;
 
     /**
      * Date constructor.

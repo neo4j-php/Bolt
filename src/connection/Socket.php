@@ -15,7 +15,6 @@ use Bolt\error\ConnectionTimeoutException;
  */
 class Socket extends AConnection
 {
-
     /**
      * @var resource|object|bool
      */

@@ -14,15 +14,8 @@ use Throwable;
  */
 class MessageException extends Exception
 {
-    /**
-     * @var string
-     */
-    private $serverMessage;
-
-    /**
-     * @var string
-     */
-    private $serverCode;
+    private string $serverMessage;
+    private string $serverCode;
 
     /**
      * @param string $message

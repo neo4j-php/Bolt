@@ -15,25 +15,10 @@ namespace Bolt\structures;
  */
 class Point3D implements IStructure
 {
-    /**
-     * @var int
-     */
-    private $srid;
-
-    /**
-     * @var float
-     */
-    private $x;
-
-    /**
-     * @var float
-     */
-    private $y;
-
-    /**
-     * @var float
-     */
-    private $z;
+    private int $srid;
+    private float $x;
+    private float $y;
+    private float $z;
 
     /**
      * Point3D constructor.

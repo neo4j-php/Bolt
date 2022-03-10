@@ -16,15 +16,15 @@ class Path implements IStructure
     /**
      * @var Node[]
      */
-    private $nodes;
+    private array $nodes;
     /**
      * @var UnboundRelationship[]
      */
-    private $rels;
+    private array $rels;
     /**
      * @var int[]
      */
-    private $ids;
+    private array $ids;
 
     /**
      * Path constructor.

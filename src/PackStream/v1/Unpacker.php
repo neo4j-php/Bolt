@@ -30,27 +30,12 @@ use Bolt\error\UnpackException;
  */
 class Unpacker implements IUnpacker
 {
-    /**
-     * @var string
-     */
-    private $message;
+    private string $message;
+    private int $offset;
+    private bool $littleEndian;
+    private int $signature;
 
-    /**
-     * @var int
-     */
-    private $offset;
-
-    /**
-     * @var bool
-     */
-    private $littleEndian;
-
-    /**
-     * @var int
-     */
-    private $signature;
-
-    private $structuresLt = [
+    private array $structuresLt = [
         0x4E => [Node::class, 'unpackInteger', 'unpackList', 'unpackMap'],
         0x52 => [Relationship::class, 'unpackInteger', 'unpackInteger', 'unpackInteger', 'unpackString', 'unpackMap'],
         0x72 => [UnboundRelationship::class, 'unpackInteger', 'unpackString', 'unpackMap'],

@@ -13,18 +13,9 @@ namespace Bolt\structures;
  */
 class UnboundRelationship implements IStructure
 {
-    /**
-     * @var int
-     */
-    private $id;
-    /**
-     * @var string
-     */
-    private $type;
-    /**
-     * @var array
-     */
-    private $properties;
+    private int $id;
+    private string $type;
+    private array $properties;
 
     /**
      * UnboundRelationship constructor.

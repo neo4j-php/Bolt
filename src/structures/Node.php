@@ -13,18 +13,9 @@ namespace Bolt\structures;
  */
 class Node implements IStructure
 {
-    /**
-     * @var int
-     */
-    private $id;
-    /**
-     * @var array
-     */
-    private $labels;
-    /**
-     * @var array
-     */
-    private $properties;
+    private int $id;
+    private array $labels;
+    private array $properties;
 
     /**
      * Node constructor.

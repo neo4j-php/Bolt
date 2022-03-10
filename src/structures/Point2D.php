@@ -15,20 +15,9 @@ namespace Bolt\structures;
  */
 class Point2D implements IStructure
 {
-    /**
-     * @var int
-     */
-    private $srid;
-
-    /**
-     * @var float
-     */
-    private $x;
-
-    /**
-     * @var float
-     */
-    private $y;
+    private int $srid;
+    private float $x;
+    private float $y;
 
     /**
      * Point2D constructor.
