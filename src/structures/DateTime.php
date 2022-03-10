@@ -19,21 +19,9 @@ namespace Bolt\structures;
  */
 class DateTime implements IStructure
 {
-
-    /**
-     * @var int
-     */
-    private $seconds;
-
-    /**
-     * @var int
-     */
-    private $nanoseconds;
-
-    /**
-     * @var int
-     */
-    private $tz_offset_seconds;
+    private int $seconds;
+    private int $nanoseconds;
+    private int $tz_offset_seconds;
 
     /**
      * DateTime constructor.

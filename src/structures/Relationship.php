@@ -13,26 +13,11 @@ namespace Bolt\structures;
  */
 class Relationship implements IStructure
 {
-    /**
-     * @var int
-     */
-    private $id;
-    /**
-     * @var int
-     */
-    private $startNodeId;
-    /**
-     * @var int
-     */
-    private $endNodeId;
-    /**
-     * @var string
-     */
-    private $type;
-    /**
-     * @var array
-     */
-    private $properties;
+    private int $id;
+    private int $startNodeId;
+    private int $endNodeId;
+    private string $type;
+    private array $properties;
 
     /**
      * Relationship constructor.

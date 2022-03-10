@@ -15,16 +15,8 @@ namespace Bolt\structures;
  */
 class LocalDateTime implements IStructure
 {
-
-    /**
-     * @var int
-     */
-    private $seconds;
-
-    /**
-     * @var int
-     */
-    private $nanoseconds;
+    private int $seconds;
+    private int $nanoseconds;
 
     /**
      * LocalDateTime constructor.

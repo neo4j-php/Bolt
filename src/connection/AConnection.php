@@ -11,29 +11,14 @@ namespace Bolt\connection;
  */
 abstract class AConnection implements IConnection
 {
+    protected string $ip;
+    protected int $port;
+    protected float $timeout;
 
     /**
-     * @var string
+     * @inheritDoc
      */
-    protected $ip;
-
-    /**
-     * @var int
-     */
-    protected $port;
-
-    /**
-     * @var int
-     */
-    protected $timeout;
-
-    /**
-     * AConnection constructor.
-     * @param string $ip
-     * @param int $port
-     * @param int|float $timeout
-     */
-    public function __construct(string $ip = '127.0.0.1', int $port = 7687, $timeout = 15)
+    public function __construct(string $ip = '127.0.0.1', int $port = 7687, float $timeout = 15)
     {
         $this->ip = $ip;
         $this->port = $port;

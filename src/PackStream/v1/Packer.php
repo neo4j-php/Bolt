@@ -32,12 +32,9 @@ class Packer implements IPacker
     private const LARGE = 65536;
     private const HUGE = 4294967295;
 
-    /**
-     * @var bool
-     */
-    private $littleEndian;
+    private bool $littleEndian;
 
-    private $structuresLt = [
+    private array $structuresLt = [
         Date::class => [0x44, 'days' => 'packInteger'],
         Time::class => [0x54, 'nanoseconds' => 'packInteger', 'tz_offset_seconds' => 'packInteger'],
         LocalTime::class => [0x74, 'nanoseconds' => 'packInteger'],

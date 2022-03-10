@@ -12,10 +12,7 @@ namespace Bolt\helpers;
  */
 class Auth
 {
-    /**
-     * @var string
-     */
-    public static $defaultUserAgent = 'bolt-php';
+    public static string $defaultUserAgent = 'bolt-php';
 
     /**
      * None authorization

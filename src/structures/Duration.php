@@ -16,25 +16,10 @@ namespace Bolt\structures;
 class Duration implements IStructure
 {
 
-    /**
-     * @var int
-     */
-    private $months;
-
-    /**
-     * @var int
-     */
-    private $days;
-
-    /**
-     * @var int
-     */
-    private $seconds;
-
-    /**
-     * @var int
-     */
-    private $nanoseconds;
+    private int $months;
+    private int $days;
+    private int $seconds;
+    private int $nanoseconds;
 
     /**
      * Duration constructor.

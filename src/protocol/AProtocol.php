@@ -21,20 +21,9 @@ abstract class AProtocol
     protected const IGNORED = 0x7E;
     protected const RECORD = 0x71;
 
-    /**
-     * @var IPacker
-     */
-    protected $packer;
-
-    /**
-     * @var IUnpacker
-     */
-    protected $unpacker;
-
-    /**
-     * @var IConnection
-     */
-    protected $connection;
+    protected IPacker $packer;
+    protected IUnpacker $unpacker;
+    protected IConnection $connection;
 
     /**
      * AProtocol constructor.

@@ -18,15 +18,8 @@ namespace Bolt\structures;
  */
 class Time implements IStructure
 {
-    /**
-     * @var int
-     */
-    private $nanoseconds;
-
-    /**
-     * @var int
-     */
-    private $tz_offset_seconds;
+    private int $nanoseconds;
+    private int $tz_offset_seconds;
 
     /**
      * Time constructor.

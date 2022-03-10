@@ -19,21 +19,9 @@ namespace Bolt\structures;
  */
 class DateTimeZoneId implements IStructure
 {
-
-    /**
-     * @var int
-     */
-    private $seconds;
-
-    /**
-     * @var int
-     */
-    private $nanoseconds;
-
-    /**
-     * @var string
-     */
-    private $tz_id;
+    private int $seconds;
+    private int $nanoseconds;
+    private string $tz_id;
 
     /**
      * DateTimeZoneId constructor.
