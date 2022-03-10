@@ -1,4 +1,4 @@
-name: Tests with a database
+name: Tests with a database PHP7
 
 on:
   push:
