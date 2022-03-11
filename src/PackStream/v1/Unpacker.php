@@ -16,7 +16,8 @@ use Bolt\structures\{
     LocalDateTime,
     Duration,
     Point2D,
-    Point3D
+    Point3D,
+    ByteArray
 };
 use Bolt\PackStream\IUnpacker;
 use Bolt\error\UnpackException;
@@ -130,6 +131,10 @@ class Unpacker implements IUnpacker
         if ($output !== null) {
             return $output;
         }
+        $output = $this->unpackByteArray($marker);
+        if ($output !== null) {
+            return $output;
+        }
 
         return null;
     }
@@ -186,7 +191,7 @@ class Unpacker implements IUnpacker
 
     /**
      * @param int $marker
-     * @return array
+     * @return array|null
      * @throws UnpackException
      */
     private function unpackMap(int $marker): ?array
@@ -212,7 +217,7 @@ class Unpacker implements IUnpacker
 
     /**
      * @param int $marker
-     * @return string
+     * @return string|null
      */
     private function unpackString(int $marker): ?string
     {
@@ -233,7 +238,7 @@ class Unpacker implements IUnpacker
 
     /**
      * @param int $marker
-     * @return int
+     * @return int|null
      */
     private function unpackInteger(int $marker): ?int
     {
@@ -257,7 +262,7 @@ class Unpacker implements IUnpacker
 
     /**
      * @param int $marker
-     * @return float
+     * @return float|null
      */
     private function unpackFloat(int $marker): ?float
     {
@@ -271,7 +276,7 @@ class Unpacker implements IUnpacker
 
     /**
      * @param int $marker
-     * @return array
+     * @return array|null
      * @throws UnpackException
      */
     private function unpackList(int $marker): ?array
@@ -294,6 +299,25 @@ class Unpacker implements IUnpacker
         }
 
         return $output;
+    }
+
+    /**
+     * @param int $marker
+     * @return ByteArray|null
+     */
+    private function unpackByteArray(int $marker): ?ByteArray
+    {
+        if ($marker == 0xCC) {
+            $size = (int)unpack('C', $this->next(1))[1];
+        } elseif ($marker == 0xCD) {
+            $size = (int)unpack('n', $this->next(2))[1];
+        } elseif ($marker == 0xCE) {
+            $size = (int)unpack('N', $this->next(4))[1];
+        } else {
+            return null;
+        }
+
+        return new ByteArray(mb_str_split($this->next($size), 1, '8bit'));
     }
 
 }

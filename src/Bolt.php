@@ -115,7 +115,7 @@ final class Bolt
     {
         $result = [];
 
-        foreach (str_split($this->connection->read(4)) as $ch) {
+        foreach (mb_str_split($this->connection->read(4), 1, '8bit') as $ch) {
             $result[] = unpack('C', $ch)[1] ?? 0;
         }
 

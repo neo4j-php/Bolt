@@ -15,7 +15,8 @@ use Bolt\structures\{
     LocalDateTime,
     Duration,
     Point2D,
-    Point3D
+    Point3D,
+    ByteArray
 };
 
 /**
@@ -117,6 +118,8 @@ class Packer implements IPacker
             case 'object':
                 if ($param instanceof IStructure) {
                     return $this->packStructure($param);
+                } elseif ($param instanceof ByteArray) {
+                    return $this->packByteArray($param);
                 } else {
                     return $this->packMap((array)$param);
                 }
@@ -261,6 +264,25 @@ class Packer implements IPacker
         }
 
         return $output;
+    }
+
+    /**
+     * @param ByteArray $bytes
+     * @return string
+     * @throws PackException
+     */
+    private function packByteArray(ByteArray $bytes): string
+    {
+        $size = count($bytes);
+        if ($size < self::MEDIUM) {
+            return chr(0xCC) . pack('C', $size) . $bytes;
+        } elseif ($size < self::LARGE) {
+            return chr(0xCD) . pack('n', $size) . $bytes;
+        } elseif ($size <= 2147483647) {
+            return chr(0xCE) . pack('N', $size) . $bytes;
+        } else {
+            throw new PackException('ByteArray too big');
+        }
     }
 
 }
