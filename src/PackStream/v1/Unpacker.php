@@ -17,7 +17,7 @@ use Bolt\structures\{
     Duration,
     Point2D,
     Point3D,
-    ByteArray
+    Bytes
 };
 use Bolt\PackStream\IUnpacker;
 use Bolt\error\UnpackException;
@@ -303,9 +303,9 @@ class Unpacker implements IUnpacker
 
     /**
      * @param int $marker
-     * @return ByteArray|null
+     * @return Bytes|null
      */
-    private function unpackByteArray(int $marker): ?ByteArray
+    private function unpackByteArray(int $marker): ?Bytes
     {
         if ($marker == 0xCC) {
             $size = (int)unpack('C', $this->next(1))[1];
@@ -317,7 +317,7 @@ class Unpacker implements IUnpacker
             return null;
         }
 
-        return new ByteArray(mb_str_split($this->next($size), 1, '8bit'));
+        return new Bytes(mb_str_split($this->next($size), 1, '8bit'));
     }
 
 }

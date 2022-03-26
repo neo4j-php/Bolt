@@ -12,7 +12,7 @@ use ArrayAccess, Countable;
  * @link https://7687.org/packstream/packstream-specification-1.html#bytes
  * @package Bolt\structures
  */
-class ByteArray implements ArrayAccess, Countable
+class Bytes implements ArrayAccess, Countable
 {
     private array $bytes = [];
 

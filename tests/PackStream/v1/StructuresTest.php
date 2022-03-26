@@ -18,7 +18,7 @@ use Bolt\structures\{
     Duration,
     Point2D,
     Point3D,
-    ByteArray
+    Bytes
 };
 use PHPUnit\Framework\TestCase;
 use Exception;
@@ -456,7 +456,7 @@ class StructuresTest extends TestCase
      * @depends      testInit
      * @dataProvider providerByteArray
      */
-    public function testByteArray(ByteArray $arr, AProtocol $protocol)
+    public function testByteArray(Bytes $arr, AProtocol $protocol)
     {
         try {
             $protocol->run('RETURN $arr', ['arr' => $arr]);
@@ -470,7 +470,7 @@ class StructuresTest extends TestCase
     public function providerByteArray(): \Generator
     {
         foreach ([0, 200, 60000, 70000] as $size) {
-            $arr = new ByteArray();
+            $arr = new Bytes();
             while (count($arr) < $size) {
                 $arr[] = pack('H', mt_rand(0, 255));
             }

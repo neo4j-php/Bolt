@@ -16,7 +16,7 @@ use Bolt\structures\{
     Duration,
     Point2D,
     Point3D,
-    ByteArray
+    Bytes
 };
 
 /**
@@ -118,7 +118,7 @@ class Packer implements IPacker
             case 'object':
                 if ($param instanceof IStructure) {
                     return $this->packStructure($param);
-                } elseif ($param instanceof ByteArray) {
+                } elseif ($param instanceof Bytes) {
                     return $this->packByteArray($param);
                 } else {
                     return $this->packMap((array)$param);
@@ -267,11 +267,11 @@ class Packer implements IPacker
     }
 
     /**
-     * @param ByteArray $bytes
+     * @param Bytes $bytes
      * @return string
      * @throws PackException
      */
-    private function packByteArray(ByteArray $bytes): string
+    private function packByteArray(Bytes $bytes): string
     {
         $size = count($bytes);
         if ($size < self::MEDIUM) {
