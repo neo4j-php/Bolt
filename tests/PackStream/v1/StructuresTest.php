@@ -17,7 +17,8 @@ use Bolt\structures\{
     LocalDateTime,
     Duration,
     Point2D,
-    Point3D
+    Point3D,
+    Bytes
 };
 use PHPUnit\Framework\TestCase;
 use Exception;
@@ -448,6 +449,32 @@ class StructuresTest extends TestCase
             return rand($start->getTimestamp(), $end->getTimestamp());
         } catch (Exception $e) {
             return strtotime('now ' . $timezone);
+        }
+    }
+
+    /**
+     * @depends      testInit
+     * @dataProvider providerByteArray
+     */
+    public function testByteArray(Bytes $arr, AProtocol $protocol)
+    {
+        try {
+            $protocol->run('RETURN $arr', ['arr' => $arr]);
+            $res = $protocol->pullAll();
+            $this->assertEquals($arr, $res[0][0]);
+        } catch (Exception $e) {
+            $this->markTestIncomplete($e->getMessage());
+        }
+    }
+
+    public function providerByteArray(): \Generator
+    {
+        foreach ([0, 200, 60000, 70000] as $size) {
+            $arr = new Bytes();
+            while (count($arr) < $size) {
+                $arr[] = pack('H', mt_rand(0, 255));
+            }
+            yield 'bytes: ' . count($arr) => [$arr];
         }
     }
 
