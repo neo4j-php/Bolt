@@ -14,15 +14,15 @@ use Throwable;
  */
 class MessageException extends Exception
 {
-    private string $serverMessage;
+    private ?string $serverMessage;
     private string $serverCode;
 
     /**
-     * @param string $message
+     * @param string|null $message
      * @param string $code
      * @param Throwable|null $previous
      */
-    public function __construct(string $message, string $code, ?Throwable $previous = null)
+    public function __construct(?string $message, string $code, ?Throwable $previous = null)
     {
         $this->serverCode = $code;
         $this->serverMessage = $message;
@@ -38,9 +38,9 @@ class MessageException extends Exception
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getServerMessage(): string
+    public function getServerMessage(): ?string
     {
         return $this->serverMessage;
     }
