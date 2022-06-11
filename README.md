@@ -11,7 +11,7 @@ Bolt protocol library over TCP socket. Bolt protocol is created and in use for c
 [![](https://img.shields.io/github/stars/stefanak-michal/Bolt)](https://github.com/neo4j-php/Bolt/stargazers)
 [![](https://img.shields.io/packagist/dt/stefanak-michal/bolt)](https://packagist.org/packages/stefanak-michal/bolt/stats)
 [![](https://img.shields.io/github/v/release/stefanak-michal/bolt)](https://github.com/neo4j-php/Bolt/releases)
-![](https://img.shields.io/github/commits-since/stefanak-michal/bolt/latest)
+[![](https://img.shields.io/github/commits-since/stefanak-michal/bolt/latest)](https://github.com/neo4j-php/Bolt/releases/latest)
 
 ## Version support
 
