@@ -8,9 +8,9 @@ Bolt protocol library over TCP socket. Bolt protocol is created and in use for c
 ![No DB Tests PHP7](https://github.com/neo4j-php/Bolt/actions/workflows/no-db-test-php-7.yml/badge.svg?branch=master)
 ![No DB Tests PHP8](https://github.com/neo4j-php/Bolt/actions/workflows/no-db-test-php-8.yml/badge.svg?branch=master)
 
-![](https://img.shields.io/github/stars/stefanak-michal/Bolt)
-![](https://img.shields.io/packagist/dt/stefanak-michal/bolt)
-![](https://img.shields.io/github/v/release/stefanak-michal/bolt)
+[![](https://img.shields.io/github/stars/stefanak-michal/Bolt)](https://github.com/neo4j-php/Bolt/stargazers)
+[![](https://img.shields.io/packagist/dt/stefanak-michal/bolt)](https://packagist.org/packages/stefanak-michal/bolt/stats)
+[![](https://img.shields.io/github/v/release/stefanak-michal/bolt)](https://github.com/neo4j-php/Bolt/releases)
 ![](https://img.shields.io/github/commits-since/stefanak-michal/bolt/latest)
 
 ## Version support
