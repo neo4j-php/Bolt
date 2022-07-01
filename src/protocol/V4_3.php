@@ -4,7 +4,6 @@ namespace Bolt\protocol;
 
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
-use Bolt\error\PackException;
 use Exception;
 
 /**
@@ -22,18 +21,15 @@ class V4_3 extends V4_2
      * The ROUTE instructs the server to return the current routing table. In previous versions there was no explicit message for this and a procedure had to be invoked using Cypher through the RUN and PULL messages.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---43---route
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---44---route
-     * @param array|string|null ...$args
+     * @param array $routing
+     * @param array $bookmarks
+     * @param string|null $db
      * @return array
      * @throws Exception
      */
-    public function route(...$args): array
+    public function route(array $routing, array $bookmarks = [], ?string $db = null): array
     {
-        if (count($args) != 3) {
-            throw new PackException('Wrong arguments count');
-        }
-
-        $this->write($this->packer->pack(0x66, (object)$args[0], $args[1], $args[2]));
+        $this->write($this->packer->pack(0x66, (object)$routing, $bookmarks, $db));
         $message = $this->read($signature);
 
         if ($signature === self::FAILURE) {

@@ -4,7 +4,6 @@ namespace Bolt\protocol;
 
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
-use Bolt\error\PackException;
 use Exception;
 
 /**
@@ -22,9 +21,10 @@ class V3 extends V2
      * @inheritDoc
      * @deprecated Replaced with HELLO message
      */
-    public function init(...$args): array
+    public function init(string $userAgent, array $authToken): array
     {
-        return $this->hello(...$args);
+        $authToken['user_agent'] = $userAgent;
+        return $this->hello($authToken);
     }
 
     /**
@@ -32,17 +32,13 @@ class V3 extends V2
      * The HELLO message request the connection to be authorized for use with the remote database.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---hello
-     * @param mixed ...$args Use \Bolt\helpers\Auth to generate appropiate array
+     * @param array $extra Use \Bolt\helpers\Auth to generate appropiate array
      * @return array
      * @throws Exception
      */
-    public function hello(...$args): array
+    public function hello(array $extra): array
     {
-        if (count($args) < 1) {
-            throw new PackException('Wrong arguments count');
-        }
-
-        $this->write($this->packer->pack(0x01, $args[0]));
+        $this->write($this->packer->pack(0x01, $extra));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
@@ -60,21 +56,19 @@ class V3 extends V2
      * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---run
      * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---run
      * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---run---44
-     * @param string|array ...$args query, parameters, extra
+     * @param string $query
+     * @param array $parameters
+     * @param array $extra
      * @return array
      * @throws Exception
      */
-    public function run(...$args): array
+    public function run(string $query, array $parameters = [], array $extra = []): array
     {
-        if (empty($args)) {
-            throw new PackException('Wrong arguments count');
-        }
-
         $this->write($this->packer->pack(
             0x10,
-            $args[0],
-            (object)($args[1] ?? []),
-            (object)($args[2] ?? [])
+            $query,
+            (object)$parameters,
+            (object)$extra
         ));
         $message = $this->read($signature);
 
@@ -96,13 +90,13 @@ class V3 extends V2
      * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---begin
      * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---begin
      * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---begin---44
-     * @param mixed ...$args extra
+     * @param array $extra
      * @return array Current version has empty success message
      * @throws Exception
      */
-    public function begin(...$args): array
+    public function begin(array $extra = []): array
     {
-        $this->write($this->packer->pack(0x11, (object)($args[0] ?? [])));
+        $this->write($this->packer->pack(0x11, (object)$extra));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
@@ -176,4 +170,5 @@ class V3 extends V2
         $this->write($this->packer->pack(0x02));
         $this->connection->disconnect();
     }
+
 }

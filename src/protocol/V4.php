@@ -21,9 +21,9 @@ class V4 extends V3
      * @inheritDoc
      * @deprecated Renamed to PULL
      */
-    public function pullAll(...$args): array
+    public function pullAll(): array
     {
-        return $this->pull(...$args);
+        return $this->pull();
     }
 
     /**
@@ -31,18 +31,16 @@ class V4 extends V3
      * The PULL message requests data from the remainder of the result stream.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---pull
-     * @param array ...$args
+     * @param array $extra
      * @return array
      * @throws Exception
      */
-    public function pull(...$args): array
+    public function pull(array $extra = []): array
     {
-        if (count($args) == 0)
-            $args[0] = ['n' => -1];
-        elseif (!array_key_exists('n', $args[0]))
-            $args[0]['n'] = -1;
+        if (!array_key_exists('n', $extra))
+            $extra['n'] = -1;
 
-        $this->write($this->packer->pack(0x3F, $args[0]));
+        $this->write($this->packer->pack(0x3F, $extra));
 
         $output = [];
         do {
@@ -66,9 +64,9 @@ class V4 extends V3
      * @inheritDoc
      * @deprecated Renamed to DISCARD
      */
-    public function discardAll(...$args): array
+    public function discardAll(): array
     {
-        return $this->discard(...$args);
+        return $this->discard();
     }
 
     /**
@@ -76,18 +74,16 @@ class V4 extends V3
      * The DISCARD message requests that the remainder of the result stream should be thrown away.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---discard
-     * @param mixed ...$args
+     * @param array $extra
      * @return array
      * @throws Exception
      */
-    public function discard(...$args): array
+    public function discard(array $extra = []): array
     {
-        if (count($args) == 0)
-            $args[0] = ['n' => -1];
-        elseif (!array_key_exists('n', $args[0]))
-            $args[0]['n'] = -1;
+        if (!array_key_exists('n', $extra))
+            $extra['n'] = -1;
 
-        $this->write($this->packer->pack(0x2F, $args[0]));
+        $this->write($this->packer->pack(0x2F, $extra));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {

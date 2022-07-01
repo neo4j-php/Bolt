@@ -17,11 +17,11 @@ class V4_1 extends V4
      * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---43---hello
      * @inheritDoc
      */
-    public function hello(...$args): array
+    public function hello(array $extra): array
     {
-        if (isset($args[0]['routing']) && is_array($args[0]['routing']))
-            $args[0]['routing'] = (object)$args[0]['routing'];
+        if (isset($extra['routing']) && is_array($extra['routing']))
+            $extra['routing'] = (object)$extra['routing'];
 
-        return parent::hello(...$args);
+        return parent::hello($extra);
     }
 }

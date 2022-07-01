@@ -4,7 +4,6 @@ namespace Bolt\protocol;
 
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
-use Bolt\error\PackException;
 use Exception;
 
 /**
@@ -23,20 +22,14 @@ class V1 extends AProtocol
      * The INIT message is a request for the connection to be authorized for use with the remote database.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---init
-     * @param mixed ...$args Use \Bolt\helpers\Auth to generate appropiate array
+     * @param string $userAgent
+     * @param array $authToken
      * @return array
      * @throws Exception
      */
-    public function init(...$args): array
+    public function init(string $userAgent, array $authToken): array
     {
-        if (count($args) < 1) {
-            throw new PackException('Wrong arguments count');
-        }
-
-        $userAgent = $args[0]['user_agent'];
-        unset($args[0]['user_agent']);
-
-        $this->write($this->packer->pack(0x01, $userAgent, $args[0]));
+        $this->write($this->packer->pack(0x01, $userAgent, $authToken));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
@@ -53,17 +46,14 @@ class V1 extends AProtocol
      * A RUN message submits a new query for execution, the result of which will be consumed by a subsequent message, such as PULL_ALL.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---run
-     * @param mixed ...$args
+     * @param string $query
+     * @param array $parameters
      * @return array
      * @throws Exception
      */
-    public function run(...$args): array
+    public function run(string $query, array $parameters = []): array
     {
-        if (empty($args)) {
-            throw new PackException('Wrong arguments count');
-        }
-
-        $this->write($this->packer->pack(0x10, $args[0], (object)($args[1] ?? [])));
+        $this->write($this->packer->pack(0x10, $query, (object)$parameters));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
@@ -83,11 +73,10 @@ class V1 extends AProtocol
      * The PULL_ALL message issues a request to stream the outstanding result back to the client, before returning to a READY state.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---pull_all
-     * @param mixed ...$args
      * @return array Array of records with last success entry
      * @throws Exception
      */
-    public function pullAll(...$args): array
+    public function pullAll(): array
     {
         $this->write($this->packer->pack(0x3F));
 
@@ -114,12 +103,11 @@ class V1 extends AProtocol
      * Send DISCARD_ALL message
      * The DISCARD_ALL message issues a request to discard the outstanding result and return to a READY state.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---discard_all
-     * @param mixed ...$args
+     * https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---discard_all
      * @return array
      * @throws Exception
      */
-    public function discardAll(...$args): array
+    public function discardAll(): array
     {
         $this->write($this->packer->pack(0x2F));
         $message = $this->read($signature);
