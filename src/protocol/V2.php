@@ -10,6 +10,12 @@ namespace Bolt\protocol;
  * @see https://7687.org/bolt/bolt-protocol-message-specification-2.html
  * @package Bolt\protocol
  */
-class V2 extends V1
+class V2 extends AProtocol
 {
+    use \Bolt\protocol\v1\InitMessage;
+    use \Bolt\protocol\v1\RunMessage;
+    use \Bolt\protocol\v1\PullAllMessage;
+    use \Bolt\protocol\v1\DiscardAllMessage;
+    use \Bolt\protocol\v1\ResetMessage;
+    use \Bolt\protocol\v1\AckFailureMessage;
 }

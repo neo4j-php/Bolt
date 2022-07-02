@@ -10,18 +10,18 @@ namespace Bolt\protocol;
  * @see https://7687.org/bolt/bolt-protocol-message-specification-4.html#version-41
  * @package Bolt\protocol
  */
-class V4_1 extends V4
+class V4_1 extends AProtocol
 {
-    /**
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---41---hello
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---43---hello
-     * @inheritDoc
-     */
-    public function hello(array $extra): array
-    {
-        if (isset($extra['routing']) && is_array($extra['routing']))
-            $extra['routing'] = (object)$extra['routing'];
+    use \Bolt\protocol\v1\ResetMessage;
 
-        return parent::hello($extra);
-    }
+    use \Bolt\protocol\v3\RunMessage;
+    use \Bolt\protocol\v3\BeginMessage;
+    use \Bolt\protocol\v3\CommitMessage;
+    use \Bolt\protocol\v3\RollbackMessage;
+    use \Bolt\protocol\v3\GoodbyeMessage;
+
+    use \Bolt\protocol\v4\PullMessage;
+    use \Bolt\protocol\v4\DiscardMessage;
+
+    use \Bolt\protocol\v4_1\HelloMessage;
 }

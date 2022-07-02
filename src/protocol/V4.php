@@ -2,10 +2,6 @@
 
 namespace Bolt\protocol;
 
-use Bolt\error\IgnoredException;
-use Exception;
-use Bolt\error\MessageException;
-
 /**
  * Class Protocol version 4
  *
@@ -14,86 +10,17 @@ use Bolt\error\MessageException;
  * @see https://7687.org/bolt/bolt-protocol-message-specification-4.html
  * @package Bolt\protocol
  */
-class V4 extends V3
+class V4 extends AProtocol
 {
+    use \Bolt\protocol\v1\ResetMessage;
 
-    /**
-     * @inheritDoc
-     * @deprecated Renamed to PULL
-     */
-    public function pullAll(): array
-    {
-        return $this->pull();
-    }
+    use \Bolt\protocol\v3\HelloMessage;
+    use \Bolt\protocol\v3\RunMessage;
+    use \Bolt\protocol\v3\BeginMessage;
+    use \Bolt\protocol\v3\CommitMessage;
+    use \Bolt\protocol\v3\RollbackMessage;
+    use \Bolt\protocol\v3\GoodbyeMessage;
 
-    /**
-     * Send PULL message
-     * The PULL message requests data from the remainder of the result stream.
-     *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---pull
-     * @param array $extra
-     * @return array
-     * @throws Exception
-     */
-    public function pull(array $extra = []): array
-    {
-        if (!array_key_exists('n', $extra))
-            $extra['n'] = -1;
-
-        $this->write($this->packer->pack(0x3F, $extra));
-
-        $output = [];
-        do {
-            $message = $this->read($signature);
-            $output[] = $message;
-        } while ($signature == self::RECORD);
-
-        if ($signature == self::FAILURE) {
-            $last = array_pop($output);
-            throw new MessageException($last['message'], $last['code']);
-        }
-
-        if ($signature == self::IGNORED) {
-            throw new IgnoredException('PULL message IGNORED. Server in FAILED or INTERRUPTED state.');
-        }
-
-        return $output;
-    }
-
-    /**
-     * @inheritDoc
-     * @deprecated Renamed to DISCARD
-     */
-    public function discardAll(): array
-    {
-        return $this->discard();
-    }
-
-    /**
-     * Send DISCARD message
-     * The DISCARD message requests that the remainder of the result stream should be thrown away.
-     *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---discard
-     * @param array $extra
-     * @return array
-     * @throws Exception
-     */
-    public function discard(array $extra = []): array
-    {
-        if (!array_key_exists('n', $extra))
-            $extra['n'] = -1;
-
-        $this->write($this->packer->pack(0x2F, $extra));
-        $message = $this->read($signature);
-
-        if ($signature == self::FAILURE) {
-            throw new MessageException($message['message'], $message['code']);
-        }
-
-        if ($signature == self::IGNORED) {
-            throw new IgnoredException('DISCARD message IGNORED. Server in FAILED or INTERRUPTED state.');
-        }
-
-        return $message;
-    }
+    use \Bolt\protocol\v4\PullMessage;
+    use \Bolt\protocol\v4\DiscardMessage;
 }
