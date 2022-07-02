@@ -24,7 +24,7 @@ trait DiscardMessage
      * The DISCARD message requests that the remainder of the result stream should be thrown away.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---discard
-     * @param array $extra
+     * @param array $extra [n::Integer, qid::Integer]
      * @return array
      * @throws Exception
      */

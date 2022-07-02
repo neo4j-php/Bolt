@@ -24,7 +24,7 @@ trait PullMessage
      * The PULL message requests data from the remainder of the result stream.
      *
      * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---pull
-     * @param array $extra
+     * @param array $extra [n::Integer, qid::Integer]
      * @return array
      * @throws Exception
      */

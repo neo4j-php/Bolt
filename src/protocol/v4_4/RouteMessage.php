@@ -26,7 +26,7 @@ trait RouteMessage
      * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---44---route
      * @param array $routing
      * @param array $bookmarks
-     * @param array $extra
+     * @param array $extra [db::String, imp_user::String]
      * @return array
      * @throws Exception
      */
