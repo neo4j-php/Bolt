@@ -1,6 +1,6 @@
 <?php
 
-namespace Bolt\tests;
+namespace Bolt\tests\protocol;
 
 use PHPUnit\Framework\TestCase;
 use Bolt\connection\AConnection;
@@ -13,7 +13,6 @@ use Bolt\connection\AConnection;
  */
 abstract class ATest extends TestCase
 {
-
     /**
      * @var int Internal pointer for "readArray"
      */
@@ -47,7 +46,6 @@ abstract class ATest extends TestCase
             ->method('write')
             ->with(
                 $this->callback(function ($buffer) {
-                    var_dump(bin2hex($buffer));
                     if (bin2hex($buffer) == '0000')
                         return true;
 

@@ -18,7 +18,7 @@ use Exception;
  * @requires PHP >= 7.1
  * @requires mbstring
  */
-class V4Test extends \Bolt\tests\ATest
+class V4Test extends ATest
 {
     /**
      * @return V4

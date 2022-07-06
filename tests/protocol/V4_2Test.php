@@ -17,7 +17,7 @@ use Bolt\protocol\V4_2;
  * @requires PHP >= 7.1
  * @requires mbstring
  */
-class V4_2Test extends \Bolt\tests\ATest
+class V4_2Test extends ATest
 {
     /**
      * @return V4_2

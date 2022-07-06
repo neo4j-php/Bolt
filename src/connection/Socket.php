@@ -15,15 +15,12 @@ use Bolt\error\ConnectionTimeoutException;
  */
 class Socket extends AConnection
 {
-
     /**
      * @var resource|object|bool
      */
     private $socket = false;
 
     private const POSSIBLE_TIMEOUTS_CODES = [11, 10060];
-    /** @var float|null */
-    private $timetAtTimeoutConfiguration;
 
     /**
      * Create socket connection
@@ -69,18 +66,14 @@ class Socket extends AConnection
             throw new ConnectException('Not initialized socket');
         }
 
-        $size = mb_strlen($buffer, '8bit');
-        $sent = 0;
-
         if (Bolt::$debug)
             $this->printHex($buffer);
 
+        $size = mb_strlen($buffer, '8bit');
         while (0 < $size) {
             $sent = @socket_write($this->socket, $buffer, $size);
-            if ($sent === false) {
+            if ($sent === false)
                 $this->throwConnectException();
-            }
-
             $buffer = mb_strcut($buffer, $sent, null, '8bit');
             $size -= $sent;
         }
@@ -94,22 +87,19 @@ class Socket extends AConnection
      */
     public function read(int $length = 2048): string
     {
-        $output = '';
-
-        if ($this->socket === false) {
+        if ($this->socket === false)
             throw new ConnectException('Not initialized socket');
-        }
 
+        $output = '';
         do {
             $readed = @socket_read($this->socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
-            if ($readed === false) {
+            if ($readed === false)
                 $this->throwConnectException();
-            }
             $output .= $readed;
         } while (mb_strlen($output, '8bit') < $length);
 
         if (Bolt::$debug)
-            $this->printHex($output, false);
+            $this->printHex($output, 'S: ');
 
         return $output;
     }
@@ -125,20 +115,21 @@ class Socket extends AConnection
         }
     }
 
-    public function setTimeout(float $timeout): void
+    public function setTimeout(float $timeout)
     {
         parent::setTimeout($timeout);
         $this->configureTimeout();
     }
 
-    private function configureTimeout(): void
+    private function configureTimeout()
     {
+        if ($this->socket === false)
+            return;
         $timeoutSeconds = floor($this->timeout);
         $microSeconds = floor(($this->timeout - $timeoutSeconds) * 1000000);
         $timeoutOption = ['sec' => $timeoutSeconds, 'usec' => $microSeconds];
         socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, $timeoutOption);
         socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, $timeoutOption);
-        $this->timetAtTimeoutConfiguration = microtime(true);
     }
 
     /**
@@ -149,11 +140,8 @@ class Socket extends AConnection
     {
         $code = socket_last_error($this->socket);
         if (in_array($code, self::POSSIBLE_TIMEOUTS_CODES)) {
-            $timediff = microtime(true) - $this->timetAtTimeoutConfiguration;
-            if ($timediff >= $this->timeout) {
-                throw ConnectionTimeoutException::createFromTimeout($this->timeout);
-            }
-        } else if ($code !== 0) {
+            throw new ConnectionTimeoutException('Connection timeout reached after ' . $this->timeout . ' seconds.');
+        } elseif ($code !== 0) {
             throw new ConnectException(socket_strerror($code), $code);
         }
     }

@@ -7,7 +7,6 @@ use Bolt\error\PackException;
 use Generator;
 use Bolt\structures\{
     IStructure,
-    Relationship,
     Date,
     Time,
     LocalTime,
@@ -16,7 +15,8 @@ use Bolt\structures\{
     LocalDateTime,
     Duration,
     Point2D,
-    Point3D
+    Point3D,
+    Bytes
 };
 
 /**
@@ -39,7 +39,6 @@ class Packer implements IPacker
     private $littleEndian;
 
     private $structuresLt = [
-        Relationship::class => [0x52, 'id' => 'packInteger', 'startNodeId' => 'packInteger', 'endNodeId' => 'packInteger', 'type' => 'packString', 'properties' => 'packMap'],
         Date::class => [0x44, 'days' => 'packInteger'],
         Time::class => [0x54, 'nanoseconds' => 'packInteger', 'tz_offset_seconds' => 'packInteger'],
         LocalTime::class => [0x74, 'nanoseconds' => 'packInteger'],
@@ -122,6 +121,8 @@ class Packer implements IPacker
             case 'object':
                 if ($param instanceof IStructure) {
                     return $this->packStructure($param);
+                } elseif ($param instanceof Bytes) {
+                    return $this->packByteArray($param);
                 } else {
                     return $this->packMap((array)$param);
                 }
@@ -159,7 +160,8 @@ class Packer implements IPacker
      */
     private function packFloat(float $value): string
     {
-        return chr(0xC1) . strrev(pack('d', $value));
+        $packed = pack('d', $value);
+        return chr(0xC1) . ($this->littleEndian ? strrev($packed) : $packed);
     }
 
     /**
@@ -169,15 +171,10 @@ class Packer implements IPacker
      */
     private function packInteger(int $value): string
     {
-        if ($value >= 0 && $value <= 127) { //+TINY_INT
-            $packed = pack('C', 0b00000000 | $value);
-            return $this->littleEndian ? strrev($packed) : $packed;
-        } elseif ($value >= -16 && $value < 0) { //-TINY_INT
-            $packed = pack('c', 0b11110000 | $value);
-            return $this->littleEndian ? strrev($packed) : $packed;
+        if ($value >= -16 && $value <= 127) { //TINY_INT
+            return pack('c', $value);
         } elseif ($value >= -128 && $value <= -17) { //INT_8
-            $packed = pack('c', $value);
-            return chr(0xC8) . ($this->littleEndian ? strrev($packed) : $packed);
+            return chr(0xC8) . pack('c', $value);
         } elseif (($value >= 128 && $value <= 32767) || ($value >= -32768 && $value <= -129)) { //INT_16
             $packed = pack('s', $value);
             return chr(0xC9) . ($this->littleEndian ? strrev($packed) : $packed);
@@ -270,6 +267,25 @@ class Packer implements IPacker
         }
 
         return $output;
+    }
+
+    /**
+     * @param Bytes $bytes
+     * @return string
+     * @throws PackException
+     */
+    private function packByteArray(Bytes $bytes): string
+    {
+        $size = count($bytes);
+        if ($size < self::MEDIUM) {
+            return chr(0xCC) . pack('C', $size) . $bytes;
+        } elseif ($size < self::LARGE) {
+            return chr(0xCD) . pack('n', $size) . $bytes;
+        } elseif ($size <= 2147483647) {
+            return chr(0xCE) . pack('N', $size) . $bytes;
+        } else {
+            throw new PackException('ByteArray too big');
+        }
     }
 
 }

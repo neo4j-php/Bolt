@@ -16,7 +16,6 @@ use Bolt\error\ConnectionTimeoutException;
  */
 class StreamSocket extends AConnection
 {
-
     /**
      * @var array
      */
@@ -51,7 +50,7 @@ class StreamSocket extends AConnection
             'ssl' => $this->sslContextOptions
         ]);
 
-        $this->stream = @stream_socket_client( 'tcp://' . $this->ip . ':' . $this->port, $errno, $errstr, $this->timeout, STREAM_CLIENT_CONNECT, $context);
+        $this->stream = @stream_socket_client('tcp://' . $this->ip . ':' . $this->port, $errno, $errstr, $this->timeout, STREAM_CLIENT_CONNECT, $context);
 
         if ($this->stream === false) {
             throw new ConnectException($errstr, $errno);
@@ -82,9 +81,22 @@ class StreamSocket extends AConnection
         if (Bolt::$debug)
             $this->printHex($buffer);
 
+        $size = mb_strlen($buffer, '8bit');
 
-        if (fwrite($this->stream, $buffer) === false)
-            throw new ConnectException('Write error');
+        $time = microtime(true);
+        while (0 < $size) {
+            $sent = fwrite($this->stream, $buffer);
+
+            if ($sent === false) {
+                if (microtime(true) - $time >= $this->timeout)
+                    throw new ConnectionTimeoutException('Connection timeout reached after ' . $this->timeout . ' seconds.');
+                else
+                    throw new ConnectException('Write error');
+            }
+
+            $buffer = mb_strcut($buffer, $sent, null, '8bit');
+            $size -= $sent;
+        }
     }
 
     /**
@@ -95,15 +107,22 @@ class StreamSocket extends AConnection
      */
     public function read(int $length = 2048): string
     {
-        $res = stream_get_contents($this->stream, $length);
+        $output = '';
+        do {
+            $readed = stream_get_contents($this->stream, $length - mb_strlen($output, '8bit'));
 
-        if (stream_get_meta_data($this->stream)["timed_out"])
-            throw ConnectionTimeoutException::createFromTimeout($this->timeout);
+            if (stream_get_meta_data($this->stream)['timed_out'] ?? false)
+                throw new ConnectionTimeoutException('Connection timeout reached after ' . $this->timeout . ' seconds.');
+            if ($readed === false)
+                throw new ConnectException('Read error');
+
+            $output .= $readed;
+        } while (mb_strlen($output, '8bit') < $length);
 
         if (Bolt::$debug)
-            $this->printHex($res, false);
+            $this->printHex($output, 'S: ');
 
-        return (string)$res;
+        return $output;
     }
 
     /**
@@ -115,7 +134,7 @@ class StreamSocket extends AConnection
             stream_socket_shutdown($this->stream, STREAM_SHUT_RDWR);
     }
 
-    public function setTimeout(float $timeout): void
+    public function setTimeout(float $timeout)
     {
         parent::setTimeout($timeout);
         $this->configureTimeout();
@@ -127,9 +146,11 @@ class StreamSocket extends AConnection
      */
     private function configureTimeout(): void
     {
-        $timeout = (int)floor($this->timeout);
-        if (!stream_set_timeout($this->stream, $timeout, (int)floor(($this->timeout - $timeout) * 1000000))) {
-            throw new ConnectException('Cannot set timeout on stream');
+        if (is_resource($this->stream)) {
+            $timeout = (int)floor($this->timeout);
+            if (!stream_set_timeout($this->stream, $timeout, (int)floor(($this->timeout - $timeout) * 1000000))) {
+                throw new ConnectException('Cannot set timeout on stream');
+            }
         }
     }
 }

@@ -2,8 +2,10 @@
 
 namespace Bolt\tests\PackStream\v1;
 
-use Bolt\PackStream\v1\Packer;
+use Bolt\protocol\AProtocol;
+use Bolt\Bolt;
 use Exception;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Class PackerTest
@@ -18,218 +20,147 @@ use Exception;
  * @requires extension mbstring
  * @requires extension json
  */
-class PackerTest extends \Bolt\tests\ATest
+class PackerTest extends TestCase
 {
-
     /**
-     * @return Packer
+     * @return AProtocol
      */
-    public function test__construct(): Packer
+    public function testInit(): AProtocol
     {
-        $packer = new Packer();
-        $this->assertInstanceOf(Packer::class, $packer);
-        return $packer;
-    }
+        try {
+            $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
+            $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
 
-    /**
-     * @depends test__construct
-     * @dataProvider packProvider
-     * @param string $bin
-     * @param array $args
-     * @param Packer $packer
-     * @throws Exception
-     */
-    public function testPack(string $bin, array $args, Packer $packer)
-    {
-        $this->assertEquals($bin, implode(iterator_to_array($packer->pack(0x88, $args))));
-    }
+            $bolt = new Bolt($conn);
+            $this->assertInstanceOf(Bolt::class, $bolt);
 
-    /**
-     * @return array
-     */
-    public function packProvider(): array
-    {
-        $data = $this->provider(__FUNCTION__);
-        foreach ($data as &$entry)
-            $entry[1] = json_decode($entry[1], true);
-        return $data;
-    }
+            $protocol = $bolt->build();
+            $this->assertInstanceOf(AProtocol::class, $protocol);
 
-    /**
-     * @depends test__construct
-     * @dataProvider integerProvider
-     * @param string $bin
-     * @param int $number
-     * @param Packer $packer
-     * @throws Exception
-     */
-    public function testPackInteger(string $bin, int $number, Packer $packer)
-    {
-        $this->assertEquals($bin, $this->getMethod($packer)->invoke($packer, $number));
-    }
+            $this->assertNotEmpty($protocol->init(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
 
-    /**
-     * @return array
-     */
-    public function integerProvider(): array
-    {
-        $data = $this->provider(__FUNCTION__);
-        foreach ($data as &$entry)
-            $entry[1] = intval($entry[1]);
-        return $data;
-    }
-
-    /**
-     * @depends test__construct
-     * @param Packer $packer
-     * @throws Exception
-     */
-    public function testPackFloat(Packer $packer)
-    {
-        $this->assertEquals('c1400921f9f01b866e', bin2hex($this->getMethod($packer)->invoke($packer, 3.14159)));
-    }
-
-    /**
-     * @depends test__construct
-     * @param Packer $packer
-     * @throws Exception
-     */
-    public function testPackNull(Packer $packer)
-    {
-        $this->assertEquals('c0', bin2hex($this->getMethod($packer)->invoke($packer, null)));
-    }
-
-    /**
-     * @depends test__construct
-     * @param Packer $packer
-     * @throws Exception
-     */
-    public function testPackBool(Packer $packer)
-    {
-        $this->assertEquals('c2', bin2hex($this->getMethod($packer)->invoke($packer, false)));
-        $this->assertEquals('c3', bin2hex($this->getMethod($packer)->invoke($packer, true)));
-    }
-
-    /**
-     * @depends test__construct
-     * @dataProvider stringProvider
-     * @param string $bin
-     * @param string $str
-     * @param Packer $packer
-     * @throws Exception
-     */
-    public function testPackString(string $bin, string $str, Packer $packer)
-    {
-        $this->assertEquals($bin, $this->getMethod($packer)->invoke($packer, $str));
-    }
-
-    /**
-     * @return array
-     */
-    public function stringProvider(): array
-    {
-        return $this->provider(__FUNCTION__);
-    }
-
-    /**
-     * @depends test__construct
-     * @dataProvider arrayProvider
-     * @param string $bin
-     * @param array $arr
-     * @param Packer $packer
-     * @throws Exception
-     */
-    public function testPackArray(string $bin, array $arr, Packer $packer)
-    {
-        $this->assertEquals($bin, $this->getMethod($packer)->invoke($packer, $arr));
-    }
-
-    /**
-     * @return array
-     */
-    public function arrayProvider(): array
-    {
-        $data = $this->provider(__FUNCTION__);
-        foreach ($data as &$entry)
-            $entry[1] = array_map('intval', explode(',', $entry[1]));
-        return $data;
-    }
-
-    /**
-     * @depends test__construct
-     * @dataProvider mapProvider
-     * @param string $bin
-     * @param object $obj
-     * @param Packer $packer
-     * @throws Exception
-     */
-    public function testPackMap(string $bin, $obj, Packer $packer)
-    {
-        $this->assertEquals($bin, $this->getMethod($packer)->invoke($packer, $obj));
-    }
-
-    /**
-     * @return array
-     */
-    public function mapProvider(): array
-    {
-        $data = $this->provider(__FUNCTION__);
-        foreach ($data as &$entry)
-            $entry[1] = json_decode($entry[1]);
-        return $data;
-    }
-
-    /**
-     * Test it on data type resource, which is not implemented
-     * @depends test__construct
-     * @param Packer $packer
-     * @throws Exception
-     */
-    public function testException(Packer $packer)
-    {
-        $f = fopen(__FILE__, 'r');
-        $this->expectException(Exception::class);
-        $this->getMethod($packer)->invoke($packer, $f);
-        fclose($f);
-    }
-
-
-    /**
-     * Get method from Packer as accessible
-     * @param Packer $packer
-     * @return \ReflectionMethod
-     */
-    private function getMethod(Packer $packer): \ReflectionMethod
-    {
-        $reflection = new \ReflectionClass(get_class($packer));
-        $method = $reflection->getMethod('p');
-        $method->setAccessible(true);
-        return $method;
-    }
-
-    /**
-     * "Abstract" provider to read content of directory as provider array
-     * @param string $fnc
-     * @return array
-     */
-    private function provider(string $fnc): array
-    {
-        $output = [];
-        $path = __DIR__ . DS . $fnc . DS;
-
-        foreach (scandir($path) as $file) {
-            $file_parts = pathinfo($file);
-            switch ($file_parts['extension']) {
-                case 'bin':
-                    $output[$file_parts['filename']][0] = file_get_contents($path . $file);
-                    break;
-                case 'txt':
-                    $output[$file_parts['filename']][1] = trim(file_get_contents($path . $file));
-                    break;
-            }
+            return $protocol;
+        } catch (Exception $e) {
+            $this->markTestIncomplete($e->getMessage());
         }
+    }
 
-        return $output;
+    /**
+     * @depends testInit
+     * @param AProtocol $protocol
+     */
+    public function testNull(AProtocol $protocol)
+    {
+        $protocol->run('RETURN $n IS NULL', ['n' => null], ['mode' => 'r']);
+        $res = $protocol->pullAll();
+        $this->assertTrue($res[0][0]);
+    }
+
+    /**
+     * @depends testInit
+     * @param AProtocol $protocol
+     */
+    public function testBoolean(AProtocol $protocol)
+    {
+        $protocol->run('RETURN $b = true', ['b' => true], ['mode' => 'r']);
+        $res = $protocol->pullAll();
+        $this->assertTrue($res[0][0]);
+
+        $protocol->run('RETURN $b = false', ['b' => false], ['mode' => 'r']);
+        $res = $protocol->pullAll();
+        $this->assertTrue($res[0][0]);
+    }
+
+    /**
+     * @depends testInit
+     * @param AProtocol $protocol
+     */
+    public function testInteger(AProtocol $protocol)
+    {
+        $arr = array_merge(
+            range(-16, 127),
+            [-17, -128, 128, 32767, 32768, 2147483647, 2147483648, 9223372036854775807, -129, -32768, -32769, -2147483648, -2147483649, -9223372036854775808]
+        );
+        $protocol->run('RETURN ' . implode(', ', array_map(function (int $key, int $value) {
+                return '$' . $key . ' = ' . $value;
+            }, array_keys($arr), $arr)), $arr, ['mode' => 'r']);
+        $res = $protocol->pullAll();
+
+        foreach ($arr as $i => $_) {
+            $this->assertTrue($res[0][$i]);
+        }
+    }
+
+    /**
+     * @depends testInit
+     * @param AProtocol $protocol
+     */
+    public function testFloat(AProtocol $protocol)
+    {
+        for ($i = 0; $i < 10; $i++) {
+            $num = mt_rand(-mt_getrandmax(), mt_getrandmax()) / mt_getrandmax();
+            $protocol->run('RETURN ' . $num . ' + 0.000001 > $n > ' . $num . ' - 0.000001', ['n' => $num], ['mode' => 'r']); //epsilon comparison
+            $res = $protocol->pullAll();
+            $this->assertTrue($res[0][0]);
+        }
+    }
+
+    /**
+     * @depends testInit
+     * @param AProtocol $protocol
+     */
+    public function testString(AProtocol $protocol)
+    {
+        $randomString = function (int $length) {
+            $str = '';
+            while (strlen($str) < $length)
+                $str .= chr(mt_rand(32, 126));
+            return $str;
+        };
+
+        foreach ([0, 10, 200, 60000, 200000] as $length) {
+            $str = $randomString($length);
+            $protocol->run('RETURN $s = "' . str_replace(['\\', '"'], ['\\\\', '\\"'], $str) . '"', ['s' => $str], ['mode' => 'r']);
+            $res = $protocol->pullAll();
+            $this->assertTrue($res[0][0]);
+        }
+    }
+
+    /**
+     * @depends testInit
+     * @param AProtocol $protocol
+     */
+    public function testList(AProtocol $protocol)
+    {
+        foreach ([0, 10, 200, 60000, 200000] as $size) {
+            $arr = $this->randomArray($size);
+            $protocol->run('RETURN size($arr) = ' . count($arr), ['arr' => $arr], ['mode' => 'r']);
+            $res = $protocol->pullAll();
+            $this->assertTrue($res[0][0]);
+        }
+    }
+
+    private function randomArray(int $size): array
+    {
+        $arr = [];
+        while (count($arr) < $size) {
+            $arr[] = mt_rand(-1000, 1000);
+        }
+        return $arr;
+    }
+
+    /**
+     * @depends testInit
+     * @param AProtocol $protocol
+     */
+    public function testDictionary(AProtocol $protocol)
+    {
+        foreach ([0, 10, 200, 60000, 200000] as $size) {
+            $arr = $this->randomArray($size);
+            $protocol->run('RETURN size(keys($arr)) = ' . count($arr), ['arr' => (object)$arr], ['mode' => 'r']);
+            $res = $protocol->pullAll();
+            $this->assertTrue($res[0][0]);
+        }
     }
 
 }

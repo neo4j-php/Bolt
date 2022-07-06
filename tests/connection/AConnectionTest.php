@@ -104,7 +104,6 @@ final class AConnectionTest extends TestCase
             $this->assertGreaterThanOrEqual(1.0, $newTime - $time);
         }
 
-        $socket->setTimeout(100.0);
         try {
             $protocol->reset();
         } catch (MessageException $e) {
@@ -112,8 +111,6 @@ final class AConnectionTest extends TestCase
             $protocol = (new Bolt($socket))->build();
             $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         }
-
-        $socket->setTimeout(1.0);
 
         $time = microtime(true);
         try {

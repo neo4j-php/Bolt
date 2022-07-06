@@ -16,7 +16,8 @@ use Bolt\structures\{
     LocalDateTime,
     Duration,
     Point2D,
-    Point3D
+    Point3D,
+    Bytes
 };
 use Bolt\PackStream\IUnpacker;
 use Bolt\error\UnpackException;
@@ -145,6 +146,10 @@ class Unpacker implements IUnpacker
         if ($output !== null) {
             return $output;
         }
+        $output = $this->unpackByteArray($marker);
+        if ($output !== null) {
+            return $output;
+        }
 
         return null;
     }
@@ -201,7 +206,7 @@ class Unpacker implements IUnpacker
 
     /**
      * @param int $marker
-     * @return array
+     * @return array|null
      * @throws UnpackException
      */
     private function unpackMap(int $marker): ?array
@@ -227,7 +232,7 @@ class Unpacker implements IUnpacker
 
     /**
      * @param int $marker
-     * @return string
+     * @return string|null
      */
     private function unpackString(int $marker): ?string
     {
@@ -248,14 +253,12 @@ class Unpacker implements IUnpacker
 
     /**
      * @param int $marker
-     * @return int
+     * @return int|null
      */
     private function unpackInteger(int $marker): ?int
     {
-        if ($marker >> 7 == 0b0) { //+TINY_INT
-            return $marker;
-        } elseif ($marker >> 4 == 0b1111) { //-TINY_INT
-            return (int)unpack('c', strrev(chr($marker)))[1];
+        if ($marker >> 4 >= 0xF || $marker >> 4 <= 0x7) { //TINY_INT
+            return (int)unpack('c', chr($marker))[1];
         } elseif ($marker == 0xC8) { //INT_8
             return (int)unpack('c', $this->next(1))[1];
         } elseif ($marker == 0xC9) { //INT_16
@@ -266,7 +269,7 @@ class Unpacker implements IUnpacker
             return (int)unpack('l', $this->littleEndian ? strrev($value) : $value)[1];
         } elseif ($marker == 0xCB) { //INT_64
             $value = $this->next(8);
-            return (int)unpack("q", $this->littleEndian ? strrev($value) : $value)[1];
+            return (int)unpack('q', $this->littleEndian ? strrev($value) : $value)[1];
         } else {
             return null;
         }
@@ -274,12 +277,13 @@ class Unpacker implements IUnpacker
 
     /**
      * @param int $marker
-     * @return float
+     * @return float|null
      */
     private function unpackFloat(int $marker): ?float
     {
         if ($marker == 0xC1) {
-            return (float)unpack('d', strrev($this->next(8)))[1];
+            $value = $this->next(8);
+            return (float)unpack('d', $this->littleEndian ? strrev($value) : $value)[1];
         } else {
             return null;
         }
@@ -287,7 +291,7 @@ class Unpacker implements IUnpacker
 
     /**
      * @param int $marker
-     * @return array
+     * @return array|null
      * @throws UnpackException
      */
     private function unpackList(int $marker): ?array
@@ -310,6 +314,25 @@ class Unpacker implements IUnpacker
         }
 
         return $output;
+    }
+
+    /**
+     * @param int $marker
+     * @return Bytes|null
+     */
+    private function unpackByteArray(int $marker): ?Bytes
+    {
+        if ($marker == 0xCC) {
+            $size = (int)unpack('C', $this->next(1))[1];
+        } elseif ($marker == 0xCD) {
+            $size = (int)unpack('n', $this->next(2))[1];
+        } elseif ($marker == 0xCE) {
+            $size = (int)unpack('N', $this->next(4))[1];
+        } else {
+            return null;
+        }
+
+        return new Bytes(str_split($this->next($size)));
     }
 
 }
