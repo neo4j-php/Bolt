@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <phpunit colors="true" verbose="true"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
@@ -11,7 +12,8 @@
         <testsuite name="Database">
             <directory>./tests/connection</directory>
             <file>./tests/BoltTest.php</file>
-            <file>./tests/StructuresTest.php</file>
+            <directory>./tests/error</directory>
+            <directory>./tests/PackStream</directory>
         </testsuite>
         <testsuite name="NoDatabase">
             <directory>./tests/error</directory>
@@ -24,5 +26,3 @@
         <var name="NEO_PASS" value="nothing"/>
     </php>
 </phpunit>
-
-
