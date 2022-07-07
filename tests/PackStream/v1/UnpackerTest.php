@@ -34,7 +34,7 @@ class UnpackerTest extends TestCase
             $protocol = $bolt->build();
             $this->assertInstanceOf(AProtocol::class, $protocol);
 
-            $this->assertNotEmpty($protocol->init(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
+            $this->assertNotEmpty($protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
 
             $conn->setTimeout(120);
             return $protocol;
@@ -50,7 +50,7 @@ class UnpackerTest extends TestCase
     public function testNull(AProtocol $protocol)
     {
         $protocol->run('RETURN null', [], ['mode' => 'r']);
-        $res = $protocol->pullAll();
+        $res = $protocol->pull();
         $this->assertNull($res[0][0]);
     }
 
@@ -61,7 +61,7 @@ class UnpackerTest extends TestCase
     public function testBoolean(AProtocol $protocol)
     {
         $protocol->run('RETURN true, false', [], ['mode' => 'r']);
-        $res = $protocol->pullAll();
+        $res = $protocol->pull();
         $this->assertTrue($res[0][0]);
         $this->assertFalse($res[0][1]);
     }
@@ -73,7 +73,7 @@ class UnpackerTest extends TestCase
     public function testInteger(AProtocol $protocol)
     {
         $protocol->run('RETURN -16, 0, 127, -17, -128, 128, 32767, 32768, 2147483647, 2147483648, 9223372036854775807, -129, -32768, -32769, -2147483648, -2147483649, -9223372036854775808', [], ['mode' => 'r']);
-        $res = $protocol->pullAll();
+        $res = $protocol->pull();
 
         foreach ([-16, 0, 127, -17, -128, 128, 32767, 32768, 2147483647, 2147483648, 9223372036854775807, -129, -32768, -32769, -2147483648, -2147483649, -9223372036854775808] as $i => $value) {
             $this->assertEquals($value, $res[0][$i]);
@@ -89,7 +89,7 @@ class UnpackerTest extends TestCase
         for ($i = 0; $i < 10; $i++) {
             $num = mt_rand(-mt_getrandmax(), mt_getrandmax()) / mt_getrandmax();
             $protocol->run('RETURN ' . $num, [], ['mode' => 'r']);
-            $res = $protocol->pullAll();
+            $res = $protocol->pull();
             $this->assertEqualsWithDelta($num, $res[0][0], 0.000001);
         }
     }
@@ -103,7 +103,7 @@ class UnpackerTest extends TestCase
     public function testString(string $str, AProtocol $protocol)
     {
         $protocol->run('RETURN "' . str_replace(['\\', '"'], ['\\\\', '\\"'], $str) . '" AS a', [], ['mode' => 'r']);
-        $res = $protocol->pullAll();
+        $res = $protocol->pull();
         $this->assertEquals($str, $res[0][0]);
     }
 
@@ -130,7 +130,7 @@ class UnpackerTest extends TestCase
     public function testList(int $size, AProtocol $protocol)
     {
         $protocol->run('RETURN range(0, ' . $size . ') AS a', [], ['mode' => 'r']);
-        $res = $protocol->pullAll();
+        $res = $protocol->pull();
         $this->assertEquals(range(0, $size), $res[0][0]);
     }
 
@@ -150,7 +150,7 @@ class UnpackerTest extends TestCase
     public function testDictionary(string $query, int $size, AProtocol $protocol)
     {
         $protocol->run($query, [], ['mode' => 'r']);
-        $res = $protocol->pullAll();
+        $res = $protocol->pull();
         $this->assertCount($size, $res[0][0]);
     }
 

@@ -47,7 +47,7 @@ final class ConnectionTest extends TestCase
         $conn = $this->getConnection($alias);
         $conn->setTimeout(1.5);
         $protocol = (new Bolt($conn))->build();
-        $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         $this->expectException(ConnectionTimeoutException::class);
         $protocol->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )');
     }
@@ -61,7 +61,7 @@ final class ConnectionTest extends TestCase
     {
         $conn = $this->getConnection($alias);
         $protocol = (new Bolt($conn))->build();
-        $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         $conn->setTimeout(200);
         $protocol->run('CALL apoc.util.sleep(150000)', [], ['mode' => 'r', 'tx_timeout' => 120000]);
     }
@@ -75,7 +75,7 @@ final class ConnectionTest extends TestCase
         $conn = $this->getConnection($alias);
         $conn->setTimeout(1);
         $protocol = (new Bolt($conn))->build();
-        $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         $this->expectException(ConnectionTimeoutException::class);
         $protocol->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )');
     }
@@ -88,7 +88,7 @@ final class ConnectionTest extends TestCase
     {
         $conn = $this->getConnection($alias);
         $protocol = (new Bolt($conn))->build();
-        $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 
         $conn->setTimeout(1.5);
         $time = microtime(true);
@@ -105,7 +105,7 @@ final class ConnectionTest extends TestCase
             $protocol->reset();
         } catch (MessageException $e) {
             $protocol = (new Bolt($conn))->build();
-            $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+            $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         }
 
         $conn->setTimeout(1.5);

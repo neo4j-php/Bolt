@@ -4,19 +4,8 @@ namespace Bolt\protocol\v1;
 
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
-use Bolt\connection\IConnection;
-use Bolt\PackStream\IPacker;
-use Bolt\PackStream\IUnpacker;
 use Exception;
-use Generator;
 
-/**
- * @method write(Generator $generator)
- * @method read(?int &$signature)
- * @property IPacker $packer
- * @property IUnpacker $unpacker
- * @property IConnection $connection;
- */
 trait DiscardAllMessage
 {
     /**

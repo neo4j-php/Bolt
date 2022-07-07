@@ -15,8 +15,6 @@ use Exception;
  * @covers \Bolt\protocol\V3
  *
  * @package Bolt\tests\protocol
- * @requires PHP >= 7.1
- * @requires mbstring
  */
 class V3Test extends ATest
 {

@@ -3,6 +3,7 @@
 namespace Bolt\tests\protocol;
 
 use Bolt\protocol\V2;
+use Exception;
 
 /**
  * Class V2Test
@@ -14,7 +15,6 @@ use Bolt\protocol\V2;
  * @covers \Bolt\protocol\V2
  *
  * @package Bolt\tests\protocol
- * @requires PHP >= 7.1
  */
 class V2Test extends ATest
 {

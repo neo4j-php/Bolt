@@ -17,8 +17,6 @@ use Exception;
  * @covers \Bolt\PackStream\v1\Unpacker
  *
  * @package Bolt\tests\protocol
- * @requires PHP >= 7.1
- * @requires extension mbstring
  */
 class V1Test extends ATest
 {
@@ -43,7 +41,9 @@ class V1Test extends ATest
         self::$writeBuffer = [hex2bin('003db20188626f6c742d706870a386736368656d65856261736963897072696e636970616c84757365728b63726564656e7469616c738870617373776f7264')];
 
         try {
-            $this->assertIsArray($cls->init(\Bolt\helpers\Auth::basic('user', 'password')));
+            $authToken = \Bolt\helpers\Auth::basic('user', 'password');
+            unset($authToken['user_agent']);
+            $this->assertIsArray($cls->init('bolt-php', $authToken));
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -63,7 +63,10 @@ class V1Test extends ATest
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
-        $cls->init(\Bolt\helpers\Auth::basic('user', 'password'));
+
+        $authToken = \Bolt\helpers\Auth::basic('user', 'password');
+        unset($authToken['user_agent']);
+        $cls->init('bolt-php', $authToken);
     }
 
     /**

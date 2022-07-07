@@ -52,12 +52,9 @@ class BoltTest extends TestCase
             $protocol = $bolt->build();
             $this->assertInstanceOf(AProtocol::class, $protocol);
 
-            $this->assertIsArray($protocol->init(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
+            $this->assertIsArray($protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
 
-            if (method_exists($protocol, 'goodbye'))
-                $protocol->goodbye();
-            else
-                $conn->disconnect();
+            $protocol->goodbye();
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -101,7 +98,7 @@ class BoltTest extends TestCase
             $protocol = $bolt->build();
             $this->assertInstanceOf(AProtocol::class, $protocol);
 
-            $this->assertNotEmpty($protocol->init(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
+            $this->assertNotEmpty($protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
 
             return $protocol;
         } catch (Exception $e) {
@@ -120,7 +117,7 @@ class BoltTest extends TestCase
             $this->assertIsArray($res);
             $this->assertArrayHasKey('fields', $res);
 
-            $res = $protocol->pullAll();
+            $res = $protocol->pull();
             $this->assertEquals(1, $res[0][0] ?? 0);
             $this->assertEquals(2, $res[0][1] ?? 0);
         } catch (Exception $e) {
@@ -136,7 +133,7 @@ class BoltTest extends TestCase
     {
         try {
             $this->assertNotFalse($protocol->run('MATCH (a:Test) RETURN *', [], ['mode' => 'r']));
-            $this->assertIsArray($protocol->discardAll());
+            $this->assertIsArray($protocol->discard());
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -156,7 +153,7 @@ class BoltTest extends TestCase
         try {
             $this->assertIsArray($protocol->begin());
             $this->assertIsArray($protocol->run('CREATE (a:Test) RETURN a, ID(a)'));
-            $created = $protocol->pullAll();
+            $created = $protocol->pull();
             $this->assertIsArray($created);
             $this->assertIsArray($protocol->rollback());
 
@@ -165,7 +162,7 @@ class BoltTest extends TestCase
                 . ' RETURN COUNT(a)', [
                 'a' => $created[0][1]
             ]));
-            $res = $protocol->pullAll();
+            $res = $protocol->pull();
             $this->assertIsArray($res);
             $this->assertEquals(0, $res[0][0]);
         } catch (Exception $e) {
@@ -212,7 +209,7 @@ class BoltTest extends TestCase
     {
         $protocol->begin();
         $protocol->run('CREATE (a:Test) RETURN ID(a)');
-        $result = $protocol->pullAll();
+        $result = $protocol->pull();
 
         $data = [];
         while (strlen(serialize($data)) < 65535 * 2) {
@@ -224,7 +221,7 @@ class BoltTest extends TestCase
                 ]);
                 $this->assertIsArray($run);
 
-                $pull = $protocol->pullAll();
+                $pull = $protocol->pull();
                 $this->assertIsArray($pull);
                 $this->assertInstanceOf(\Bolt\structures\Node::class, $pull[0][0]);
                 $this->assertCount(count($data), $pull[0][0]->properties());

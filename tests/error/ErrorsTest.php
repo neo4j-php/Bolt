@@ -46,7 +46,7 @@ class ErrorsTest extends TestCase
         }
 
         $this->expectException(\Bolt\error\MessageException::class);
-        $protocol->init(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         $protocol->run('Wrong message');
     }
 
@@ -55,7 +55,9 @@ class ErrorsTest extends TestCase
         $packer = new \Bolt\PackStream\v1\Packer();
         $this->assertInstanceOf(\Bolt\PackStream\v1\Packer::class, $packer);
         $this->expectException(\Bolt\error\PackException::class);
-        foreach ($packer->pack(0x00, fopen('php://input', 'r')) as $chunk) { }
+        foreach ($packer->pack(0x00, fopen('php://input', 'r')) as $chunk) {
+            //expecting exception
+        }
     }
 
     public function testPackException2()
