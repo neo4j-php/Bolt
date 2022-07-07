@@ -62,6 +62,29 @@ class BoltTest extends TestCase
             $this->markTestIncomplete($e->getMessage());
         }
     }
+    
+    public function testAura()
+    {
+        try {
+            $conn = new \Bolt\connection\StreamSocket('demo.neo4jlabs.com');
+            $conn->setSslContextOptions([
+                'verify_peer' => true
+            ]);
+            $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
+
+            $bolt = new Bolt($conn);
+            $this->assertInstanceOf(Bolt::class, $bolt);
+
+            $protocol = $bolt->build();
+            $this->assertInstanceOf(AProtocol::class, $protocol);
+
+            $this->assertIsArray($protocol->hello(\Bolt\helpers\Auth::basic('movies', 'movies')));
+
+            $protocol->goodbye();
+        } catch (Exception $e) {
+            $this->markTestIncomplete($e->getMessage());
+        }
+    }
 
     /**
      * @return AProtocol

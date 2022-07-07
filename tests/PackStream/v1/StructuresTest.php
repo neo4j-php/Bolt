@@ -469,7 +469,7 @@ class StructuresTest extends TestCase
 
     public function providerByteArray(): \Generator
     {
-        foreach ([0, 200, 60000, 70000] as $size) {
+        foreach ([1, 200, 60000, 70000] as $size) {
             $arr = new Bytes();
             while (count($arr) < $size) {
                 $arr[] = pack('H', mt_rand(0, 255));
