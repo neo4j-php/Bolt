@@ -35,7 +35,17 @@ class V4_4Test extends ATest
     public function testRoute(V4_4 $cls)
     {
         self::$readArray = [1, 2, 0];
-        self::$writeBuffer = [hex2bin('0020b366a187616464726573738e6c6f63616c686f73743a3736383790a1826462c0')];
+        self::$writeBuffer = [
+            hex2bin('0001b3'),
+            hex2bin('000166'),
+            hex2bin('0001a1'),
+            hex2bin('00088761646472657373'),
+            hex2bin('000f8e6c6f63616c686f73743a37363837'),
+            hex2bin('000190'),
+            hex2bin('0001a1'),
+            hex2bin('0003826462'),
+            hex2bin('0001c0'),
+        ];
 
         try {
             $this->assertIsArray($cls->route(['address' => 'localhost:7687'], [], ['db' => null]));

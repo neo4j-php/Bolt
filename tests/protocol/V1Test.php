@@ -38,7 +38,18 @@ class V1Test extends ATest
     public function testInit(V1 $cls)
     {
         self::$readArray = [1, 2, 0];
-        self::$writeBuffer = [hex2bin('003db20188626f6c742d706870a386736368656d65856261736963897072696e636970616c84757365728b63726564656e7469616c738870617373776f7264')];
+        self::$writeBuffer = [
+            hex2bin('0001b2'),
+            hex2bin('000101'),
+            hex2bin('000988626f6c742d706870'),
+            hex2bin('0001a3'),
+            hex2bin('000786736368656d65'),
+            hex2bin('0006856261736963'),
+            hex2bin('000a897072696e636970616c'),
+            hex2bin('00058475736572'),
+            hex2bin('000c8b63726564656e7469616c73'),
+            hex2bin('00098870617373776f7264'),
+        ];
 
         try {
             $authToken = \Bolt\helpers\Auth::basic('user', 'password');
@@ -57,7 +68,16 @@ class V1Test extends ATest
     {
         self::$readArray = [4, 5, 0];
         self::$writeBuffer = [
-            hex2bin('003db20188626f6c742d706870a386736368656d65856261736963897072696e636970616c84757365728b63726564656e7469616c738870617373776f7264'),
+            hex2bin('0001b2'),
+            hex2bin('000101'),
+            hex2bin('000988626f6c742d706870'),
+            hex2bin('0001a3'),
+            hex2bin('000786736368656d65'),
+            hex2bin('0006856261736963'),
+            hex2bin('000a897072696e636970616c'),
+            hex2bin('00058475736572'),
+            hex2bin('000c8b63726564656e7469616c73'),
+            hex2bin('00098870617373776f7264'),
             hex2bin('0002b00e0000')
         ];
 
@@ -76,7 +96,12 @@ class V1Test extends ATest
     public function testRun(V1 $cls)
     {
         self::$readArray = [1, 2, 0];
-        self::$writeBuffer = [hex2bin('000cb2108852455455524e2031a0')];
+        self::$writeBuffer = [
+            hex2bin('0001b2'),
+            hex2bin('000110'),
+            hex2bin('00098852455455524e2031'),
+            hex2bin('0001a0'),
+        ];
 
         try {
             $this->assertIsArray($cls->run('RETURN 1'));
@@ -93,8 +118,12 @@ class V1Test extends ATest
     {
         self::$readArray = [4, 5, 0, 1, 2, 0];
         self::$writeBuffer = [
-            hex2bin('000cb2108852455455524e2031a0'),
-            hex2bin('0002b00e')
+            hex2bin('0001b2'),
+            hex2bin('000110'),
+            hex2bin('00098852455455524e2031'),
+            hex2bin('0001a0'),
+            hex2bin('0001b0'),
+            hex2bin('00010e')
         ];
 
         $this->expectException(Exception::class);
@@ -109,7 +138,10 @@ class V1Test extends ATest
     public function testPullAll(V1 $cls)
     {
         self::$readArray = [1, 3, 0, 1, 2, 0];
-        self::$writeBuffer = [hex2bin('0002b03f')];
+        self::$writeBuffer = [
+            hex2bin('0001b0'),
+            hex2bin('00013f'),
+        ];
 
         try {
             $res = $cls->pullAll();
@@ -129,8 +161,10 @@ class V1Test extends ATest
     {
         self::$readArray = [4, 5, 0, 1, 2, 0];
         self::$writeBuffer = [
-            hex2bin('0002b03f'),
-            hex2bin('0002b00e')
+            hex2bin('0001b0'),
+            hex2bin('00013f'),
+            hex2bin('0001b0'),
+            hex2bin('00010e')
         ];
 
         $this->expectException(Exception::class);
@@ -146,7 +180,10 @@ class V1Test extends ATest
     public function testDiscardAll(V1 $cls)
     {
         self::$readArray = [1, 2, 0];
-        self::$writeBuffer = [hex2bin('0002b02f')];
+        self::$writeBuffer = [
+            hex2bin('0001b0'),
+            hex2bin('00012f'),
+        ];
 
         try {
             $cls->discardAll();
@@ -163,7 +200,10 @@ class V1Test extends ATest
     public function testReset(V1 $cls)
     {
         self::$readArray = [1, 2, 0];
-        self::$writeBuffer = [hex2bin('0002b00f')];
+        self::$writeBuffer = [
+            hex2bin('0001b0'),
+            hex2bin('00010f'),
+        ];
 
         try {
             $cls->reset();

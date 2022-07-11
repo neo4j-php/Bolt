@@ -35,7 +35,15 @@ class V4Test extends ATest
     public function testPull(V4 $cls)
     {
         self::$readArray = [1, 3, 0, 1, 2, 0];
-        self::$writeBuffer = [hex2bin('000bb13fa2816eff83716964ff')];
+        self::$writeBuffer = [
+            hex2bin('0001b1'),
+            hex2bin('00013f'),
+            hex2bin('0001a2'),
+            hex2bin('0002816e'),
+            hex2bin('0001ff'),
+            hex2bin('000483716964'),
+            hex2bin('0001ff'),
+        ];
 
         try {
             $res = $cls->pull(['n' => -1, 'qid' => -1]);
@@ -55,7 +63,13 @@ class V4Test extends ATest
     {
         self::$readArray = [4, 5, 0, 1, 2, 0];
         self::$writeBuffer = [
-            hex2bin('000bb13fa2816eff83716964ff'),
+            hex2bin('0001b1'),
+            hex2bin('00013f'),
+            hex2bin('0001a2'),
+            hex2bin('0002816e'),
+            hex2bin('0001ff'),
+            hex2bin('000483716964'),
+            hex2bin('0001ff'),
             hex2bin('0002b00f')
         ];
 
@@ -71,7 +85,15 @@ class V4Test extends ATest
     public function testDiscard(V4 $cls)
     {
         self::$readArray = [1, 2, 0];
-        self::$writeBuffer = [hex2bin('000bb12fa2816eff83716964ff')];
+        self::$writeBuffer = [
+            hex2bin('0001b1'),
+            hex2bin('00012f'),
+            hex2bin('0001a2'),
+            hex2bin('0002816e'),
+            hex2bin('0001ff'),
+            hex2bin('000483716964'),
+            hex2bin('0001ff'),
+        ];
 
         try {
             $this->assertIsArray($cls->discard(['n' => -1, 'qid' => -1]));
