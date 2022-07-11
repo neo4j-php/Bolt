@@ -180,7 +180,7 @@ class BoltTest extends TestCase
         if (version_compare($protocol->getVersion(), 4.3, '>=')) {
             self::assertIsArray($protocol->route([
                 'address' => ($GLOBALS['NEO_HOST'] ?? '127.0.0.1') . ':' . ($GLOBALS['NEO_PORT'] ?? 7687)
-            ], [], []));
+            ]));
         } else {
             $this->markTestSkipped('Old Neo4j version does not support route message');
         }
