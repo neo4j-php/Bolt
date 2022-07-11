@@ -73,7 +73,7 @@ class V3 extends V2
         $this->write($this->packer->pack(
             0x10,
             $args[0],
-            $args[1] ?? [],
+            (object)($args[1] ?? []),
             (object)($args[2] ?? [])
         ));
         $message = $this->read($signature);
