@@ -3,10 +3,13 @@
 namespace Bolt\tests\PackStream\v1\generators;
 
 use Bolt\PackStream\IPackListGenerator;
-use function bin2hex;
-use function hex2bin;
-use function random_bytes;
 
+/**
+ * Class ListGenerator
+ * @author Ghlen Nagels
+ * @link https://github.com/neo4j-php/Bolt
+ * @package Bolt\tests\PackStream\v1\generators
+ */
 class RandomDataGenerator implements IPackListGenerator
 {
     private int $rows;

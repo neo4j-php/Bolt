@@ -7,9 +7,6 @@ namespace Bolt\tests\PackStream\v1\generators;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- *
- * @covers \Bolt\PackStream\v1\Packer
- *
  * @package Bolt\tests\PackStream\v1\generators
  */
 class ListGenerator implements \Bolt\PackStream\IPackListGenerator
