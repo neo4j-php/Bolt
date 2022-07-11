@@ -2,7 +2,6 @@
 
 namespace Bolt\protocol;
 
-use Generator;
 use Bolt\PackStream\{IPacker, IUnpacker};
 use Bolt\connection\IConnection;
 use Exception;
@@ -40,7 +39,7 @@ abstract class AProtocol
 
     /**
      * Write to connection
-     * @param Generator $generator
+     * @param iterable $generator
      * @throws Exception
      */
     protected function write(iterable $generator)

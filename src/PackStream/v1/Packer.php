@@ -5,7 +5,6 @@ namespace Bolt\PackStream\v1;
 use Bolt\PackStream\IPacker;
 use Bolt\error\PackException;
 use Bolt\PackStream\{IPackListGenerator, IPackDictionaryGenerator};
-use Generator;
 use Bolt\structures\{
     IStructure,
     Date,
@@ -52,10 +51,10 @@ class Packer implements IPacker
      * Pack message with parameters
      * @param $signature
      * @param mixed ...$params
-     * @return Generator
+     * @return iterable
      * @throws PackException
      */
-    public function pack($signature, ...$params): Generator
+    public function pack($signature, ...$params): iterable
     {
         $this->littleEndian = unpack('S', "\x01\x00")[1] === 1;
 
@@ -91,9 +90,10 @@ class Packer implements IPacker
 
     /**
      * @param mixed $param
+     * @return iterable
      * @throws PackException
      */
-    private function p($param): Generator
+    private function p($param): iterable
     {
         switch (gettype($param)) {
             case 'integer':
@@ -139,10 +139,10 @@ class Packer implements IPacker
 
     /**
      * @param string $str
-     * @return Generator
+     * @return iterable
      * @throws PackException
      */
-    private function packString(string $str): Generator
+    private function packString(string $str): iterable
     {
         $length = mb_strlen($str, '8bit');
 
@@ -161,9 +161,9 @@ class Packer implements IPacker
 
     /**
      * @param float $value
-     * @return Generator
+     * @return iterable
      */
-    private function packFloat(float $value): Generator
+    private function packFloat(float $value): iterable
     {
         $packed = pack('d', $value);
         yield chr(0xC1) . ($this->littleEndian ? strrev($packed) : $packed);
@@ -171,10 +171,10 @@ class Packer implements IPacker
 
     /**
      * @param int $value
-     * @return Generator
+     * @return iterable
      * @throws PackException
      */
-    private function packInteger(int $value): Generator
+    private function packInteger(int $value): iterable
     {
         if ($value >= -16 && $value <= 127) { //TINY_INT
             yield pack('c', $value);
@@ -196,10 +196,10 @@ class Packer implements IPacker
 
     /**
      * @param array|IPackDictionaryGenerator $param
-     * @return Generator
+     * @return iterable
      * @throws PackException
      */
-    private function packDictionary($param): Generator
+    private function packDictionary($param): iterable
     {
         $size = is_array($param) ? count($param) : $param->count();
 
@@ -223,10 +223,10 @@ class Packer implements IPacker
 
     /**
      * @param array|IPackListGenerator $param
-     * @return Generator
+     * @return iterable
      * @throws PackException
      */
-    private function packList($param): Generator
+    private function packList($param): iterable
     {
         $size = is_array($param) ? count($param) : $param->count();
 
@@ -249,10 +249,10 @@ class Packer implements IPacker
 
     /**
      * @param IStructure $structure
-     * @return Generator
+     * @return iterable
      * @throws PackException
      */
-    private function packStructure(IStructure $structure): Generator
+    private function packStructure(IStructure $structure): iterable
     {
         $arr = $this->structuresLt[get_class($structure)] ?? null;
         if ($arr === null) {
@@ -268,10 +268,10 @@ class Packer implements IPacker
 
     /**
      * @param Bytes $bytes
-     * @return Generator
+     * @return iterable
      * @throws PackException
      */
-    private function packByteArray(Bytes $bytes): Generator
+    private function packByteArray(Bytes $bytes): iterable
     {
         $size = count($bytes);
         if ($size < self::MEDIUM) {
