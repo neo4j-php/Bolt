@@ -4,7 +4,7 @@ namespace Bolt\PackStream\v1;
 
 use Bolt\PackStream\IPacker;
 use Bolt\error\PackException;
-use Bolt\PackStream\{PackListGenerator, PackDictionaryGenerator};
+use Bolt\PackStream\{IPackListGenerator, IPackDictionaryGenerator};
 use Generator;
 use Bolt\structures\{
     IStructure,
@@ -123,9 +123,9 @@ class Packer implements IPacker
                     yield from $this->packStructure($param);
                 } elseif ($param instanceof Bytes) {
                     yield from $this->packByteArray($param);
-                } elseif ($param instanceof PackListGenerator) {
+                } elseif ($param instanceof IPackListGenerator) {
                     yield from $this->packList($param);
-                } elseif ($param instanceof PackDictionaryGenerator) {
+                } elseif ($param instanceof IPackDictionaryGenerator) {
                     yield from $this->packDictionary($param);
                 } else {
                     yield from $this->packDictionary((array)$param);
@@ -195,7 +195,7 @@ class Packer implements IPacker
     }
 
     /**
-     * @param array|PackDictionaryGenerator $param
+     * @param array|IPackDictionaryGenerator $param
      * @return Generator
      * @throws PackException
      */
@@ -222,7 +222,7 @@ class Packer implements IPacker
     }
 
     /**
-     * @param array|PackListGenerator $param
+     * @param array|IPackListGenerator $param
      * @return Generator
      * @throws PackException
      */

@@ -3,12 +3,12 @@
 namespace Bolt\PackStream;
 
 /**
- * Class PackDictionaryGenerator
+ * Class PackListGenerator
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\PackStream
  */
-interface PackDictionaryGenerator extends \Countable, \Iterator
+interface IPackListGenerator extends \Iterator, \Countable
 {
 
 }

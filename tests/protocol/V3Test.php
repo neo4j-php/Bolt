@@ -37,7 +37,19 @@ class V3Test extends ATest
     public function testHello(V3 $cls)
     {
         self::$readArray = [1, 2, 0];
-        self::$writeBuffer = [hex2bin('0048b101a48a757365725f6167656e7488626f6c742d70687086736368656d65856261736963897072696e636970616c84757365728b63726564656e7469616c738870617373776f7264')];
+        self::$writeBuffer = [
+            hex2bin('0001b1'),
+            hex2bin('000101'),
+            hex2bin('0001a4'),
+            hex2bin('000b8a757365725f6167656e74'),
+            hex2bin('000988626f6c742d706870'),
+            hex2bin('000786736368656d65'),
+            hex2bin('0006856261736963'),
+            hex2bin('000a897072696e636970616c'),
+            hex2bin('00058475736572'),
+            hex2bin('000c8b63726564656e7469616c73'),
+            hex2bin('00098870617373776f7264'),
+        ];
 
         try {
             $this->assertIsArray($cls->hello(\Bolt\helpers\Auth::basic('user', 'password')));
@@ -54,7 +66,17 @@ class V3Test extends ATest
     {
         self::$readArray = [4, 5, 0];
         self::$writeBuffer = [
-            hex2bin('0048b101a48a757365725f6167656e7488626f6c742d70687086736368656d65856261736963897072696e636970616c84757365728b63726564656e7469616c738870617373776f7264'),
+            hex2bin('0001b1'),
+            hex2bin('000101'),
+            hex2bin('0001a4'),
+            hex2bin('000b8a757365725f6167656e74'),
+            hex2bin('000988626f6c742d706870'),
+            hex2bin('000786736368656d65'),
+            hex2bin('0006856261736963'),
+            hex2bin('000a897072696e636970616c'),
+            hex2bin('00058475736572'),
+            hex2bin('000c8b63726564656e7469616c73'),
+            hex2bin('00098870617373776f7264'),
             hex2bin('0002b00e')
         ];
 
@@ -70,7 +92,13 @@ class V3Test extends ATest
     public function testRun(V3 $cls)
     {
         self::$readArray = [1, 2, 0];
-        self::$writeBuffer = [hex2bin('000db3108852455455524e2031a0a0')];
+        self::$writeBuffer = [
+            hex2bin('0001b3'),
+            hex2bin('000110'),
+            hex2bin('00098852455455524e2031'),
+            hex2bin('0001a0'),
+            hex2bin('0001a0'),
+        ];
 
         try {
             $this->assertIsArray($cls->run('RETURN 1'));
@@ -87,7 +115,11 @@ class V3Test extends ATest
     {
         self::$readArray = [4, 5, 0, 1, 2, 0];
         self::$writeBuffer = [
-            hex2bin('000db3108852455455524e2031a0a0'),
+            hex2bin('0001b3'),
+            hex2bin('000110'),
+            hex2bin('00098852455455524e2031'),
+            hex2bin('0001a0'),
+            hex2bin('0001a0'),
             hex2bin('0002b00f0000')
         ];
 
@@ -104,7 +136,10 @@ class V3Test extends ATest
     public function testReset(V3 $cls)
     {
         self::$readArray = [1, 2, 0];
-        self::$writeBuffer = [hex2bin('0002b00f')];
+        self::$writeBuffer = [
+            hex2bin('0001b0'),
+            hex2bin('00010f'),
+        ];
 
         try {
             $cls->reset();
@@ -120,7 +155,11 @@ class V3Test extends ATest
     public function testBegin(V3 $cls)
     {
         self::$readArray = [1, 2, 0];
-        self::$writeBuffer = [hex2bin('0003b111a0')];
+        self::$writeBuffer = [
+            hex2bin('0001b1'),
+            hex2bin('000111'),
+            hex2bin('0001a0'),
+        ];
 
         try {
             $this->assertIsArray($cls->begin());
@@ -137,7 +176,9 @@ class V3Test extends ATest
     {
         self::$readArray = [4, 5, 0, 1, 2, 0];
         self::$writeBuffer = [
-            hex2bin('0003b111a0'),
+            hex2bin('0001b1'),
+            hex2bin('000111'),
+            hex2bin('0001a0'),
             hex2bin('0002b00f')
         ];
 
@@ -153,7 +194,10 @@ class V3Test extends ATest
     public function testCommit(V3 $cls)
     {
         self::$readArray = [1, 2, 0];
-        self::$writeBuffer = [hex2bin('0002b012')];
+        self::$writeBuffer = [
+            hex2bin('0001b0'),
+            hex2bin('000112'),
+        ];
 
         try {
             $this->assertIsArray($cls->commit());
@@ -170,7 +214,8 @@ class V3Test extends ATest
     {
         self::$readArray = [4, 5, 0, 1, 2, 0];
         self::$writeBuffer = [
-            hex2bin('0002b012'),
+            hex2bin('0001b0'),
+            hex2bin('000112'),
             hex2bin('0002b00f')
         ];
 
@@ -186,7 +231,10 @@ class V3Test extends ATest
     public function testRollback(V3 $cls)
     {
         self::$readArray = [1, 2, 0];
-        self::$writeBuffer = [hex2bin('0002b013')];
+        self::$writeBuffer = [
+            hex2bin('0001b0'),
+            hex2bin('000113'),
+        ];
 
         try {
             $this->assertIsArray($cls->rollback());
@@ -203,7 +251,8 @@ class V3Test extends ATest
     {
         self::$readArray = [4, 5, 0, 1, 2, 0];
         self::$writeBuffer = [
-            hex2bin('0002b013'),
+            hex2bin('0001b0'),
+            hex2bin('000113'),
             hex2bin('0002b00f')
         ];
 
@@ -220,7 +269,10 @@ class V3Test extends ATest
     public function testGoodbye(V3 $cls)
     {
         self::$readArray = [1, 2, 0];
-        self::$writeBuffer = [hex2bin('0002b002')];
+        self::$writeBuffer = [
+            hex2bin('0001b0'),
+            hex2bin('000102'),
+        ];
 
         try {
             $cls->goodbye();
