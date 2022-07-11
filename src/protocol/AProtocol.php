@@ -43,7 +43,7 @@ abstract class AProtocol
      * @param Generator $generator
      * @throws Exception
      */
-    protected function write(Generator $generator)
+    protected function write(iterable $generator)
     {
         foreach ($generator as $buffer)
             $this->connection->write($buffer);
