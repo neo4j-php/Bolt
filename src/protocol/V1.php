@@ -12,7 +12,6 @@ use Exception;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- * @see https://7687.org/bolt/bolt-protocol-message-specification-1.html
  * @package Bolt\protocol
  */
 class V1 extends AProtocol
@@ -22,7 +21,7 @@ class V1 extends AProtocol
      * Send INIT message
      * The INIT message is a request for the connection to be authorized for use with the remote database.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---init
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-init
      * @param mixed ...$args Use \Bolt\helpers\Auth to generate appropiate array
      * @return array
      * @throws Exception
@@ -52,7 +51,7 @@ class V1 extends AProtocol
      * Send RUN message
      * A RUN message submits a new query for execution, the result of which will be consumed by a subsequent message, such as PULL_ALL.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---run
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-run
      * @param mixed ...$args
      * @return array
      * @throws Exception
@@ -82,7 +81,7 @@ class V1 extends AProtocol
      * Send PULL_ALL message
      * The PULL_ALL message issues a request to stream the outstanding result back to the client, before returning to a READY state.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---pull_all
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#message-pull
      * @param mixed ...$args
      * @return array Array of records with last success entry
      * @throws Exception
@@ -114,7 +113,7 @@ class V1 extends AProtocol
      * Send DISCARD_ALL message
      * The DISCARD_ALL message issues a request to discard the outstanding result and return to a READY state.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---discard_all
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-discard
      * @param mixed ...$args
      * @return array
      * @throws Exception
@@ -141,7 +140,7 @@ class V1 extends AProtocol
      * The client must acknowledge the FAILURE message by sending an ACK_FAILURE message to the server.
      * Until the server receives the ACK_FAILURE message, it will send an IGNORED message in response to any other message from the client.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---ack_failure
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-ack-failure
      * @throws Exception
      */
     private function ackFailure()
@@ -159,7 +158,7 @@ class V1 extends AProtocol
      * Send RESET message
      * The RESET message requests that the connection should be set back to its initial READY state, as if an INIT had just successfully completed.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---reset
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-reset
      * @return array Current version has empty success message
      * @throws Exception
      */
