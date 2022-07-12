@@ -27,10 +27,10 @@ _If you need support for PHP < 7.4 you can use latest v3.x release. Not all new 
 
 ### Extensions
 
-- mbstring https://www.php.net/manual/en/book.mbstring.php
-- sockets https://www.php.net/manual/en/book.sockets.php (optional) - Required when you use Socket connection class
-- openssl https://www.php.net/manual/en/book.openssl.php (optional) - Required when you use StreamSocket connection class with enabled SSL
-- phpunit >= 9 https://phpunit.de/ (development)
+- [mbstring](https://www.php.net/manual/en/book.mbstring.php)
+- [sockets](https://www.php.net/manual/en/book.sockets.php) (optional) - Required when you use Socket connection class
+- [openssl](https://www.php.net/manual/en/book.openssl.php) (optional) - Required when you use StreamSocket connection class with enabled SSL
+- [phpunit](https://phpunit.de/) >= 9 (development)
 
 ## Installation
 
