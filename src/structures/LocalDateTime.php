@@ -10,7 +10,7 @@ namespace Bolt\structures;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- * @link https://7687.org/packstream/packstream-specification-1.html#localdatetime---structure
+ * @link https://www.neo4j.com/docs/bolt/current/packstream/#structure-localdatetime
  * @package Bolt\structures
  */
 class LocalDateTime implements IStructure

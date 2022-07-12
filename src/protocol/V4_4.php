@@ -7,6 +7,7 @@ namespace Bolt\protocol;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
+ * @see https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-summary-44
  * @package Bolt\protocol
  */
 class V4_4 extends AProtocol

@@ -23,7 +23,7 @@ We like to keep the code unified and clean as possible.
 - Set methods return type
 - Add descriptive method annotations if needed
 - Don't use @deprecated annotation
-- Follow Bolt specification by [official documentation](https://7687.org/)
+- Follow Bolt specification by [official documentation](https://www.neo4j.com/docs/bolt/current/)
 
 \
 PHP Bolt library is a volunteer effort. We are thankful for your interest or contribution.
