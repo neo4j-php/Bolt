@@ -101,6 +101,8 @@ _`run` executes query in auto-commit transaction if explicit transaction was not
 
 List or dictionary can be also provided as instance of class implementing `Bolt\PackStream\IPackListGenerator` or `Bolt\PackStream\IPackDictionaryGenerator`. This approach helps with memory management while working with big amount of data. To learn more you can check [performance test](https://github.com/neo4j-php/Bolt/blob/master/tests/PerformanceTest.php) or [packer test](https://github.com/neo4j-php/Bolt/blob/master/tests/PackStream/v1/PackerTest.php).
 
+Structures Node, Relationship, UnboundRelationship and Path cannot be used as parameter. They are available only as received data from database.
+
 ### Neo4j Aura
 
 Connecting to Aura requires encryption which is provided with SSL. To connect to Aura you have to use StreamSocket connection class and enable SSL.
