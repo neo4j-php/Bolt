@@ -1,6 +1,6 @@
 {
     "name": "stefanak-michal/bolt",
-    "description": "Bolt protocol library over TCP socket",
+    "description": "PHP library for communication with Neo4j graph database over TCP socket with Bolt protocol specification",
     "keywords": ["neo4j", "bolt", "socket", "database"],
     "homepage": "https://github.com/neo4j-php/Bolt",
     "type": "library",
