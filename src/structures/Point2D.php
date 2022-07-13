@@ -10,7 +10,7 @@ namespace Bolt\structures;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- * @link https://7687.org/packstream/packstream-specification-1.html#point2d---structure
+ * @link https://www.neo4j.com/docs/bolt/current/packstream/#structure-point2d
  * @package Bolt\structures
  */
 class Point2D implements IStructure

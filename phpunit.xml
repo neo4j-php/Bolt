@@ -8,8 +8,6 @@
             <directory>./tests/PackStream</directory>
         </testsuite>
         <testsuite name="NoDatabase">
-            <directory>./tests/error</directory>
-            <directory>./tests/PackStream</directory>
             <directory>./tests/protocol</directory>
         </testsuite>
     </testsuites>

@@ -4,7 +4,7 @@ namespace Bolt\PackStream\v1;
 
 use Bolt\PackStream\IPacker;
 use Bolt\error\PackException;
-use Generator;
+use Bolt\PackStream\{IPackListGenerator, IPackDictionaryGenerator};
 use Bolt\structures\{
     IStructure,
     Date,
@@ -54,41 +54,38 @@ class Packer implements IPacker
      * Pack message with parameters
      * @param $signature
      * @param mixed ...$params
-     * @return Generator
+     * @return iterable
      * @throws PackException
      */
-    public function pack($signature, ...$params): Generator
+    public function pack($signature, ...$params): iterable
     {
-        $output = '';
-
         $this->littleEndian = unpack('S', "\x01\x00")[1] === 1;
 
         //structure
         $length = count($params);
         if ($length < self::SMALL) { //TINY_STRUCT
-            $output .= pack('C', 0b10110000 | $length);
+            yield pack('n', 1) . pack('C', 0b10110000 | $length);
         } elseif ($length < self::MEDIUM) { //STRUCT_8
-            $output .= chr(0xDC) . pack('C', $length);
+            yield pack('n', 2) . chr(0xDC) . pack('C', $length);
         } elseif ($length < self::LARGE) { //STRUCT_16
-            $output .= chr(0xDD) . pack('n', $length);
+            yield pack('n', 4) . chr(0xDD) . pack('n', $length);
         } else {
             throw new PackException('Too many parameters');
         }
 
-        $output .= chr($signature);
+        yield pack('n', 1) . chr($signature);
 
         foreach ($params as $param) {
-            $output .= $this->p($param);
-        }
-
-        //structure buffer
-        $totalLength = mb_strlen($output, '8bit');
-        $offset = 0;
-        while ($offset < $totalLength) {
-            $chunk = mb_strcut($output, $offset, 65535, '8bit');
-            $chunkLength = mb_strlen($chunk, '8bit');
-            $offset += $chunkLength;
-            yield pack('n', $chunkLength) . $chunk;
+            foreach ($this->p($param) as $packed) {
+                $totalLength = mb_strlen($packed, '8bit');
+                $offset = 0;
+                while ($offset < $totalLength) {
+                    $chunk = mb_strcut($packed, $offset, 65535, '8bit');
+                    $chunkLength = mb_strlen($chunk, '8bit');
+                    $offset += $chunkLength;
+                    yield pack('n', $chunkLength) . $chunk;
+                }
+            }
         }
 
         yield chr(0x00) . chr(0x00);
@@ -96,36 +93,47 @@ class Packer implements IPacker
 
     /**
      * @param mixed $param
-     * @return string
+     * @return iterable
      * @throws PackException
      */
-    private function p($param): string
+    private function p($param): iterable
     {
         switch (gettype($param)) {
             case 'integer':
-                return $this->packInteger($param);
+                yield from $this->packInteger($param);
+                break;
             case 'double':
-                return $this->packFloat($param);
+                yield from $this->packFloat($param);
+                break;
             case 'boolean':
-                return chr($param ? 0xC3 : 0xC2);
+                yield chr($param ? 0xC3 : 0xC2);
+                break;
             case 'NULL':
-                return chr(0xC0);
+                yield chr(0xC0);
+                break;
             case 'string':
-                return $this->packString($param);
+                yield from $this->packString($param);
+                break;
             case 'array':
                 if ($param === array_values($param)) {
-                    return $this->packList($param);
+                    yield from $this->packList($param);
                 } else {
-                    return $this->packMap($param);
+                    yield from $this->packDictionary($param);
                 }
+                break;
             case 'object':
                 if ($param instanceof IStructure) {
-                    return $this->packStructure($param);
+                    yield from $this->packStructure($param);
                 } elseif ($param instanceof Bytes) {
-                    return $this->packByteArray($param);
+                    yield from $this->packByteArray($param);
+                } elseif ($param instanceof IPackListGenerator) {
+                    yield from $this->packList($param);
+                } elseif ($param instanceof IPackDictionaryGenerator) {
+                    yield from $this->packDictionary($param);
                 } else {
-                    return $this->packMap((array)$param);
+                    yield from $this->packDictionary((array)$param);
                 }
+                break;
 
             default:
                 throw new PackException('Not recognized type of parameter');
@@ -134,21 +142,21 @@ class Packer implements IPacker
 
     /**
      * @param string $str
-     * @return string
+     * @return iterable
      * @throws PackException
      */
-    private function packString(string $str): string
+    private function packString(string $str): iterable
     {
         $length = mb_strlen($str, '8bit');
 
         if ($length < self::SMALL) { //TINY_STRING
-            return pack('C', 0b10000000 | $length) . $str;
+            yield pack('C', 0b10000000 | $length) . $str;
         } elseif ($length < self::MEDIUM) { //STRING_8
-            return chr(0xD0) . pack('C', $length) . $str;
+            yield chr(0xD0) . pack('C', $length) . $str;
         } elseif ($length < self::LARGE) { //STRING_16
-            return chr(0xD1) . pack('n', $length) . $str;
+            yield chr(0xD1) . pack('n', $length) . $str;
         } elseif ($length < self::HUGE) { //STRING_32
-            return chr(0xD2) . pack('N', $length) . $str;
+            yield chr(0xD2) . pack('N', $length) . $str;
         } else {
             throw new PackException('String too long');
         }
@@ -156,104 +164,98 @@ class Packer implements IPacker
 
     /**
      * @param float $value
-     * @return string
+     * @return iterable
      */
-    private function packFloat(float $value): string
+    private function packFloat(float $value): iterable
     {
         $packed = pack('d', $value);
-        return chr(0xC1) . ($this->littleEndian ? strrev($packed) : $packed);
+        yield chr(0xC1) . ($this->littleEndian ? strrev($packed) : $packed);
     }
 
     /**
      * @param int $value
-     * @return string
+     * @return iterable
      * @throws PackException
      */
-    private function packInteger(int $value): string
+    private function packInteger(int $value): iterable
     {
         if ($value >= -16 && $value <= 127) { //TINY_INT
-            return pack('c', $value);
+            yield pack('c', $value);
         } elseif ($value >= -128 && $value <= -17) { //INT_8
-            return chr(0xC8) . pack('c', $value);
+            yield chr(0xC8) . pack('c', $value);
         } elseif (($value >= 128 && $value <= 32767) || ($value >= -32768 && $value <= -129)) { //INT_16
             $packed = pack('s', $value);
-            return chr(0xC9) . ($this->littleEndian ? strrev($packed) : $packed);
+            yield chr(0xC9) . ($this->littleEndian ? strrev($packed) : $packed);
         } elseif (($value >= 32768 && $value <= 2147483647) || ($value >= -2147483648 && $value <= -32769)) { //INT_32
             $packed = pack('l', $value);
-            return chr(0xCA) . ($this->littleEndian ? strrev($packed) : $packed);
+            yield chr(0xCA) . ($this->littleEndian ? strrev($packed) : $packed);
         } elseif (($value >= 2147483648 && $value <= 9223372036854775807) || ($value >= -9223372036854775808 && $value <= -2147483649)) { //INT_64
             $packed = pack('q', $value);
-            return chr(0xCB) . ($this->littleEndian ? strrev($packed) : $packed);
+            yield chr(0xCB) . ($this->littleEndian ? strrev($packed) : $packed);
         } else {
             throw new PackException('Integer out of range');
         }
     }
 
     /**
-     * @param array $arr
-     * @return string
+     * @param array|IPackDictionaryGenerator $param
+     * @return iterable
      * @throws PackException
      */
-    private function packMap(array $arr): string
+    private function packDictionary($param): iterable
     {
-        $output = '';
-        $size = count($arr);
+        $size = is_array($param) ? count($param) : $param->count();
 
         if ($size < self::SMALL) { //TINY_MAP
-            $output .= pack('C', 0b10100000 | $size);
+            yield pack('C', 0b10100000 | $size);
         } elseif ($size < self::MEDIUM) { //MAP_8
-            $output .= chr(0xD8) . pack('C', $size);
+            yield chr(0xD8) . pack('C', $size);
         } elseif ($size < self::LARGE) { //MAP_16
-            $output .= chr(0xD9) . pack('n', $size);
+            yield chr(0xD9) . pack('n', $size);
         } elseif ($size < self::HUGE) { //MAP_32
-            $output .= chr(0xDA) . pack('N', $size);
+            yield chr(0xDA) . pack('N', $size);
         } else {
             throw new PackException('Too many map elements');
         }
 
-        foreach ($arr as $k => $v) {
-            $output .= $this->p((string)$k); // The key names in a map must be of type String.
-            $output .= $this->p($v);
+        foreach ($param as $k => $v) {
+            yield from $this->p((string)$k); // The key names in a map must be of type String.
+            yield from $this->p($v);
         }
-
-        return $output;
     }
 
     /**
-     * @param array $arr
-     * @return string
+     * @param array|IPackListGenerator $param
+     * @return iterable
      * @throws PackException
      */
-    private function packList(array $arr): string
+    private function packList($param): iterable
     {
-        $output = '';
-        $size = count($arr);
+        $size = is_array($param) ? count($param) : $param->count();
 
         if ($size < self::SMALL) { //TINY_LIST
-            $output .= pack('C', 0b10010000 | $size);
+            yield pack('C', 0b10010000 | $size);
         } elseif ($size < self::MEDIUM) { //LIST_8
-            $output .= chr(0xD4) . pack('C', $size);
+            yield chr(0xD4) . pack('C', $size);
         } elseif ($size < self::LARGE) { //LIST_16
-            $output .= chr(0xD5) . pack('n', $size);
+            yield chr(0xD5) . pack('n', $size);
         } elseif ($size < self::HUGE) { //LIST_32
-            $output .= chr(0xD6) . pack('N', $size);
+            yield chr(0xD6) . pack('N', $size);
         } else {
             throw new PackException('Too many list elements');
         }
 
-        foreach ($arr as $v) {
-            $output .= $this->p($v);
+        foreach ($param as $v) {
+            yield from $this->p($v);
         }
-
-        return $output;
     }
 
     /**
      * @param IStructure $structure
-     * @return string
+     * @return iterable
      * @throws PackException
      */
-    private function packStructure(IStructure $structure): string
+    private function packStructure(IStructure $structure): iterable
     {
         $arr = $this->structuresLt[get_class($structure)] ?? null;
         if ($arr === null) {
@@ -261,28 +263,26 @@ class Packer implements IPacker
         }
 
         $signature = chr(array_shift($arr));
-        $output = pack('C', 0b10110000 | count($arr)) . $signature;
+        yield pack('C', 0b10110000 | count($arr)) . $signature;
         foreach ($arr as $structureMethod => $packerMethod) {
-            $output .= $this->{$packerMethod}($structure->{$structureMethod}());
+            yield from $this->{$packerMethod}($structure->{$structureMethod}());
         }
-
-        return $output;
     }
 
     /**
      * @param Bytes $bytes
-     * @return string
+     * @return iterable
      * @throws PackException
      */
-    private function packByteArray(Bytes $bytes): string
+    private function packByteArray(Bytes $bytes): iterable
     {
         $size = count($bytes);
         if ($size < self::MEDIUM) {
-            return chr(0xCC) . pack('C', $size) . $bytes;
+            yield chr(0xCC) . pack('C', $size) . $bytes;
         } elseif ($size < self::LARGE) {
-            return chr(0xCD) . pack('n', $size) . $bytes;
+            yield chr(0xCD) . pack('n', $size) . $bytes;
         } elseif ($size <= 2147483647) {
-            return chr(0xCE) . pack('N', $size) . $bytes;
+            yield chr(0xCE) . pack('N', $size) . $bytes;
         } else {
             throw new PackException('ByteArray too big');
         }

@@ -100,6 +100,7 @@ final class ConnectionTest extends TestCase
             $this->assertGreaterThanOrEqual(1.0, $newTime - $time);
         }
 
+        $conn->setTimeout(15.0);
         try {
             $protocol->reset();
         } catch (MessageException $e) {
@@ -107,6 +108,7 @@ final class ConnectionTest extends TestCase
             $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         }
 
+        $conn->setTimeout(1.5);
         $time = microtime(true);
         try {
             $protocol->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )');

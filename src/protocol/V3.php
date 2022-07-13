@@ -12,7 +12,7 @@ use Exception;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- * @see https://7687.org/bolt/bolt-protocol-message-specification-3.html
+ * @see https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-summary-3
  * @package Bolt\protocol
  */
 class V3 extends V2
@@ -31,7 +31,7 @@ class V3 extends V2
      * Send HELLO message
      * The HELLO message request the connection to be authorized for use with the remote database.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---hello
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-hello
      * @param mixed ...$args Use \Bolt\helpers\Auth to generate appropiate array
      * @return array
      * @throws Exception
@@ -57,9 +57,7 @@ class V3 extends V2
      * Send RUN message
      * The RUN message requests that a Cypher query is executed with a set of parameters and additional extra data.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---run
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---run
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---run---44
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-run
      * @param string|array ...$args query, parameters, extra
      * @return array
      * @throws Exception
@@ -93,9 +91,7 @@ class V3 extends V2
      * Send BEGIN message
      * The BEGIN message request the creation of a new Explicit Transaction.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---begin
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---begin
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---begin---44
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-begin
      * @param mixed ...$args extra
      * @return array Current version has empty success message
      * @throws Exception
@@ -120,7 +116,7 @@ class V3 extends V2
      * Send COMMIT message
      * The COMMIT message request that the Explicit Transaction is done.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---commit
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-commit
      * @return array Current version has empty success message
      * @throws Exception
      */
@@ -144,7 +140,7 @@ class V3 extends V2
      * Send ROLLBACK message
      * The ROLLBACK message requests that the Explicit Transaction rolls back.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---rollback
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-rollback
      * @return array Current version has empty success message
      * @throws Exception
      */
@@ -168,7 +164,7 @@ class V3 extends V2
      * Send GOODBYE message
      * The GOODBYE message notifies the server that the connection is terminating gracefully.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---goodbye
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-goodbye
      * @throws Exception
      */
     public function goodbye()

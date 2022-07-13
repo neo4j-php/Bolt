@@ -108,7 +108,7 @@ final class Bolt
     }
 
     /**
-     * @link https://7687.org/bolt/bolt-protocol-handshake-specification.html
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/handshake/
      * @return string
      * @throws Exception
      */

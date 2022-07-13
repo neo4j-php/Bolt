@@ -16,7 +16,8 @@
     },
     "support": {
         "issues": "https://github.com/neo4j-php/Bolt/issues",
-        "source": "https://github.com/neo4j-php/Bolt"
+        "source": "https://github.com/neo4j-php/Bolt",
+		"docs": "https://www.neo4j.com/docs/bolt/current/"
     },
     "funding": [
         {

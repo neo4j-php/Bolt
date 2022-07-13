@@ -52,9 +52,9 @@ class Unpacker implements IUnpacker
     private $signature;
 
     private $structuresLt = [
-        0x4E => [Node::class, 'unpackInteger', 'unpackList', 'unpackMap'],
-        0x52 => [Relationship::class, 'unpackInteger', 'unpackInteger', 'unpackInteger', 'unpackString', 'unpackMap'],
-        0x72 => [UnboundRelationship::class, 'unpackInteger', 'unpackString', 'unpackMap'],
+        0x4E => [Node::class, 'unpackInteger', 'unpackList', 'unpackDictionary'],
+        0x52 => [Relationship::class, 'unpackInteger', 'unpackInteger', 'unpackInteger', 'unpackString', 'unpackDictionary'],
+        0x72 => [UnboundRelationship::class, 'unpackInteger', 'unpackString', 'unpackDictionary'],
         0x50 => [Path::class, 'unpackList', 'unpackList', 'unpackList'],
         0x44 => [Date::class, 'unpackInteger'],
         0x54 => [Time::class, 'unpackInteger', 'unpackInteger'],
@@ -138,7 +138,7 @@ class Unpacker implements IUnpacker
         if ($output !== null) {
             return $output;
         }
-        $output = $this->unpackMap($marker);
+        $output = $this->unpackDictionary($marker);
         if ($output !== null) {
             return $output;
         }
@@ -209,15 +209,15 @@ class Unpacker implements IUnpacker
      * @return array|null
      * @throws UnpackException
      */
-    private function unpackMap(int $marker): ?array
+    private function unpackDictionary(int $marker): ?array
     {
-        if ($marker >> 4 == 0b1010) { //TINY_MAP
+        if ($marker >> 4 == 0b1010) { //TINY_DICT
             $size = 0b10100000 ^ $marker;
-        } elseif ($marker == 0xD8) { //MAP_8
+        } elseif ($marker == 0xD8) { //DICT_8
             $size = (int)unpack('C', $this->next(1))[1];
-        } elseif ($marker == 0xD9) { //MAP_16
+        } elseif ($marker == 0xD9) { //DICT_16
             $size = (int)unpack('n', $this->next(2))[1];
-        } elseif ($marker == 0xDA) { //MAP_32
+        } elseif ($marker == 0xDA) { //DICT_32
             $size = (int)unpack('N', $this->next(4))[1];
         } else {
             return null;

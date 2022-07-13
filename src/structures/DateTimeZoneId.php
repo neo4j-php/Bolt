@@ -14,7 +14,7 @@ namespace Bolt\structures;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- * @link https://7687.org/packstream/packstream-specification-1.html#datetimezoneid---structure
+ * @link https://www.neo4j.com/docs/bolt/current/packstream/#structure-datetimezoneid
  * @package Bolt\structures
  */
 class DateTimeZoneId implements IStructure

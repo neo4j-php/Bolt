@@ -11,7 +11,7 @@ use Bolt\error\MessageException;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- * @see https://7687.org/bolt/bolt-protocol-message-specification-4.html
+ * @see https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-summary-40
  * @package Bolt\protocol
  */
 class V4 extends V3
@@ -30,7 +30,7 @@ class V4 extends V3
      * Send PULL message
      * The PULL message requests data from the remainder of the result stream.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---pull
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#message-pull
      * @param array ...$args
      * @return array
      * @throws Exception
@@ -75,7 +75,7 @@ class V4 extends V3
      * Send DISCARD message
      * The DISCARD message requests that the remainder of the result stream should be thrown away.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---discard
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-discard
      * @param mixed ...$args
      * @return array
      * @throws Exception
