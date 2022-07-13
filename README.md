@@ -46,9 +46,9 @@ Run the following command in your project to install the latest applicable versi
 
 ### Manual
 
-1. Download [latest release](https://github.com/neo4j-php/Bolt/releases/latest) or [master](https://github.com/neo4j-php/Bolt)
+1. Download source code from [github](https://github.com/neo4j-php/Bolt/)
 2. Unpack
-3. Copy content of `src` directory to your project
+3. Copy content of `src` directory into your project
 
 ## Usage
 
