@@ -61,7 +61,9 @@ final class Bolt
      */
     public function setProtocolVersions(...$v): Bolt
     {
-        $this->versions = $v;
+        $this->versions = array_slice($v, 0, 4);
+        while (count($this->versions) < 4)
+            $this->versions[] = 0;
         return $this;
     }
 
@@ -135,10 +137,7 @@ final class Bolt
     {
         $versions = [];
 
-        while (count($this->versions) < 4)
-            $this->versions[] = '0';
-
-        foreach (array_slice($this->versions, 0, 4) as $v) {
+        foreach ($this->versions as $v) {
             if (is_int($v))
                 $versions[] = pack('N', $v);
             else {
