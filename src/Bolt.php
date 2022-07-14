@@ -109,9 +109,9 @@ final class Bolt
 
     /**
      * Read and compose selected protocol version
-     * @return string
+     * @return string|null
      */
-    private function unpackProtocolVersion(): string
+    private function unpackProtocolVersion(): ?string
     {
         $result = [];
 
@@ -123,7 +123,8 @@ final class Bolt
             array_shift($result);
         }
 
-        return implode('.', array_reverse($result));
+        $version = implode('.', array_reverse($result));
+        return in_array($version, $this->versions) ? $version : null;
     }
 
     /**
@@ -137,7 +138,7 @@ final class Bolt
         while (count($this->versions) < 4)
             $this->versions[] = '0';
 
-        foreach ($this->versions as $v) {
+        foreach (array_slice($this->versions, 0, 4) as $v) {
             if (is_int($v))
                 $versions[] = pack('N', $v);
             else {
