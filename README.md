@@ -27,10 +27,10 @@ _If you need support for PHP < 7.4 you can use latest v3.x release. Not all new 
 
 ### Extensions
 
-- mbstring https://www.php.net/manual/en/book.mbstring.php
-- sockets https://www.php.net/manual/en/book.sockets.php (optional) - Required when you use Socket connection class
-- openssl https://www.php.net/manual/en/book.openssl.php (optional) - Required when you use StreamSocket connection class with enabled SSL
-- phpunit >= 9 https://phpunit.de/ (development)
+- [mbstring](https://www.php.net/manual/en/book.mbstring.php)
+- [sockets](https://www.php.net/manual/en/book.sockets.php) (optional) - Required when you use Socket connection class
+- [openssl](https://www.php.net/manual/en/book.openssl.php) (optional) - Required when you use StreamSocket connection class with enabled SSL
+- [phpunit](https://phpunit.de/) >= 9 (development)
 
 ## Installation
 
@@ -46,9 +46,9 @@ Run the following command in your project to install the latest applicable versi
 
 ### Manual
 
-1. Download [latest release](https://github.com/neo4j-php/Bolt/releases/latest) or [master](https://github.com/neo4j-php/Bolt)
+1. Download source code from [github](https://github.com/neo4j-php/Bolt/)
 2. Unpack
-3. Copy content of `src` directory to your project
+3. Copy content of `src` directory into your project
 
 ## Usage
 
@@ -100,6 +100,8 @@ _`run` executes query in auto-commit transaction if explicit transaction was not
 | Structure | [directory with structures](https://github.com/neo4j-php/Bolt/tree/master/src/structures) |
 
 List or dictionary can be also provided as instance of class implementing `Bolt\PackStream\IPackListGenerator` or `Bolt\PackStream\IPackDictionaryGenerator`. This approach helps with memory management while working with big amount of data. To learn more you can check [performance test](https://github.com/neo4j-php/Bolt/blob/master/tests/PerformanceTest.php) or [packer test](https://github.com/neo4j-php/Bolt/blob/master/tests/PackStream/v1/PackerTest.php).
+
+Structures Node, Relationship, UnboundRelationship and Path cannot be used as parameter. They are available only as received data from database.
 
 ### Neo4j Aura
 

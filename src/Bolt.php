@@ -61,7 +61,9 @@ final class Bolt
      */
     public function setProtocolVersions(...$v): Bolt
     {
-        $this->versions = $v;
+        $this->versions = array_slice($v, 0, 4);
+        while (count($this->versions) < 4)
+            $this->versions[] = 0;
         return $this;
     }
 
@@ -109,9 +111,9 @@ final class Bolt
 
     /**
      * Read and compose selected protocol version
-     * @return string
+     * @return string|null
      */
-    private function unpackProtocolVersion(): string
+    private function unpackProtocolVersion(): ?string
     {
         $result = [];
 
@@ -123,7 +125,8 @@ final class Bolt
             array_shift($result);
         }
 
-        return implode('.', array_reverse($result));
+        $version = implode('.', array_reverse($result));
+        return in_array($version, $this->versions) ? $version : null;
     }
 
     /**
@@ -133,9 +136,6 @@ final class Bolt
     private function packProtocolVersions(): string
     {
         $versions = [];
-
-        while (count($this->versions) < 4)
-            $this->versions[] = '0';
 
         foreach ($this->versions as $v) {
             if (is_int($v))
