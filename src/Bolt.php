@@ -102,7 +102,10 @@ final class Bolt
         $this->connection->write(chr(0x60) . chr(0x60) . chr(0xb0) . chr(0x17));
         $this->connection->write($this->packProtocolVersions());
 
-        $version = $this->unpackProtocolVersion();
+        $bytes = $this->connection->read(4);
+        if ($bytes == 'HTTP')
+            throw new ConnectException('Cannot to connect to Bolt service on ' . $this->connection->getIp() . ':' . $this->connection->getPort() . ' (looks like HTTP)');
+        $version = $this->unpackProtocolVersion($bytes);
         if (empty($version))
             throw new ConnectException('Wrong version');
 
@@ -111,13 +114,14 @@ final class Bolt
 
     /**
      * Read and compose selected protocol version
+     * @param string $bytes
      * @return string|null
      */
-    private function unpackProtocolVersion(): ?string
+    private function unpackProtocolVersion(string $bytes): ?string
     {
         $result = [];
 
-        foreach (mb_str_split($this->connection->read(4), 1, '8bit') as $ch) {
+        foreach (mb_str_split($bytes, 1, '8bit') as $ch) {
             $result[] = unpack('C', $ch)[1] ?? 0;
         }
 
