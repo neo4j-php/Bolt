@@ -66,7 +66,7 @@ class BoltTest extends TestCase
     public function testAura()
     {
         try {
-            $conn = new \Bolt\connection\StreamSocket('demo.neo4jlabs.com');
+            $conn = new \Bolt\connection\StreamSocket('neo4j+s://demo.neo4jlabs.com');
             $conn->setSslContextOptions([
                 'verify_peer' => true
             ]);

@@ -20,6 +20,13 @@ abstract class AConnection implements IConnection
      */
     public function __construct(string $ip = '127.0.0.1', int $port = 7687, float $timeout = 15)
     {
+        if (filter_var($ip, FILTER_VALIDATE_URL)) {
+            $scheme = parse_url($ip, PHP_URL_SCHEME);
+            if (!empty($scheme)) {
+                $ip = str_replace($scheme . '://', '', $ip);
+            }
+        }
+
         $this->ip = $ip;
         $this->port = $port;
         $this->timeout = $timeout;
