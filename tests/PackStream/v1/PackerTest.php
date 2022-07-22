@@ -81,26 +81,27 @@ class PackerTest extends TestCase
 
     /**
      * @depends testInit
+     * @dataProvider providerInteger
+     * @param int $i
      * @param AProtocol $protocol
      */
-    public function testInteger(AProtocol $protocol)
+    public function testInteger(int $i, AProtocol $protocol)
     {
-        $arr = array_merge(
-            range(-16, 127),
-            [-17, -128, 128, 32767, 32768, 2147483647, 2147483648, 9223372036854775807, -129, -32768, -32769, -2147483648, -2147483649, -9223372036854775808]
-        );
         try {
-            $protocol->run('RETURN ' . implode(', ', array_map(function (int $key, int $value) {
-                    return '$' . $key . ' = ' . $value;
-                }, array_keys($arr), $arr)), $arr, ['mode' => 'r']);
+            $protocol->run('RETURN $i = ' . $i, ['i' => $i], ['mode' => 'r']);
             $res = $protocol->pullAll();
-
-            foreach ($arr as $i => $_) {
-                $this->assertTrue($res[0][$i]);
-            }
+            $this->assertTrue($res[0][0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
+    }
+
+    public function providerInteger(): \Generator
+    {
+        foreach (range(-16, 127) as $i)
+            yield 'int ' . $i => [$i];
+        foreach ([-17, -128, 128, 32767, 32768, 2147483647, 2147483648, 9223372036854775807, -129, -32768, -32769, -2147483648, -2147483649, -9223372036854775808] as $i)
+            yield 'int ' . number_format($i, 0, '', ' ') => [(int)$i];
     }
 
     /**
