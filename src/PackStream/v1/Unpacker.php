@@ -239,6 +239,7 @@ class Unpacker implements IUnpacker
     /**
      * @param int $marker
      * @return int|null
+     * @throws UnpackException
      */
     private function unpackInteger(int $marker): ?int
     {
@@ -254,6 +255,9 @@ class Unpacker implements IUnpacker
             return (int)unpack('l', $this->littleEndian ? strrev($value) : $value)[1];
         } elseif ($marker == 0xCB) { //INT_64
             $value = $this->next(8);
+            if (PHP_INT_SIZE == 4) {
+                throw new UnpackException('It is not possible to unpack 64-bit integer received over Bolt, because the environment is running 32-bit versions of PHP.');
+            }
             return (int)unpack('q', $this->littleEndian ? strrev($value) : $value)[1];
         } else {
             return null;
