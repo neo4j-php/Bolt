@@ -256,7 +256,7 @@ class Unpacker implements IUnpacker
         } elseif ($marker == 0xCB) { //INT_64
             $value = $this->next(8);
             if (PHP_INT_SIZE == 4) {
-                throw new UnpackException('It is not possible to unpack 64-bit integer received over Bolt, because the environment is running 32-bit version of PHP.');
+                throw new UnpackException('It is not possible to unpack received 64-bit integer because the environment is running 32-bit version of PHP.');
             }
             return (int)unpack('q', $this->littleEndian ? strrev($value) : $value)[1];
         } else {
