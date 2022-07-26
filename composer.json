@@ -44,6 +44,7 @@
     },
     "suggest": {
         "laudis/neo4j-php-client": "Neo4j-PHP-Client is the most advanced PHP Client for Neo4j",
+        "stefanak-michal/neo4j-bolt-wrapper": "Wrapper for Neo4j PHP Bolt library to simplify usage.",
         "ext-sockets": "Needed when using Socket connection class",
         "ext-openssl": "Needed when using StreamSocket connection class with SSL"
     },
