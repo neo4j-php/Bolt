@@ -22,7 +22,7 @@ final class Bolt
     private IPacker $packer;
     private IUnpacker $unpacker;
     private IConnection $connection;
-    private array $versions = [4.4, 4.3, 4.2, 3];
+    private array $versions = [];
     public static bool $debug = false;
 
     /**
@@ -33,6 +33,7 @@ final class Bolt
     public function __construct(IConnection $connection)
     {
         $this->connection = $connection;
+        $this->setProtocolVersions(4.4, 4.3, 4.2, 3);
         $this->setPackStreamVersion();
     }
 
