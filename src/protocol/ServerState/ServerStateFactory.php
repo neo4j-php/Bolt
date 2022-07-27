@@ -57,7 +57,9 @@ class ServerStateFactory
 
     public function buildNewState(int $state): IServerState
     {
-        return new (self::IMPLEMENTATION_MAPPING[$this->version][$state] ?? Unknown::class)();
+        $class = self::IMPLEMENTATION_MAPPING[$this->version][$state] ?? Unknown::class;
+
+        return new $class();
     }
 
     public static function createFromProtocol(AProtocol $protocol): self
