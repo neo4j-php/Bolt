@@ -48,6 +48,7 @@ class V4Test extends ATest
         ];
 
         try {
+            \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::STREAMING);
             $res = $cls->pull(['n' => -1, 'qid' => -1]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -75,6 +76,7 @@ class V4Test extends ATest
             hex2bin('0002b00f')
         ];
 
+        \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::STREAMING);
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
         $cls->pull(['n' => -1, 'qid' => -1]);
@@ -98,6 +100,7 @@ class V4Test extends ATest
         ];
 
         try {
+            \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::STREAMING);
             $this->assertIsArray($cls->discard(['n' => -1, 'qid' => -1]));
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
