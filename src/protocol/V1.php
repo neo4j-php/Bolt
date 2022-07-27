@@ -35,16 +35,7 @@ class V1 extends AProtocol
         $userAgent = $args[0]['user_agent'];
         unset($args[0]['user_agent']);
 
-        $this->write($this->packer->pack(0x01, $userAgent, $args[0]));
-        $message = $this->read($signature);
-
-        if ($signature == self::FAILURE) {
-            // ..but must immediately close the connection after the failure has been sent.
-            $this->connection->disconnect();
-            throw new MessageException($message['message'], $message['code']);
-        }
-
-        return $message;
+        return $this->io(Signatures::INIT, $userAgent, $args[0]);
     }
 
     /**
@@ -62,19 +53,12 @@ class V1 extends AProtocol
             throw new PackException('Wrong arguments count');
         }
 
-        $this->write($this->packer->pack(0x10, $args[0], (object)($args[1] ?? [])));
-        $message = $this->read($signature);
-
-        if ($signature == self::FAILURE) {
-            $this->ackFailure();
-            throw new MessageException($message['message'], $message['code']);
+        try {
+            return $this->io(Signatures::RUN, $args[0], (object)($args[1] ?? []));
+        } catch (MessageException $e) {
+            $this->ackFailure(); // acknowledge the failure for backwards compatibility
+            throw $e;
         }
-
-        if ($signature == self::IGNORED) {
-            throw new IgnoredException('RUN message IGNORED. Server in FAILED or INTERRUPTED state.');
-        }
-
-        return $message;
     }
 
     /**
@@ -88,22 +72,19 @@ class V1 extends AProtocol
      */
     public function pullAll(...$args): array
     {
-        $this->write($this->packer->pack(0x3F));
+        $this->write($this->packer->pack(Signatures::PULL_ALL));
 
         $output = [];
         do {
-            $message = $this->read($signature);
-            $output[] = $message;
-        } while ($signature == self::RECORD);
+            $last = $this->read($signature);
+            $output[] = $last;
+        } while ($signature === self::RECORD);
 
-        if ($signature == self::FAILURE) {
+        try {
+            $this->interpretResult(Signatures::PULL_ALL, $signature, $last);
+        } catch (MessageException $e) {
             $this->ackFailure();
-            $last = array_pop($output);
-            throw new MessageException($last['message'], $last['code']);
-        }
-
-        if ($signature == self::IGNORED) {
-            throw new IgnoredException('PULL_ALL message IGNORED. Server in FAILED or INTERRUPTED state.');
+            throw $e;
         }
 
         return $output;
@@ -120,19 +101,12 @@ class V1 extends AProtocol
      */
     public function discardAll(...$args): array
     {
-        $this->write($this->packer->pack(0x2F));
-        $message = $this->read($signature);
-
-        if ($signature == self::FAILURE) {
-            $this->ackFailure();
-            throw new MessageException($message['message'], $message['code']);
+        try {
+            return $this->io(Signatures::DISCARD_ALL);
+        } catch (MessageException $e) {
+            $this->ackFailure(); // acknowledge the failure for backwards compatibility
+            throw $e;
         }
-
-        if ($signature == self::IGNORED) {
-            throw new IgnoredException('DISCARD_ALL message IGNORED. Server in FAILED or INTERRUPTED state.');
-        }
-
-        return $message;
     }
 
     /**
@@ -143,15 +117,9 @@ class V1 extends AProtocol
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-ack-failure
      * @throws Exception
      */
-    private function ackFailure()
+    private function ackFailure(): void
     {
-        $this->write($this->packer->pack(0x0E));
-        $message = $this->read($signature);
-
-        if ($signature == self::FAILURE) {
-            $this->connection->disconnect();
-            throw new MessageException($message['message'], $message['code']);
-        }
+        $this->io(Signatures::ACK_FAILURE);
     }
 
     /**
@@ -164,14 +132,6 @@ class V1 extends AProtocol
      */
     public function reset(): array
     {
-        $this->write($this->packer->pack(0x0F));
-        $message = $this->read($signature);
-
-        if ($signature == self::FAILURE) {
-            $this->connection->disconnect();
-            throw new MessageException($message['message'], $message['code']);
-        }
-
-        return $message;
+        return $this->io(Signatures::RESET);
     }
 }

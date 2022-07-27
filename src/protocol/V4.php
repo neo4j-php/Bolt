@@ -37,27 +37,20 @@ class V4 extends V3
      */
     public function pull(...$args): array
     {
-        if (count($args) == 0)
+        if (count($args) === 0)
             $args[0] = ['n' => -1];
         elseif (!array_key_exists('n', $args[0]))
             $args[0]['n'] = -1;
 
-        $this->write($this->packer->pack(0x3F, $args[0]));
+        $this->write($this->packer->pack(Signatures::PULL, $args[0]));
 
         $output = [];
         do {
-            $message = $this->read($signature);
-            $output[] = $message;
-        } while ($signature == self::RECORD);
+            $last = $this->read($signature);
+            $output[] = $last;
+        } while ($signature === self::RECORD);
 
-        if ($signature == self::FAILURE) {
-            $last = array_pop($output);
-            throw new MessageException($last['message'], $last['code']);
-        }
-
-        if ($signature == self::IGNORED) {
-            throw new IgnoredException('PULL message IGNORED. Server in FAILED or INTERRUPTED state.');
-        }
+        $this->interpretResult(Signatures::PULL, $signature, $last);
 
         return $output;
     }
@@ -82,22 +75,11 @@ class V4 extends V3
      */
     public function discard(...$args): array
     {
-        if (count($args) == 0)
+        if (count($args) === 0)
             $args[0] = ['n' => -1];
         elseif (!array_key_exists('n', $args[0]))
             $args[0]['n'] = -1;
 
-        $this->write($this->packer->pack(0x2F, $args[0]));
-        $message = $this->read($signature);
-
-        if ($signature == self::FAILURE) {
-            throw new MessageException($message['message'], $message['code']);
-        }
-
-        if ($signature == self::IGNORED) {
-            throw new IgnoredException('DISCARD message IGNORED. Server in FAILED or INTERRUPTED state.');
-        }
-
-        return $message;
+        return $this->io(Signatures::DISCARD, $args[0]);
     }
 }

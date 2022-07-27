@@ -2,6 +2,12 @@
 
 namespace Bolt\protocol;
 
+use Bolt\error\IgnoredException;
+use Bolt\error\MessageException;
+use Bolt\protocol\ServerState\IServerState;
+use Bolt\protocol\ServerState\ServerStateFactory;
+use Bolt\protocol\ServerState\ServerStates;
+use Bolt\protocol\ServerState\ServerStateSignal;
 use Bolt\PackStream\{IPacker, IUnpacker};
 use Bolt\connection\IConnection;
 use Exception;
@@ -24,6 +30,9 @@ abstract class AProtocol
     protected IUnpacker $unpacker;
     protected IConnection $connection;
 
+    private IServerState $serverState;
+    private ServerStateFactory $serverStateFactory;
+
     /**
      * AProtocol constructor.
      * @param IPacker $packer
@@ -35,6 +44,8 @@ abstract class AProtocol
         $this->packer = $packer;
         $this->unpacker = $unpacker;
         $this->connection = $connection;
+        $this->serverStateFactory = ServerStateFactory::createFromProtocol($this);
+        $this->serverState = $this->serverStateFactory->buildNewState(ServerStates::CONNECTED);
     }
 
     /**
@@ -76,6 +87,26 @@ abstract class AProtocol
     }
 
     /**
+     * Writes an action to the server and interpret/return the response.
+     *
+     * @param int $messageSignature
+     * @param ...$toPack
+     *
+     * @return mixed|null
+     * @throws Exception
+     */
+    protected function io(int $messageSignature, ...$toPack)
+    {
+        $this->write($this->packer->pack($messageSignature, ...$toPack));
+
+        $data = $this->read($responseSignature);
+
+        $this->interpretResult($messageSignature, $responseSignature, $data);
+
+        return $data;
+    }
+
+    /**
      * Returns the bolt protocol version as a string.
      * @return string
      */
@@ -86,5 +117,34 @@ abstract class AProtocol
         }
 
         trigger_error('Protocol version class name is not valid', E_USER_ERROR);
+    }
+
+    public function getAssumedServerState(): IServerState
+    {
+        return $this->serverState;
+    }
+
+    /**
+     * @return void
+     * @throws IgnoredException
+     * @throws MessageException
+     */
+    protected function interpretResult(int $messageSignature, ?int $responseSignature, $data): void
+    {
+        if ($responseSignature === self::IGNORED) {
+            throw new IgnoredException('RUN message IGNORED. Server in FAILED or INTERRUPTED state.');
+        }
+
+        $state = $this->serverState->transitionFromMessage(
+            $messageSignature,
+            $responseSignature,
+            $data ?? []
+        );
+
+        $this->serverState = $this->serverStateFactory->buildNewState($state);
+
+        if ($responseSignature === self::FAILURE) {
+            throw new MessageException($data['message'], $data['code']);
+        }
     }
 }

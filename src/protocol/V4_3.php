@@ -28,21 +28,10 @@ class V4_3 extends V4_2
      */
     public function route(...$args): array
     {
-        if (count($args) != 3) {
+        if (count($args) !== 3) {
             throw new PackException('Wrong arguments count');
         }
 
-        $this->write($this->packer->pack(0x66, (object)$args[0], $args[1], $args[2]));
-        $message = $this->read($signature);
-
-        if ($signature === self::FAILURE) {
-            throw new MessageException($message['message'], $message['code']);
-        }
-
-        if ($signature == self::IGNORED) {
-            throw new IgnoredException('ROUTE message IGNORED. Server in FAILED or INTERRUPTED state.');
-        }
-
-        return $message;
+        return $this->io(Signatures::ROUTE, (object)$args[0], $args[1], $args[2]);
     }
 }
