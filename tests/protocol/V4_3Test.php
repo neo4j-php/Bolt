@@ -48,6 +48,7 @@ class V4_3Test extends ATest
         ];
 
         try {
+            \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::READY);
             $this->assertIsArray($cls->route(['address' => 'localhost:7687'], [], null));
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());

@@ -5,6 +5,7 @@ namespace Bolt\protocol;
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
 use Bolt\error\PackException;
+use Bolt\helpers\ServerState;
 use Exception;
 
 /**
@@ -28,6 +29,8 @@ class V1 extends AProtocol
      */
     public function init(...$args): array
     {
+        ServerState::is(ServerState::CONNECTED);
+
         if (count($args) < 1) {
             throw new PackException('Wrong arguments count');
         }
@@ -41,9 +44,11 @@ class V1 extends AProtocol
         if ($signature == self::FAILURE) {
             // ..but must immediately close the connection after the failure has been sent.
             $this->connection->disconnect();
+            ServerState::set(ServerState::DEFUNCT);
             throw new MessageException($message['message'], $message['code']);
         }
 
+        ServerState::set(ServerState::READY);
         return $message;
     }
 
@@ -58,6 +63,8 @@ class V1 extends AProtocol
      */
     public function run(...$args): array
     {
+        ServerState::is(ServerState::READY);
+
         if (empty($args)) {
             throw new PackException('Wrong arguments count');
         }
@@ -66,14 +73,16 @@ class V1 extends AProtocol
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
+            ServerState::set(ServerState::FAILED);
             $this->ackFailure();
             throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
-            throw new IgnoredException('RUN message IGNORED. Server in FAILED or INTERRUPTED state.');
+            throw new IgnoredException(__FUNCTION__);
         }
 
+        ServerState::set(ServerState::STREAMING);
         return $message;
     }
 
@@ -88,6 +97,8 @@ class V1 extends AProtocol
      */
     public function pullAll(...$args): array
     {
+        ServerState::is(ServerState::STREAMING, ServerState::TX_STREAMING);
+
         $this->write($this->packer->pack(0x3F));
 
         $output = [];
@@ -97,15 +108,16 @@ class V1 extends AProtocol
         } while ($signature == self::RECORD);
 
         if ($signature == self::FAILURE) {
+            ServerState::set(ServerState::FAILED);
             $this->ackFailure();
-            $last = array_pop($output);
-            throw new MessageException($last['message'], $last['code']);
+            throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
-            throw new IgnoredException('PULL_ALL message IGNORED. Server in FAILED or INTERRUPTED state.');
+            throw new IgnoredException(__FUNCTION__);
         }
 
+        ServerState::set(ServerState::get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
         return $output;
     }
 
@@ -120,18 +132,22 @@ class V1 extends AProtocol
      */
     public function discardAll(...$args): array
     {
+        ServerState::is(ServerState::STREAMING, ServerState::TX_STREAMING);
+
         $this->write($this->packer->pack(0x2F));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
+            ServerState::set(ServerState::FAILED);
             $this->ackFailure();
             throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
-            throw new IgnoredException('DISCARD_ALL message IGNORED. Server in FAILED or INTERRUPTED state.');
+            throw new IgnoredException(__FUNCTION__);
         }
 
+        ServerState::set(ServerState::get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
         return $message;
     }
 
@@ -150,8 +166,11 @@ class V1 extends AProtocol
 
         if ($signature == self::FAILURE) {
             $this->connection->disconnect();
+            ServerState::set(ServerState::DEFUNCT);
             throw new MessageException($message['message'], $message['code']);
         }
+
+        ServerState::set(ServerState::READY);
     }
 
     /**
@@ -169,9 +188,11 @@ class V1 extends AProtocol
 
         if ($signature == self::FAILURE) {
             $this->connection->disconnect();
+            ServerState::set(ServerState::DEFUNCT);
             throw new MessageException($message['message'], $message['code']);
         }
 
+        ServerState::set(ServerState::READY);
         return $message;
     }
 }

@@ -52,6 +52,7 @@ class V4_1Test extends ATest
         ];
 
         try {
+            \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::CONNECTED);
             $this->assertIsArray($cls->hello(\Bolt\helpers\Auth::basic('user', 'password'), []));
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -80,6 +81,7 @@ class V4_1Test extends ATest
             hex2bin('0002b00e')
         ];
 
+        \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::CONNECTED);
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
         $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'), []);

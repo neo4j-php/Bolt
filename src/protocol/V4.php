@@ -3,6 +3,7 @@
 namespace Bolt\protocol;
 
 use Bolt\error\IgnoredException;
+use Bolt\helpers\ServerState;
 use Exception;
 use Bolt\error\MessageException;
 
@@ -37,6 +38,8 @@ class V4 extends V3
      */
     public function pull(...$args): array
     {
+        ServerState::is(ServerState::STREAMING, ServerState::TX_STREAMING);
+
         if (count($args) == 0)
             $args[0] = ['n' => -1];
         elseif (!array_key_exists('n', $args[0]))
@@ -51,14 +54,15 @@ class V4 extends V3
         } while ($signature == self::RECORD);
 
         if ($signature == self::FAILURE) {
-            $last = array_pop($output);
-            throw new MessageException($last['message'], $last['code']);
+            ServerState::set(ServerState::FAILED);
+            throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
-            throw new IgnoredException('PULL message IGNORED. Server in FAILED or INTERRUPTED state.');
+            throw new IgnoredException(__FUNCTION__);
         }
 
+        ServerState::set(($message['has_more'] ?? false) ? ServerState::get() : (ServerState::get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY));
         return $output;
     }
 
@@ -82,6 +86,8 @@ class V4 extends V3
      */
     public function discard(...$args): array
     {
+        ServerState::is(ServerState::STREAMING);
+
         if (count($args) == 0)
             $args[0] = ['n' => -1];
         elseif (!array_key_exists('n', $args[0]))
@@ -91,13 +97,15 @@ class V4 extends V3
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
+            ServerState::set(ServerState::FAILED);
             throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
-            throw new IgnoredException('DISCARD message IGNORED. Server in FAILED or INTERRUPTED state.');
+            throw new IgnoredException(__FUNCTION__);
         }
 
+        ServerState::set(($message['has_more'] ?? false) ? ServerState::get() : (ServerState::get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY));
         return $message;
     }
 }

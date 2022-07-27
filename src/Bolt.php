@@ -4,6 +4,7 @@ namespace Bolt;
 
 use Bolt\error\{ConnectException, PackException, UnpackException};
 use Exception;
+use Bolt\helpers\ServerState;
 use Bolt\PackStream\{IPacker, IUnpacker};
 use Bolt\protocol\AProtocol;
 use Bolt\connection\IConnection;
@@ -35,6 +36,7 @@ final class Bolt
         $this->connection = $connection;
         $this->setProtocolVersions(4.4, 4.3, 4.2, 3);
         $this->setPackStreamVersion();
+        ServerState::set(ServerState::DISCONNECTED);
     }
 
     /**
@@ -44,6 +46,8 @@ final class Bolt
      */
     public function build(): AProtocol
     {
+        ServerState::is(ServerState::DISCONNECTED, ServerState::DEFUNCT);
+
         if (!$this->connection->connect())
             throw new ConnectException('Connection failed');
 
@@ -53,6 +57,7 @@ final class Bolt
         if (!class_exists($protocolClass))
             throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
 
+        ServerState::set(ServerState::CONNECTED);
         return new $protocolClass($this->packer, $this->unpacker, $this->connection);
     }
 
