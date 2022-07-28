@@ -30,6 +30,7 @@ class V1Test extends ATest
     {
         $cls = new V1(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection());
         $this->assertInstanceOf(V1::class, $cls);
+        $cls->serverState = new \Bolt\helpers\ServerState();
         return $cls;
     }
 
@@ -54,7 +55,6 @@ class V1Test extends ATest
         ];
 
         try {
-            \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::CONNECTED);
             $this->assertIsArray($cls->init(\Bolt\helpers\Auth::basic('user', 'password')));
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -82,7 +82,6 @@ class V1Test extends ATest
             hex2bin('0002b00e0000')
         ];
 
-        \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::CONNECTED);
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
         $cls->init(\Bolt\helpers\Auth::basic('user', 'password'));
@@ -103,7 +102,6 @@ class V1Test extends ATest
         ];
 
         try {
-            \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::READY);
             $this->assertIsArray($cls->run('RETURN 1'));
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -126,7 +124,6 @@ class V1Test extends ATest
             hex2bin('00010e')
         ];
 
-        \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::READY);
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
         $cls->run('RETURN 1');
@@ -145,7 +142,6 @@ class V1Test extends ATest
         ];
 
         try {
-            \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::STREAMING);
             $res = $cls->pullAll();
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -169,7 +165,6 @@ class V1Test extends ATest
             hex2bin('00010e')
         ];
 
-        \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::STREAMING);
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
         $cls->pullAll();
@@ -189,7 +184,6 @@ class V1Test extends ATest
         ];
 
         try {
-            \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::STREAMING);
             $cls->discardAll();
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());

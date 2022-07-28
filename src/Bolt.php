@@ -25,6 +25,7 @@ final class Bolt
     private IConnection $connection;
     private array $versions = [];
     public static bool $debug = false;
+    public ServerState $serverState;
 
     /**
      * Bolt constructor
@@ -36,7 +37,7 @@ final class Bolt
         $this->connection = $connection;
         $this->setProtocolVersions(4.4, 4.3, 4.2, 3);
         $this->setPackStreamVersion();
-        ServerState::set(ServerState::DISCONNECTED);
+        $this->serverState = new ServerState();
     }
 
     /**
@@ -46,19 +47,28 @@ final class Bolt
      */
     public function build(): AProtocol
     {
-        ServerState::is(ServerState::DISCONNECTED, ServerState::DEFUNCT);
+        $this->serverState->is(ServerState::DISCONNECTED, ServerState::DEFUNCT);
 
-        if (!$this->connection->connect())
-            throw new ConnectException('Connection failed');
+        try {
+            if (!$this->connection->connect()) {
+                throw new ConnectException('Connection failed');
+            }
 
-        $version = $this->handshake();
+            $version = $this->handshake();
 
-        $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
-        if (!class_exists($protocolClass))
-            throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
+            $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
+            if (!class_exists($protocolClass)) {
+                throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
+            }
+        } catch (ConnectException $e) {
+            $this->serverState->set(ServerState::DEFUNCT);
+            throw $e;
+        }
 
-        ServerState::set(ServerState::CONNECTED);
-        return new $protocolClass($this->packer, $this->unpacker, $this->connection);
+        $this->serverState->set(ServerState::CONNECTED);
+        $protocol = new $protocolClass($this->packer, $this->unpacker, $this->connection);
+        $protocol->serverState = $this->serverState;
+        return $protocol;
     }
 
     /**

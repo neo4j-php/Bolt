@@ -27,6 +27,7 @@ class V4_3Test extends ATest
     {
         $cls = new V4_3(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection());
         $this->assertInstanceOf(V4_3::class, $cls);
+        $cls->serverState = new \Bolt\helpers\ServerState();
         return $cls;
     }
 
@@ -48,7 +49,6 @@ class V4_3Test extends ATest
         ];
 
         try {
-            \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::READY);
             $this->assertIsArray($cls->route(['address' => 'localhost:7687'], [], null));
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());

@@ -27,6 +27,7 @@ class V3Test extends ATest
     {
         $cls = new V3(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection());
         $this->assertInstanceOf(V3::class, $cls);
+        $cls->serverState = new \Bolt\helpers\ServerState();
         return $cls;
     }
 
@@ -52,7 +53,6 @@ class V3Test extends ATest
         ];
 
         try {
-            \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::CONNECTED);
             $this->assertIsArray($cls->hello(\Bolt\helpers\Auth::basic('user', 'password')));
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -81,7 +81,6 @@ class V3Test extends ATest
             hex2bin('0002b00e')
         ];
 
-        \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::CONNECTED);
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
         $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'));
@@ -103,7 +102,6 @@ class V3Test extends ATest
         ];
 
         try {
-            \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::READY);
             $this->assertIsArray($cls->run('RETURN 1'));
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -126,7 +124,6 @@ class V3Test extends ATest
             hex2bin('0002b00f0000')
         ];
 
-        \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::READY);
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
         $cls->run('RETURN 1');
@@ -166,7 +163,6 @@ class V3Test extends ATest
         ];
 
         try {
-            \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::READY);
             $this->assertIsArray($cls->begin());
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -187,7 +183,6 @@ class V3Test extends ATest
             hex2bin('0002b00f')
         ];
 
-        \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::READY);
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
         $cls->begin();
@@ -206,7 +201,6 @@ class V3Test extends ATest
         ];
 
         try {
-            \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::TX_READY);
             $this->assertIsArray($cls->commit());
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -226,7 +220,6 @@ class V3Test extends ATest
             hex2bin('0002b00f')
         ];
 
-        \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::TX_READY);
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
         $cls->commit();
@@ -245,7 +238,6 @@ class V3Test extends ATest
         ];
 
         try {
-            \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::TX_READY);
             $this->assertIsArray($cls->rollback());
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -265,7 +257,6 @@ class V3Test extends ATest
             hex2bin('0002b00f')
         ];
 
-        \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::TX_READY);
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
         $cls->rollback();

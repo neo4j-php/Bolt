@@ -26,6 +26,7 @@ class V4_2Test extends ATest
     {
         $cls = new V4_2(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection());
         $this->assertInstanceOf(V4_2::class, $cls);
+        $cls->serverState = new \Bolt\helpers\ServerState();
         return $cls;
     }
 

@@ -38,7 +38,7 @@ class V4 extends V3
      */
     public function pull(...$args): array
     {
-        ServerState::is(ServerState::STREAMING, ServerState::TX_STREAMING);
+        $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
 
         if (count($args) == 0)
             $args[0] = ['n' => -1];
@@ -54,15 +54,16 @@ class V4 extends V3
         } while ($signature == self::RECORD);
 
         if ($signature == self::FAILURE) {
-            ServerState::set(ServerState::FAILED);
+            $this->serverState->set(ServerState::FAILED);
             throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
+            $this->serverState->set(ServerState::INTERRUPTED);
             throw new IgnoredException(__FUNCTION__);
         }
 
-        ServerState::set(($message['has_more'] ?? false) ? ServerState::get() : (ServerState::get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY));
+        $this->serverState->set(($message['has_more'] ?? false) ? $this->serverState->get() : ($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY));
         return $output;
     }
 
@@ -86,7 +87,7 @@ class V4 extends V3
      */
     public function discard(...$args): array
     {
-        ServerState::is(ServerState::STREAMING);
+        $this->serverState->is(ServerState::STREAMING);
 
         if (count($args) == 0)
             $args[0] = ['n' => -1];
@@ -97,15 +98,16 @@ class V4 extends V3
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
-            ServerState::set(ServerState::FAILED);
+            $this->serverState->set(ServerState::FAILED);
             throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
+            $this->serverState->set(ServerState::INTERRUPTED);
             throw new IgnoredException(__FUNCTION__);
         }
 
-        ServerState::set(($message['has_more'] ?? false) ? ServerState::get() : (ServerState::get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY));
+        $this->serverState->set(($message['has_more'] ?? false) ? $this->serverState->get() : ($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY));
         return $message;
     }
 }

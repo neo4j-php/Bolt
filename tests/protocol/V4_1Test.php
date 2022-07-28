@@ -27,6 +27,7 @@ class V4_1Test extends ATest
     {
         $cls = new V4_1(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection());
         $this->assertInstanceOf(V4_1::class, $cls);
+        $cls->serverState = new \Bolt\helpers\ServerState();
         return $cls;
     }
 
@@ -52,7 +53,6 @@ class V4_1Test extends ATest
         ];
 
         try {
-            \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::CONNECTED);
             $this->assertIsArray($cls->hello(\Bolt\helpers\Auth::basic('user', 'password'), []));
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -81,7 +81,6 @@ class V4_1Test extends ATest
             hex2bin('0002b00e')
         ];
 
-        \Bolt\helpers\ServerState::set(\Bolt\helpers\ServerState::CONNECTED);
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
         $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'), []);

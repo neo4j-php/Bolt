@@ -29,7 +29,7 @@ class V4_3 extends V4_2
      */
     public function route(...$args): array
     {
-        ServerState::is(ServerState::READY);
+        $this->serverState->is(ServerState::READY);
 
         if (count($args) != 3) {
             throw new PackException('Wrong arguments count');
@@ -43,6 +43,7 @@ class V4_3 extends V4_2
         }
 
         if ($signature == self::IGNORED) {
+            $this->serverState->set(ServerState::INTERRUPTED);
             throw new IgnoredException(__FUNCTION__);
         }
 

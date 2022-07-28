@@ -2,10 +2,8 @@
 
 namespace Bolt\helpers;
 
-use Bolt\error\ServerStateException;
-
 /**
- * Class ServerState
+ * Class ServerState ..keep track of assumed server state
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt
@@ -67,7 +65,12 @@ class ServerState
      * Internal pointer for current server state
      * @var string
      */
-    private static string $current;
+    private string $current = self::DISCONNECTED;
+
+    /**
+     * @var callable(string $current, array $expected)
+     */
+    public $expectedServerStateMismatchCallback;
 
     /**
      * Internal enum to verify valid server state
@@ -89,33 +92,33 @@ class ServerState
      * Get current server state
      * @return string
      */
-    public static function get(): string
+    public function get(): string
     {
-        return self::$current;
+        return $this->current;
     }
 
     /**
      * Set current server state
      * @param string $state
      */
-    public static function set(string $state)
+    public function set(string $state)
     {
         if (in_array($state, self::$lt))
-            self::$current = $state;
+            $this->current = $state;
     }
 
     /**
      * Check if current server state equals one of requested
      * @param string ...$states
-     * @throws ServerStateException
      */
-    public static function is(string ...$states)
+    public function is(string ...$states)
     {
         foreach ($states as $state) {
-            if (in_array($state, self::$lt) && self::$current === $state)
+            if (in_array($state, self::$lt) && $this->current === $state)
                 return;
         }
 
-        throw ServerStateException::expected(...$states);
+        if (is_callable($this->expectedServerStateMismatchCallback))
+            ($this->expectedServerStateMismatchCallback)($this->get(), $states);
     }
 }

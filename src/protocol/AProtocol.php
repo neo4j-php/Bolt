@@ -2,6 +2,7 @@
 
 namespace Bolt\protocol;
 
+use Bolt\helpers\ServerState;
 use Bolt\PackStream\{IPacker, IUnpacker};
 use Bolt\connection\IConnection;
 use Exception;
@@ -23,6 +24,8 @@ abstract class AProtocol
     protected IPacker $packer;
     protected IUnpacker $unpacker;
     protected IConnection $connection;
+
+    public ServerState $serverState;
 
     /**
      * AProtocol constructor.
