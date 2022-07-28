@@ -32,12 +32,14 @@ abstract class AProtocol
      * @param IPacker $packer
      * @param IUnpacker $unpacker
      * @param IConnection $connection
+     * @param ServerState $serverState
      */
-    public function __construct(IPacker $packer, IUnpacker $unpacker, IConnection $connection)
+    public function __construct(IPacker $packer, IUnpacker $unpacker, IConnection $connection, ServerState $serverState)
     {
         $this->packer = $packer;
         $this->unpacker = $unpacker;
         $this->connection = $connection;
+        $this->serverState = $serverState;
     }
 
     /**

@@ -37,7 +37,6 @@ final class Bolt
         $this->connection = $connection;
         $this->setProtocolVersions(4.4, 4.3, 4.2, 3);
         $this->setPackStreamVersion();
-        $this->serverState = new ServerState();
     }
 
     /**
@@ -47,6 +46,7 @@ final class Bolt
      */
     public function build(): AProtocol
     {
+        $this->serverState = new ServerState();
         $this->serverState->is(ServerState::DISCONNECTED, ServerState::DEFUNCT);
 
         try {
@@ -66,9 +66,7 @@ final class Bolt
         }
 
         $this->serverState->set(ServerState::CONNECTED);
-        $protocol = new $protocolClass($this->packer, $this->unpacker, $this->connection);
-        $protocol->serverState = $this->serverState;
-        return $protocol;
+        return new $protocolClass($this->packer, $this->unpacker, $this->connection, $this->serverState);
     }
 
     /**
