@@ -2,7 +2,6 @@
 
 namespace Bolt\error;
 
-use Bolt\helpers\ServerState;
 use Exception;
 use Throwable;
 
