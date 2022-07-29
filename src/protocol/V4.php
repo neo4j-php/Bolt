@@ -28,6 +28,15 @@ class V4 extends V3
     }
 
     /**
+     * @inheritDoc
+     * @deprecated Renamed to PULL
+     */
+    public function _pullAll(...$args)
+    {
+        $this->_pull(...$args);
+    }
+
+    /**
      * Send PULL message
      * The PULL message requests data from the remainder of the result stream.
      *
@@ -89,6 +98,15 @@ class V4 extends V3
     public function discardAll(...$args): array
     {
         return $this->discard(...$args);
+    }
+
+    /**
+     * @inheritDoc
+     * @deprecated Renamed to DISCARD
+     */
+    public function _discardAll(...$args)
+    {
+        $this->_discard(...$args);
     }
 
     /**
