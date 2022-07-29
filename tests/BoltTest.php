@@ -3,6 +3,7 @@
 namespace Bolt\tests;
 
 use Bolt\Bolt;
+use Bolt\error\MessageException;
 use Bolt\protocol\AProtocol;
 use Exception;
 use PHPUnit\Framework\TestCase;
@@ -232,7 +233,7 @@ class BoltTest extends TestCase
                 $this->assertInstanceOf(\Bolt\structures\Node::class, $pull[0][0]);
                 $this->assertCount(count($data), $pull[0][0]->properties());
             } catch (Exception $e) {
-                $this->markTestIncomplete();
+                $this->markTestIncomplete($e->getMessage());
             }
         }
 
@@ -252,5 +253,94 @@ class BoltTest extends TestCase
 
         $this->expectException(Exception::class);
         $protocol->run('RETURN 1 as num');
+    }
+
+    /**
+     * @depends testHello
+     * @param AProtocol $protocol
+     */
+    public function testPipelineAutocommit(AProtocol $protocol)
+    {
+        try {
+            $protocol->_run('RETURN 1 AS num');
+            $protocol->_pullAll();
+            $response = $protocol->fetchPipelineResponse();
+        } catch (Exception $e) {
+            $this->markTestIncomplete($e->getMessage());
+        }
+
+        $this->assertCount(2, $response);
+        $this->assertEquals(1, $response[1][0][0]);
+        foreach ($response as $entry) {
+            if ($entry instanceof Exception) {
+                $this->markTestIncomplete($entry->getMessage());
+            }
+        }
+    }
+
+    /**
+     * @depends testHello
+     * @param AProtocol $protocol
+     */
+    public function testPipelineTransaction(AProtocol $protocol)
+    {
+        try {
+            $protocol->_begin();
+            $protocol->_run('RETURN 2 AS num');
+            $protocol->_run('RETURN "abc" AS str UNION RETURN "def" AS str');
+            $protocol->_discardAll();
+            $protocol->_rollback();
+            $response = $protocol->fetchPipelineResponse();
+        } catch (Exception $e) {
+            $this->markTestIncomplete($e->getMessage());
+        }
+
+        $this->assertCount(5, $response);
+        foreach ($response as $entry) {
+            if ($entry instanceof Exception) {
+                $this->markTestIncomplete($entry->getMessage());
+            }
+        }
+    }
+
+    /**
+     * @depends testHello
+     * @param AProtocol $protocol
+     */
+    public function testPipelineReset(AProtocol $protocol)
+    {
+        try {
+            $protocol->_run('RETURN 1 AS num');
+            $protocol->_reset();
+            $response = $protocol->fetchPipelineResponse();
+        } catch (Exception $e) {
+            $this->markTestIncomplete($e->getMessage());
+        }
+
+        $this->assertCount(2, $response);
+        $this->assertInstanceOf(MessageException::class, $response[0]);
+        $this->assertEmpty($response[1]);
+    }
+
+    /**
+     * @depends testHello
+     * @param AProtocol $protocol
+     */
+    public function testPipelineFlush(AProtocol $protocol)
+    {
+        try {
+            $protocol->run('RETURN "abc" as str');
+            $res = $protocol->pullAll();
+            $this->assertEquals('abc', $res[0][0]);
+
+            $protocol->_run('CREATE (n:Test { param: 5 }) WITH n DELETE n');
+            $protocol->_pullAll();
+
+            $protocol->run('RETURN 2 as num');
+            $res = $protocol->pullAll();
+            $this->assertEquals(2, $res[0][0]);
+        } catch (Exception $e) {
+            $this->markTestIncomplete($e->getMessage());
+        }
     }
 }

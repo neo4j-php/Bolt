@@ -2,6 +2,8 @@
 
 namespace Bolt\protocol;
 
+use Bolt\error\IgnoredException;
+use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
 use Bolt\PackStream\{IPacker, IUnpacker};
 use Bolt\connection\IConnection;
@@ -26,6 +28,8 @@ abstract class AProtocol
     protected IConnection $connection;
 
     public ServerState $serverState;
+
+    protected array $pipelinedMessages = [];
 
     /**
      * AProtocol constructor.
@@ -91,5 +95,65 @@ abstract class AProtocol
         }
 
         trigger_error('Protocol version class name is not valid', E_USER_ERROR);
+    }
+
+    /**
+     * Fetch all responses from pipelined (executed) messages
+     * @return array
+     * @throws Exception
+     */
+    public function fetchPipelineResponse(): array
+    {
+        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
+
+        $output = [];
+
+        foreach ($this->pipelinedMessages as $message) {
+            $response = $this->read($signature);
+
+            switch ($signature) {
+                case self::RECORD:
+                    $records = [$response];
+                    do {
+                        $record = $this->read($signature);
+                        $records[] = $record;
+                    } while ($signature == self::RECORD);
+                    $output[] = $records;
+                    break;
+
+                case self::FAILURE:
+                    $output[] = new MessageException($response['message'], $response['code']);
+                    break;
+
+                case self::IGNORED:
+                    $output[] = new IgnoredException($message);
+                    break;
+
+                default:
+                    $output[] = $response;
+            }
+        }
+
+        $this->pipelinedMessages = [];
+
+        if (end($output) instanceof MessageException) {
+            $this->serverState->set(ServerState::FAILED);
+        } elseif (end($output) instanceof IgnoredException) {
+            $this->serverState->set(ServerState::INTERRUPTED);
+        } else {
+            $this->serverState->set($this->serverState->get() == ServerState::READY || $this->serverState->get() == ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
+        }
+
+        return $output;
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function flushPipelineResponse()
+    {
+        if (count($this->pipelinedMessages) > 0) {
+            $this->fetchPipelineResponse();
+        }
     }
 }
