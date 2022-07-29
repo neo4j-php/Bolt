@@ -25,7 +25,7 @@ class V4_1Test extends ATest
      */
     public function test__construct(): V4_1
     {
-        $cls = new V4_1(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection());
+        $cls = new V4_1(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection(), new \Bolt\helpers\ServerState());
         $this->assertInstanceOf(V4_1::class, $cls);
         return $cls;
     }

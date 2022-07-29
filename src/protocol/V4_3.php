@@ -5,6 +5,7 @@ namespace Bolt\protocol;
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
 use Bolt\error\PackException;
+use Bolt\helpers\ServerState;
 use Exception;
 
 /**
@@ -28,6 +29,8 @@ class V4_3 extends V4_2
      */
     public function route(...$args): array
     {
+        $this->serverState->is(ServerState::READY);
+
         if (count($args) != 3) {
             throw new PackException('Wrong arguments count');
         }
@@ -40,7 +43,8 @@ class V4_3 extends V4_2
         }
 
         if ($signature == self::IGNORED) {
-            throw new IgnoredException('ROUTE message IGNORED. Server in FAILED or INTERRUPTED state.');
+            $this->serverState->set(ServerState::INTERRUPTED);
+            throw new IgnoredException(__FUNCTION__);
         }
 
         return $message;
