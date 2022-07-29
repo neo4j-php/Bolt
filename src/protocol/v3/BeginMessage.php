@@ -4,6 +4,7 @@ namespace Bolt\protocol\v3;
 
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
+use Bolt\helpers\ServerState;
 use Exception;
 
 trait BeginMessage
@@ -21,17 +22,22 @@ trait BeginMessage
      */
     public function begin(array $extra = []): array
     {
+        $this->serverState->is(ServerState::READY);
+
         $this->write($this->packer->pack(0x11, (object)$extra));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
+            $this->serverState->set(ServerState::FAILED);
             throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
-            throw new IgnoredException('BEGIN message IGNORED. Server in FAILED or INTERRUPTED state.');
+            $this->serverState->set(ServerState::INTERRUPTED);
+            throw new IgnoredException(__FUNCTION__);
         }
 
+        $this->serverState->set(ServerState::TX_READY);
         return $message;
     }
 }

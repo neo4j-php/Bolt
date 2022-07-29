@@ -4,6 +4,7 @@ namespace Bolt\protocol\v1;
 
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
+use Bolt\helpers\ServerState;
 use Exception;
 
 trait PullAllMessage
@@ -18,6 +19,8 @@ trait PullAllMessage
      */
     public function pullAll(): array
     {
+        $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
+
         $this->write($this->packer->pack(0x3F));
 
         $output = [];
@@ -27,16 +30,18 @@ trait PullAllMessage
         } while ($signature == self::RECORD);
 
         if ($signature == self::FAILURE) {
+            $this->serverState->set(ServerState::FAILED);
             if (method_exists($this, 'ackFailure'))
                 $this->ackFailure();
-            $last = array_pop($output);
-            throw new MessageException($last['message'], $last['code']);
+            throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
-            throw new IgnoredException('PULL_ALL message IGNORED. Server in FAILED or INTERRUPTED state.');
+            $this->serverState->set(ServerState::INTERRUPTED);
+            throw new IgnoredException(__FUNCTION__);
         }
 
+        $this->serverState->set($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
         return $output;
     }
 }

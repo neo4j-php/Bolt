@@ -4,6 +4,7 @@ namespace Bolt\protocol\v4;
 
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
+use Bolt\helpers\ServerState;
 use Exception;
 
 trait PullMessage
@@ -19,6 +20,8 @@ trait PullMessage
      */
     public function pull(array $extra = []): array
     {
+        $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
+
         if (!array_key_exists('n', $extra))
             $extra['n'] = -1;
 
@@ -31,14 +34,16 @@ trait PullMessage
         } while ($signature == self::RECORD);
 
         if ($signature == self::FAILURE) {
-            $last = array_pop($output);
-            throw new MessageException($last['message'], $last['code']);
+            $this->serverState->set(ServerState::FAILED);
+            throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
-            throw new IgnoredException('PULL message IGNORED. Server in FAILED or INTERRUPTED state.');
+            $this->serverState->set(ServerState::INTERRUPTED);
+            throw new IgnoredException(__FUNCTION__);
         }
 
+        $this->serverState->set(($message['has_more'] ?? false) ? $this->serverState->get() : ($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY));
         return $output;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Bolt\protocol\v3;
 
+use Bolt\helpers\ServerState;
 use Exception;
 
 trait GoodbyeMessage
@@ -17,5 +18,6 @@ trait GoodbyeMessage
     {
         $this->write($this->packer->pack(0x02));
         $this->connection->disconnect();
+        $this->serverState->set(ServerState::DEFUNCT);
     }
 }

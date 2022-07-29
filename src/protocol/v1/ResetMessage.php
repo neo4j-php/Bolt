@@ -3,6 +3,7 @@
 namespace Bolt\protocol\v1;
 
 use Bolt\error\MessageException;
+use Bolt\helpers\ServerState;
 use Exception;
 
 trait ResetMessage
@@ -22,9 +23,11 @@ trait ResetMessage
 
         if ($signature == self::FAILURE) {
             $this->connection->disconnect();
+            $this->serverState->set(ServerState::DEFUNCT);
             throw new MessageException($message['message'], $message['code']);
         }
 
+        $this->serverState->set(ServerState::READY);
         return $message;
     }
 }

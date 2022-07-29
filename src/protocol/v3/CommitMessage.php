@@ -4,6 +4,7 @@ namespace Bolt\protocol\v3;
 
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
+use Bolt\helpers\ServerState;
 use Exception;
 
 trait CommitMessage
@@ -18,17 +19,22 @@ trait CommitMessage
      */
     public function commit(): array
     {
+        $this->serverState->is(ServerState::TX_READY);
+
         $this->write($this->packer->pack(0x12));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
+            $this->serverState->set(ServerState::FAILED);
             throw new MessageException($message['message'], $message['code']);
         }
 
         if ($signature == self::IGNORED) {
-            throw new IgnoredException('COMMIT message IGNORED. Server in FAILED or INTERRUPTED state.');
+            $this->serverState->set(ServerState::INTERRUPTED);
+            throw new IgnoredException(__FUNCTION__);
         }
 
+        $this->serverState->set(ServerState::READY);
         return $message;
     }
 }

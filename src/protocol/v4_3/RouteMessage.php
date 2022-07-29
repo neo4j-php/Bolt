@@ -4,6 +4,7 @@ namespace Bolt\protocol\v4_3;
 
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
+use Bolt\helpers\ServerState;
 use Exception;
 
 trait RouteMessage
@@ -21,6 +22,8 @@ trait RouteMessage
      */
     public function route(array $routing, array $bookmarks = [], ?string $db = null): array
     {
+        $this->serverState->is(ServerState::READY);
+
         $this->write($this->packer->pack(0x66, (object)$routing, $bookmarks, $db));
         $message = $this->read($signature);
 
@@ -29,7 +32,8 @@ trait RouteMessage
         }
 
         if ($signature == self::IGNORED) {
-            throw new IgnoredException('ROUTE message IGNORED. Server in FAILED or INTERRUPTED state.');
+            $this->serverState->set(ServerState::INTERRUPTED);
+            throw new IgnoredException(__FUNCTION__);
         }
 
         return $message;
