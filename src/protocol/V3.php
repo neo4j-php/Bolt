@@ -107,7 +107,7 @@ class V3 extends V2
         ));
 
         $this->pipelinedMessages[] = 'run';
-        $this->serverState->set($this->serverState->is(ServerState::READY) ? ServerState::STREAMING : ServerState::TX_STREAMING);
+        $this->serverState->set($this->serverState->get() == ServerState::READY ? ServerState::STREAMING : ServerState::TX_STREAMING);
     }
 
     /**

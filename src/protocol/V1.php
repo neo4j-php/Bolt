@@ -142,7 +142,7 @@ class V1 extends AProtocol
         $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
         $this->write($this->packer->pack(0x3F));
         $this->pipelinedMessages[] = 'pull_all';
-        if ($this->serverState->is(ServerState::STREAMING)) {
+        if ($this->serverState->get() == ServerState::STREAMING) {
             $this->serverState->set(ServerState::READY);
         }
     }
@@ -186,7 +186,7 @@ class V1 extends AProtocol
         $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
         $this->write($this->packer->pack(0x2F));
         $this->pipelinedMessages[] = 'discard_all';
-        if ($this->serverState->is(ServerState::STREAMING)) {
+        if ($this->serverState->get() == ServerState::STREAMING) {
             $this->serverState->set(ServerState::READY);
         }
     }

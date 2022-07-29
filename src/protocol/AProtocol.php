@@ -141,7 +141,7 @@ abstract class AProtocol
         } elseif (end($output) instanceof IgnoredException) {
             $this->serverState->set(ServerState::INTERRUPTED);
         } else {
-            $this->serverState->set($this->serverState->is(ServerState::READY, ServerState::STREAMING) ? ServerState::READY : ServerState::TX_READY);
+            $this->serverState->set($this->serverState->get() == ServerState::READY || $this->serverState->get() == ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
         }
 
         return $output;

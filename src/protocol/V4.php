@@ -68,7 +68,7 @@ class V4 extends V3
         }
 
         if ($message['has_more'] ?? false) {
-            $this->serverState->set($this->serverState->is(ServerState::READY) ? ServerState::STREAMING : ServerState::TX_STREAMING);
+            $this->serverState->set($this->serverState->get() == ServerState::READY ? ServerState::STREAMING : ServerState::TX_STREAMING);
         }
 
         return $output;
@@ -89,7 +89,7 @@ class V4 extends V3
         $this->write($this->packer->pack(0x3F, $args[0]));
 
         $this->pipelinedMessages[] = 'pull';
-        $this->serverState->set($this->serverState->is(ServerState::STREAMING) ? ServerState::READY : ServerState::TX_READY);
+        $this->serverState->set($this->serverState->get() == ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
     }
 
     /**
@@ -138,7 +138,7 @@ class V4 extends V3
         }
 
         if ($message['has_more'] ?? false) {
-            $this->serverState->set($this->serverState->is(ServerState::READY) ? ServerState::STREAMING : ServerState::TX_STREAMING);
+            $this->serverState->set($this->serverState->get() == ServerState::READY ? ServerState::STREAMING : ServerState::TX_STREAMING);
         }
 
         return $message;
@@ -159,6 +159,6 @@ class V4 extends V3
         $this->write($this->packer->pack(0x2F, $args[0]));
 
         $this->pipelinedMessages[] = 'discard';
-        $this->serverState->set($this->serverState->is(ServerState::STREAMING) ? ServerState::READY : ServerState::TX_READY);
+        $this->serverState->set($this->serverState->get() == ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
     }
 }
