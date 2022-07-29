@@ -146,4 +146,14 @@ abstract class AProtocol
 
         return $output;
     }
+
+    /**
+     * @throws Exception
+     */
+    protected function flushPipelineResponse()
+    {
+        if (count($this->pipelinedMessages) > 0) {
+            $this->fetchPipelineResponse();
+        }
+    }
 }

@@ -63,6 +63,7 @@ class V1 extends AProtocol
      */
     public function run(...$args): array
     {
+        $this->flushPipelineResponse();
         $this->_run(...$args);
         array_pop($this->pipelinedMessages);
 
@@ -109,6 +110,7 @@ class V1 extends AProtocol
      */
     public function pullAll(...$args): array
     {
+        $this->flushPipelineResponse();
         $this->_pullAll(...$args);
         array_pop($this->pipelinedMessages);
 
@@ -156,6 +158,7 @@ class V1 extends AProtocol
      */
     public function discardAll(...$args): array
     {
+        $this->flushPipelineResponse();
         $this->_discardAll(...$args);
         array_pop($this->pipelinedMessages);
 
@@ -220,6 +223,7 @@ class V1 extends AProtocol
      */
     public function reset(): array
     {
+        $this->flushPipelineResponse();
         $this->_reset();
         array_pop($this->pipelinedMessages);
 

@@ -47,6 +47,7 @@ class V4 extends V3
      */
     public function pull(...$args): array
     {
+        $this->flushPipelineResponse();
         $this->_pull(...$args);
         array_pop($this->pipelinedMessages);
 
@@ -120,6 +121,7 @@ class V4 extends V3
      */
     public function discard(...$args): array
     {
+        $this->flushPipelineResponse();
         $this->_discard(...$args);
         array_pop($this->pipelinedMessages);
 

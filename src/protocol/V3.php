@@ -69,6 +69,7 @@ class V3 extends V2
      */
     public function run(...$args): array
     {
+        $this->flushPipelineResponse();
         $this->_run(...$args);
         array_pop($this->pipelinedMessages);
 
@@ -120,6 +121,7 @@ class V3 extends V2
      */
     public function begin(...$args): array
     {
+        $this->flushPipelineResponse();
         $this->_begin(...$args);
         array_pop($this->pipelinedMessages);
 
@@ -159,6 +161,7 @@ class V3 extends V2
      */
     public function commit(): array
     {
+        $this->flushPipelineResponse();
         $this->_commit();
         array_pop($this->pipelinedMessages);
 
@@ -198,6 +201,7 @@ class V3 extends V2
      */
     public function rollback(): array
     {
+        $this->flushPipelineResponse();
         $this->_rollback();
         array_pop($this->pipelinedMessages);
 
