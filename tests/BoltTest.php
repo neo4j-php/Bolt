@@ -321,4 +321,26 @@ class BoltTest extends TestCase
         $this->assertInstanceOf(MessageException::class, $response[0]);
         $this->assertEmpty($response[1]);
     }
+
+    /**
+     * @depends testHello
+     * @param AProtocol $protocol
+     */
+    public function testPipelineFlush(AProtocol $protocol)
+    {
+        try {
+            $protocol->run('RETURN "abc" as str');
+            $res = $protocol->pullAll();
+            $this->assertEquals('abc', $res[0][0]);
+
+            $protocol->_run('CREATE (n:Test { param: 5 }) WITH n DELETE n');
+            $protocol->_pullAll();
+
+            $protocol->run('RETURN 2 as num');
+            $res = $protocol->pullAll();
+            $this->assertEquals(2, $res[0][0]);
+        } catch (Exception $e) {
+            $this->markTestIncomplete($e->getMessage());
+        }
+    }
 }
