@@ -110,15 +110,17 @@ class ServerState
     /**
      * Check if current server state equals one of requested
      * @param string ...$states
+     * @return bool
      */
-    public function is(string ...$states)
+    public function is(string ...$states): bool
     {
         foreach ($states as $state) {
             if (in_array($state, self::$lt) && $this->current === $state)
-                return;
+                return true;
         }
 
         if (is_callable($this->expectedServerStateMismatchCallback))
             ($this->expectedServerStateMismatchCallback)($this->get(), $states);
+        return false;
     }
 }
