@@ -87,7 +87,7 @@ class V4 extends V3
      */
     public function discard(...$args): array
     {
-        $this->serverState->is(ServerState::STREAMING);
+        $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
 
         if (count($args) == 0)
             $args[0] = ['n' => -1];
