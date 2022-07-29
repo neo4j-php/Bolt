@@ -38,14 +38,8 @@ class V4 extends V3
      */
     public function pull(...$args): array
     {
-        $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
-
-        if (count($args) == 0)
-            $args[0] = ['n' => -1];
-        elseif (!array_key_exists('n', $args[0]))
-            $args[0]['n'] = -1;
-
-        $this->write($this->packer->pack(0x3F, $args[0]));
+        $this->_pull(...$args);
+        array_pop($this->pipelinedMessages);
 
         $output = [];
         do {
@@ -63,8 +57,29 @@ class V4 extends V3
             throw new IgnoredException(__FUNCTION__);
         }
 
-        $this->serverState->set(($message['has_more'] ?? false) ? $this->serverState->get() : ($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY));
+        if ($message['has_more'] ?? false) {
+            $this->serverState->set($this->serverState->is(ServerState::READY) ? ServerState::STREAMING : ServerState::TX_STREAMING);
+        }
+
         return $output;
+    }
+
+    /**
+     * Pipelined version of PULL
+     */
+    public function _pull(...$args)
+    {
+        $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
+
+        if (count($args) == 0)
+            $args[0] = ['n' => -1];
+        elseif (!array_key_exists('n', $args[0]))
+            $args[0]['n'] = -1;
+
+        $this->write($this->packer->pack(0x3F, $args[0]));
+
+        $this->pipelinedMessages[] = 'pull';
+        $this->serverState->set($this->serverState->is(ServerState::STREAMING) ? ServerState::READY : ServerState::TX_READY);
     }
 
     /**
@@ -87,14 +102,9 @@ class V4 extends V3
      */
     public function discard(...$args): array
     {
-        $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
+        $this->_discard(...$args);
+        array_pop($this->pipelinedMessages);
 
-        if (count($args) == 0)
-            $args[0] = ['n' => -1];
-        elseif (!array_key_exists('n', $args[0]))
-            $args[0]['n'] = -1;
-
-        $this->write($this->packer->pack(0x2F, $args[0]));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
@@ -107,7 +117,28 @@ class V4 extends V3
             throw new IgnoredException(__FUNCTION__);
         }
 
-        $this->serverState->set(($message['has_more'] ?? false) ? $this->serverState->get() : ($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY));
+        if ($message['has_more'] ?? false) {
+            $this->serverState->set($this->serverState->is(ServerState::READY) ? ServerState::STREAMING : ServerState::TX_STREAMING);
+        }
+
         return $message;
+    }
+
+    /**
+     * Pipelined version of DISCARD
+     */
+    public function _discard(...$args)
+    {
+        $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
+
+        if (count($args) == 0)
+            $args[0] = ['n' => -1];
+        elseif (!array_key_exists('n', $args[0]))
+            $args[0]['n'] = -1;
+
+        $this->write($this->packer->pack(0x2F, $args[0]));
+
+        $this->pipelinedMessages[] = 'discard';
+        $this->serverState->set($this->serverState->is(ServerState::STREAMING) ? ServerState::READY : ServerState::TX_READY);
     }
 }
