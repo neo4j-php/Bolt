@@ -63,10 +63,13 @@ class V1 extends AProtocol
      */
     public function run(...$args): array
     {
-        $this->flushPipelineResponse();
-        $this->_run(...$args);
-        array_pop($this->pipelinedMessages);
+        $this->serverState->is(ServerState::READY);
 
+        if (empty($args)) {
+            throw new PackException('Wrong arguments count');
+        }
+
+        $this->write($this->packer->pack(0x10, $args[0], (object)($args[1] ?? [])));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
@@ -80,23 +83,8 @@ class V1 extends AProtocol
             throw new IgnoredException(__FUNCTION__);
         }
 
-        return $message;
-    }
-
-    /**
-     * Pipelined version of RUN
-     */
-    public function _run(...$args)
-    {
-        $this->serverState->is(ServerState::READY);
-
-        if (empty($args)) {
-            throw new PackException('Wrong arguments count');
-        }
-
-        $this->write($this->packer->pack(0x10, $args[0], (object)($args[1] ?? [])));
-        $this->pipelinedMessages[] = 'run';
         $this->serverState->set(ServerState::STREAMING);
+        return $message;
     }
 
     /**
@@ -110,9 +98,9 @@ class V1 extends AProtocol
      */
     public function pullAll(...$args): array
     {
-        $this->flushPipelineResponse();
-        $this->_pullAll(...$args);
-        array_pop($this->pipelinedMessages);
+        $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
+
+        $this->write($this->packer->pack(0x3F));
 
         $output = [];
         do {
@@ -131,20 +119,8 @@ class V1 extends AProtocol
             throw new IgnoredException(__FUNCTION__);
         }
 
+        $this->serverState->set($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
         return $output;
-    }
-
-    /**
-     * Pipelined version of PULL_ALL
-     */
-    public function _pullAll(...$args)
-    {
-        $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
-        $this->write($this->packer->pack(0x3F));
-        $this->pipelinedMessages[] = 'pull_all';
-        if ($this->serverState->get() == ServerState::STREAMING) {
-            $this->serverState->set(ServerState::READY);
-        }
     }
 
     /**
@@ -158,10 +134,9 @@ class V1 extends AProtocol
      */
     public function discardAll(...$args): array
     {
-        $this->flushPipelineResponse();
-        $this->_discardAll(...$args);
-        array_pop($this->pipelinedMessages);
+        $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
 
+        $this->write($this->packer->pack(0x2F));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
@@ -175,20 +150,8 @@ class V1 extends AProtocol
             throw new IgnoredException(__FUNCTION__);
         }
 
+        $this->serverState->set($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
         return $message;
-    }
-
-    /**
-     * Pipelined version of DISCARD_ALL
-     */
-    public function _discardAll(...$args)
-    {
-        $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
-        $this->write($this->packer->pack(0x2F));
-        $this->pipelinedMessages[] = 'discard_all';
-        if ($this->serverState->get() == ServerState::STREAMING) {
-            $this->serverState->set(ServerState::READY);
-        }
     }
 
     /**
@@ -223,10 +186,7 @@ class V1 extends AProtocol
      */
     public function reset(): array
     {
-        $this->flushPipelineResponse();
-        $this->_reset();
-        array_pop($this->pipelinedMessages);
-
+        $this->write($this->packer->pack(0x0F));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
@@ -235,16 +195,7 @@ class V1 extends AProtocol
             throw new MessageException($message['message'], $message['code']);
         }
 
-        return $message;
-    }
-
-    /**
-     * Pipelined version of RESET
-     */
-    public function _reset()
-    {
-        $this->write($this->packer->pack(0x0F));
-        $this->pipelinedMessages[] = 'reset';
         $this->serverState->set(ServerState::READY);
+        return $message;
     }
 }

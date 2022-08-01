@@ -69,10 +69,18 @@ class V3 extends V2
      */
     public function run(...$args): array
     {
-        $this->flushPipelineResponse();
-        $this->_run(...$args);
-        array_pop($this->pipelinedMessages);
+        $this->serverState->is(ServerState::READY, ServerState::TX_READY);
 
+        if (empty($args)) {
+            throw new PackException('Wrong arguments count');
+        }
+
+        $this->write($this->packer->pack(
+            0x10,
+            $args[0],
+            (object)($args[1] ?? []),
+            (object)($args[2] ?? [])
+        ));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
@@ -85,29 +93,8 @@ class V3 extends V2
             throw new IgnoredException(__FUNCTION__);
         }
 
+        $this->serverState->set($this->serverState->get() === ServerState::READY ? ServerState::STREAMING : ServerState::TX_STREAMING);
         return $message;
-    }
-
-    /**
-     * Pipelined version of RUN
-     */
-    public function _run(...$args)
-    {
-        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::TX_STREAMING);
-
-        if (empty($args)) {
-            throw new PackException('Wrong arguments count');
-        }
-
-        $this->write($this->packer->pack(
-            0x10,
-            $args[0],
-            (object)($args[1] ?? []),
-            (object)($args[2] ?? [])
-        ));
-
-        $this->pipelinedMessages[] = 'run';
-        $this->serverState->set($this->serverState->get() == ServerState::READY ? ServerState::STREAMING : ServerState::TX_STREAMING);
     }
 
     /**
@@ -121,10 +108,9 @@ class V3 extends V2
      */
     public function begin(...$args): array
     {
-        $this->flushPipelineResponse();
-        $this->_begin(...$args);
-        array_pop($this->pipelinedMessages);
+        $this->serverState->is(ServerState::READY);
 
+        $this->write($this->packer->pack(0x11, (object)($args[0] ?? [])));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
@@ -137,18 +123,8 @@ class V3 extends V2
             throw new IgnoredException(__FUNCTION__);
         }
 
-        return $message;
-    }
-
-    /**
-     * Pipelined version of BEGIN
-     */
-    public function _begin(...$args)
-    {
-        $this->serverState->is(ServerState::READY);
-        $this->write($this->packer->pack(0x11, (object)($args[0] ?? [])));
-        $this->pipelinedMessages[] = 'begin';
         $this->serverState->set(ServerState::TX_READY);
+        return $message;
     }
 
     /**
@@ -161,10 +137,9 @@ class V3 extends V2
      */
     public function commit(): array
     {
-        $this->flushPipelineResponse();
-        $this->_commit();
-        array_pop($this->pipelinedMessages);
+        $this->serverState->is(ServerState::TX_READY);
 
+        $this->write($this->packer->pack(0x12));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
@@ -177,18 +152,8 @@ class V3 extends V2
             throw new IgnoredException(__FUNCTION__);
         }
 
-        return $message;
-    }
-
-    /**
-     * Pipelined version of COMMIT
-     */
-    public function _commit()
-    {
-        $this->serverState->is(ServerState::TX_READY, ServerState::TX_STREAMING);
-        $this->write($this->packer->pack(0x12));
-        $this->pipelinedMessages[] = 'commit';
         $this->serverState->set(ServerState::READY);
+        return $message;
     }
 
     /**
@@ -201,10 +166,9 @@ class V3 extends V2
      */
     public function rollback(): array
     {
-        $this->flushPipelineResponse();
-        $this->_rollback();
-        array_pop($this->pipelinedMessages);
+        $this->serverState->is(ServerState::TX_READY);
 
+        $this->write($this->packer->pack(0x13));
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
@@ -217,18 +181,8 @@ class V3 extends V2
             throw new IgnoredException(__FUNCTION__);
         }
 
-        return $message;
-    }
-
-    /**
-     * Pipelined version of ROLLBACK
-     */
-    public function _rollback()
-    {
-        $this->serverState->is(ServerState::TX_READY, ServerState::TX_STREAMING);
-        $this->write($this->packer->pack(0x13));
-        $this->pipelinedMessages[] = 'rollback';
         $this->serverState->set(ServerState::READY);
+        return $message;
     }
 
     /**
