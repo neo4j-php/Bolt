@@ -2,6 +2,7 @@
 
 namespace Bolt\protocol;
 
+use Bolt\error\{IgnoredException, MessageException};
 use Bolt\helpers\ServerState;
 use Bolt\PackStream\{IPacker, IUnpacker};
 use Bolt\connection\IConnection;
@@ -26,6 +27,8 @@ abstract class AProtocol
     protected IConnection $connection;
 
     public ServerState $serverState;
+
+    protected array $pipelinedMessages = [];
 
     /**
      * AProtocol constructor.
@@ -91,5 +94,25 @@ abstract class AProtocol
         }
 
         trigger_error('Protocol version class name is not valid', E_USER_ERROR);
+    }
+
+    /**
+     * Fetch all responses from pipelined (executed) messages
+     * @return array
+     * @throws Exception
+     */
+    public function fetchPipelineResponse(): array
+    {
+        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
+        $output = [];
+        foreach ($this->pipelinedMessages as $message) {
+            try {
+                $output[] = $this->{'_' . $message}();
+            } catch (MessageException|IgnoredException $e) {
+                $output[] = $e;
+            }
+        }
+        $this->pipelinedMessages = [];
+        return count($output) == 1 ? reset($output) : $output;
     }
 }

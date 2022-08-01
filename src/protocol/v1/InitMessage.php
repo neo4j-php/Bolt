@@ -12,7 +12,7 @@ trait InitMessage
      * Send INIT message
      * The INIT message is a request for the connection to be authorized for use with the remote database.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---init
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-init
      * @param string $userAgent
      * @param array $authToken
      * @return array

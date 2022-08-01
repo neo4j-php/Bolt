@@ -5,6 +5,7 @@ namespace Bolt\protocol\v1;
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
+use Bolt\protocol\AProtocol;
 use Exception;
 
 trait PullAllMessage
@@ -13,16 +14,23 @@ trait PullAllMessage
      * Send PULL_ALL message
      * The PULL_ALL message issues a request to stream the outstanding result back to the client, before returning to a READY state.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---pull_all
-     * @return array Array of records with last success entry
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#message-pull
+     * @return AProtocol
      * @throws Exception
      */
-    public function pullAll(): array
+    public function pullAll(): AProtocol
     {
         $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
-
         $this->write($this->packer->pack(0x3F));
+        $this->pipelinedMessages[] = 'pull_all';
+        if ($this->serverState->get() == ServerState::STREAMING) {
+            $this->serverState->set(ServerState::READY);
+        }
+        return $this;
+    }
 
+    private function _pullAll(): array
+    {
         $output = [];
         do {
             $message = $this->read($signature);

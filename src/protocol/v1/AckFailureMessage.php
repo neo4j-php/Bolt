@@ -13,7 +13,7 @@ trait AckFailureMessage
      * The client must acknowledge the FAILURE message by sending an ACK_FAILURE message to the server.
      * Until the server receives the ACK_FAILURE message, it will send an IGNORED message in response to any other message from the client.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---ack_failure
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-ack-failure
      * @throws Exception
      */
     private function ackFailure()

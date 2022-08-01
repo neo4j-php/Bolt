@@ -11,7 +11,7 @@ trait GoodbyeMessage
      * Send GOODBYE message
      * The GOODBYE message notifies the server that the connection is terminating gracefully.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---goodbye
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-goodbye
      * @throws Exception
      */
     public function goodbye()

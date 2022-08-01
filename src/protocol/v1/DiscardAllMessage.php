@@ -5,6 +5,7 @@ namespace Bolt\protocol\v1;
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
+use Bolt\protocol\AProtocol;
 use Exception;
 
 trait DiscardAllMessage
@@ -13,16 +14,24 @@ trait DiscardAllMessage
      * Send DISCARD_ALL message
      * The DISCARD_ALL message issues a request to discard the outstanding result and return to a READY state.
      *
-     * https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---discard_all
-     * @return array
+     * https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-discard
+     * @return AProtocol
      * @throws Exception
      */
-    public function discardAll(): array
+    public function discardAll(): AProtocol
     {
         $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
-
         $this->write($this->packer->pack(0x2F));
-        $message = $this->read($signature);
+        $this->pipelinedMessages[] = 'discard_all';
+        if ($this->serverState->get() == ServerState::STREAMING) {
+            $this->serverState->set(ServerState::READY);
+        }
+        return $this;
+    }
+
+    private function _discardAll(): array
+    {
+                $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
             $this->serverState->set(ServerState::FAILED);

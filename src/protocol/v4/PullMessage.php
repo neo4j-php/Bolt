@@ -5,6 +5,7 @@ namespace Bolt\protocol\v4;
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
+use Bolt\protocol\AProtocol;
 use Exception;
 
 trait PullMessage
@@ -13,12 +14,12 @@ trait PullMessage
      * Send PULL message
      * The PULL message requests data from the remainder of the result stream.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---pull
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#message-pull
      * @param array $extra [n::Integer, qid::Integer]
-     * @return array
+     * @return AProtocol
      * @throws Exception
      */
-    public function pull(array $extra = []): array
+    public function pull(array $extra = []): AProtocol
     {
         $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
 
@@ -27,6 +28,13 @@ trait PullMessage
 
         $this->write($this->packer->pack(0x3F, $extra));
 
+        $this->pipelinedMessages[] = 'pull';
+        $this->serverState->set($this->serverState->get() == ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
+        return $this;
+    }
+
+    private function _pull(): array
+    {
         $output = [];
         do {
             $message = $this->read($signature);

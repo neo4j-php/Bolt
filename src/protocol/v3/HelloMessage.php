@@ -12,8 +12,8 @@ trait HelloMessage
      * Send HELLO message
      * The HELLO message request the connection to be authorized for use with the remote database.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---hello
-     * @param array $extra Use \Bolt\helpers\Auth to generate appropiate array
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-hello
+     * @param array $extra Use \Bolt\helpers\Auth to generate appropriate array
      * @return array
      * @throws Exception
      */

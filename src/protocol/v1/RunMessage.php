@@ -5,6 +5,7 @@ namespace Bolt\protocol\v1;
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
+use Bolt\protocol\AProtocol;
 use Exception;
 
 trait RunMessage
@@ -13,17 +14,29 @@ trait RunMessage
      * Send RUN message
      * A RUN message submits a new query for execution, the result of which will be consumed by a subsequent message, such as PULL_ALL.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-1.html#request-message---run
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-run
      * @param string $query
      * @param array $parameters
-     * @return array
+     * @return AProtocol
      * @throws Exception
      */
-    public function run(string $query, array $parameters = []): array
+    public function run(string $query, array $parameters = []): AProtocol
     {
         $this->serverState->is(ServerState::READY);
-
         $this->write($this->packer->pack(0x10, $query, (object)$parameters));
+        $this->pipelinedMessages[] = 'run';
+        $this->serverState->set(ServerState::STREAMING);
+        return $this;
+    }
+
+    /**
+     * Read RUN response
+     * @return array
+     * @throws IgnoredException
+     * @throws MessageException
+     */
+    private function _run(): array
+    {
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
@@ -40,5 +53,6 @@ trait RunMessage
 
         $this->serverState->set(ServerState::STREAMING);
         return $message;
+
     }
 }

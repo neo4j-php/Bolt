@@ -5,6 +5,7 @@ namespace Bolt\protocol\v3;
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
+use Bolt\protocol\AProtocol;
 use Exception;
 
 trait RollbackMessage
@@ -13,15 +14,21 @@ trait RollbackMessage
      * Send ROLLBACK message
      * The ROLLBACK message requests that the Explicit Transaction rolls back.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---rollback
-     * @return array Current version has empty success message
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-rollback
+     * @return AProtocol
      * @throws Exception
      */
-    public function rollback(): array
+    public function rollback(): AProtocol
     {
-        $this->serverState->is(ServerState::TX_READY);
-
+        $this->serverState->is(ServerState::TX_READY, ServerState::TX_STREAMING);
         $this->write($this->packer->pack(0x13));
+        $this->pipelinedMessages[] = 'rollback';
+        $this->serverState->set(ServerState::READY);
+        return $this;
+    }
+
+    private function _rollback(): array
+    {
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {

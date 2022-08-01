@@ -5,6 +5,7 @@ namespace Bolt\protocol\v4;
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
+use Bolt\protocol\AProtocol;
 use Exception;
 
 trait DiscardMessage
@@ -13,12 +14,12 @@ trait DiscardMessage
      * Send DISCARD message
      * The DISCARD message requests that the remainder of the result stream should be thrown away.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---discard
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-discard
      * @param array $extra [n::Integer, qid::Integer]
-     * @return array
+     * @return AProtocol
      * @throws Exception
      */
-    public function discard(array $extra = []): array
+    public function discard(array $extra = []): AProtocol
     {
         $this->serverState->is(ServerState::STREAMING);
 
@@ -26,6 +27,14 @@ trait DiscardMessage
             $extra['n'] = -1;
 
         $this->write($this->packer->pack(0x2F, $extra));
+
+        $this->pipelinedMessages[] = 'discard';
+        $this->serverState->set($this->serverState->get() == ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
+        return $this;
+    }
+
+    private function _discard(): array
+    {
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {

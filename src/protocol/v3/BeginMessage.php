@@ -5,6 +5,7 @@ namespace Bolt\protocol\v3;
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
+use Bolt\protocol\AProtocol;
 use Exception;
 
 trait BeginMessage
@@ -13,18 +14,22 @@ trait BeginMessage
      * Send BEGIN message
      * The BEGIN message request the creation of a new Explicit Transaction.
      *
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-3.html#request-message---begin
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---begin
-     * @link https://7687.org/bolt/bolt-protocol-message-specification-4.html#request-message---begin---44
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-begin
      * @param array $extra
-     * @return array Current version has empty success message
+     * @return AProtocol
      * @throws Exception
      */
-    public function begin(array $extra = []): array
+    public function begin(array $extra = []): AProtocol
     {
         $this->serverState->is(ServerState::READY);
-
         $this->write($this->packer->pack(0x11, (object)$extra));
+        $this->pipelinedMessages[] = 'begin';
+        $this->serverState->set(ServerState::TX_READY);
+        return $this;
+    }
+
+    private function _begin(): array
+    {
         $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
