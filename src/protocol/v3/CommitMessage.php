@@ -28,6 +28,12 @@ trait CommitMessage
         return $this;
     }
 
+    /**
+     * Read COMMIT response
+     * @return array
+     * @throws IgnoredException
+     * @throws MessageException
+     */
     private function _commit(): array
     {
         $message = $this->read($signature);

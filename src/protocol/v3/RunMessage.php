@@ -37,6 +37,12 @@ trait RunMessage
         return $this;
     }
 
+    /**
+     * Read RUN response
+     * @return array
+     * @throws IgnoredException
+     * @throws MessageException
+     */
     private function _run(): array
     {
         $message = $this->read($signature);

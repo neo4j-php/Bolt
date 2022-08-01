@@ -53,6 +53,5 @@ trait RunMessage
 
         $this->serverState->set(ServerState::STREAMING);
         return $message;
-
     }
 }

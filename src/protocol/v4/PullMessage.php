@@ -33,6 +33,12 @@ trait PullMessage
         return $this;
     }
 
+    /**
+     * Read PULL response
+     * @return array
+     * @throws IgnoredException
+     * @throws MessageException
+     */
     private function _pull(): array
     {
         $output = [];

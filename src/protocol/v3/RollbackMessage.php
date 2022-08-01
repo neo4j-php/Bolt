@@ -27,6 +27,12 @@ trait RollbackMessage
         return $this;
     }
 
+    /**
+     * Read ROLLBACK response
+     * @return array
+     * @throws IgnoredException
+     * @throws MessageException
+     */
     private function _rollback(): array
     {
         $message = $this->read($signature);

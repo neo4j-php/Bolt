@@ -25,6 +25,11 @@ trait ResetMessage
         return $this;
     }
 
+    /**
+     * Read RESET response
+     * @return array
+     * @throws MessageException
+     */
     private function _reset(): array
     {
         $message = $this->read($signature);

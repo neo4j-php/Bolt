@@ -33,6 +33,12 @@ trait DiscardMessage
         return $this;
     }
 
+    /**
+     * Read DISCARD response
+     * @return array
+     * @throws IgnoredException
+     * @throws MessageException
+     */
     private function _discard(): array
     {
         $message = $this->read($signature);

@@ -29,6 +29,12 @@ trait PullAllMessage
         return $this;
     }
 
+    /**
+     * Read PULL_ALL response
+     * @return array
+     * @throws IgnoredException
+     * @throws MessageException
+     */
     private function _pullAll(): array
     {
         $output = [];

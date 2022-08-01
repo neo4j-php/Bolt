@@ -28,6 +28,12 @@ trait BeginMessage
         return $this;
     }
 
+    /**
+     * Read BEGIN response
+     * @return array
+     * @throws IgnoredException
+     * @throws MessageException
+     */
     private function _begin(): array
     {
         $message = $this->read($signature);

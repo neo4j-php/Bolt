@@ -106,11 +106,7 @@ abstract class AProtocol
         $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
         $output = [];
         foreach ($this->pipelinedMessages as $message) {
-            try {
-                $output[] = $this->{'_' . $message}();
-            } catch (MessageException|IgnoredException $e) {
-                $output[] = $e;
-            }
+            $output[] = $this->{'_' . $message}();
         }
         $this->pipelinedMessages = [];
         return count($output) == 1 ? reset($output) : $output;

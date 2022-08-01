@@ -29,9 +29,15 @@ trait DiscardAllMessage
         return $this;
     }
 
+    /**
+     * Read DISCARD_ALL response
+     * @return array
+     * @throws IgnoredException
+     * @throws MessageException
+     */
     private function _discardAll(): array
     {
-                $message = $this->read($signature);
+        $message = $this->read($signature);
 
         if ($signature == self::FAILURE) {
             $this->serverState->set(ServerState::FAILED);
