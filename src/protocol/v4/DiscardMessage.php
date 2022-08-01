@@ -16,7 +16,7 @@ trait DiscardMessage
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-discard
      * @param array $extra [n::Integer, qid::Integer]
-     * @return AProtocol
+     * @return AProtocol|\Bolt\protocol\V4|\Bolt\protocol\V4_1|\Bolt\protocol\V4_2|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4
      * @throws Exception
      */
     public function discard(array $extra = []): AProtocol
@@ -28,18 +28,17 @@ trait DiscardMessage
 
         $this->write($this->packer->pack(0x2F, $extra));
 
-        $this->pipelinedMessages[] = 'discard';
+        $this->pipelinedMessages[] = __FUNCTION__;
         $this->serverState->set($this->serverState->get() == ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
         return $this;
     }
 
     /**
      * Read DISCARD response
-     * @return array
      * @throws IgnoredException
      * @throws MessageException
      */
-    private function _discard(): array
+    protected function _discard(): iterable
     {
         $message = $this->read($signature);
 
@@ -54,6 +53,6 @@ trait DiscardMessage
         }
 
         $this->serverState->set(($message['has_more'] ?? false) ? $this->serverState->get() : ($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY));
-        return $message;
+        yield $message;
     }
 }

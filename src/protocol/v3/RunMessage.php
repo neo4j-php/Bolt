@@ -18,7 +18,7 @@ trait RunMessage
      * @param string $query
      * @param array $parameters
      * @param array $extra
-     * @return AProtocol
+     * @return AProtocol|\Bolt\protocol\V3|\Bolt\protocol\V4|\Bolt\protocol\V4_1|\Bolt\protocol\V4_2|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4
      * @throws Exception
      */
     public function run(string $query, array $parameters = [], array $extra = []): AProtocol
@@ -32,18 +32,17 @@ trait RunMessage
             (object)$extra
         ));
 
-        $this->pipelinedMessages[] = 'run';
+        $this->pipelinedMessages[] = __FUNCTION__;
         $this->serverState->set($this->serverState->get() == ServerState::READY ? ServerState::STREAMING : ServerState::TX_STREAMING);
         return $this;
     }
 
     /**
      * Read RUN response
-     * @return array
      * @throws IgnoredException
      * @throws MessageException
      */
-    private function _run(): array
+    protected function _run(): iterable
     {
         $message = $this->read($signature);
 
@@ -58,6 +57,6 @@ trait RunMessage
         }
 
         $this->serverState->set($this->serverState->get() === ServerState::READY ? ServerState::STREAMING : ServerState::TX_STREAMING);
-        return $message;
+        yield $message;
     }
 }

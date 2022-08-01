@@ -5,6 +5,7 @@ namespace Bolt\protocol\v4_3;
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
+use Bolt\protocol\AProtocol;
 use Exception;
 
 trait RouteMessage
@@ -17,14 +18,24 @@ trait RouteMessage
      * @param array $routing
      * @param array $bookmarks
      * @param string|null $db
-     * @return array
+     * @return AProtocol|\Bolt\protocol\V4_3
      * @throws Exception
      */
-    public function route(array $routing, array $bookmarks = [], ?string $db = null): array
+    public function route(array $routing, array $bookmarks = [], ?string $db = null): AProtocol
     {
         $this->serverState->is(ServerState::READY);
-
         $this->write($this->packer->pack(0x66, (object)$routing, $bookmarks, $db));
+        $this->pipelinedMessages[] = __FUNCTION__;
+        return $this;
+    }
+
+    /**
+     * Read ROUTE response
+     * @throws IgnoredException
+     * @throws MessageException
+     */
+    protected function _route(): iterable
+    {
         $message = $this->read($signature);
 
         if ($signature === self::FAILURE) {
@@ -36,6 +47,6 @@ trait RouteMessage
             throw new IgnoredException(__FUNCTION__);
         }
 
-        return $message;
+        yield $message;
     }
 }

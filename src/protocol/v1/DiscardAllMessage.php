@@ -15,14 +15,14 @@ trait DiscardAllMessage
      * The DISCARD_ALL message issues a request to discard the outstanding result and return to a READY state.
      *
      * https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-discard
-     * @return AProtocol
+     * @return AProtocol|\Bolt\protocol\V1|\Bolt\protocol\V2|\Bolt\protocol\V3
      * @throws Exception
      */
     public function discardAll(): AProtocol
     {
         $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
         $this->write($this->packer->pack(0x2F));
-        $this->pipelinedMessages[] = 'discard_all';
+        $this->pipelinedMessages[] = __FUNCTION__;
         if ($this->serverState->get() == ServerState::STREAMING) {
             $this->serverState->set(ServerState::READY);
         }
@@ -31,11 +31,10 @@ trait DiscardAllMessage
 
     /**
      * Read DISCARD_ALL response
-     * @return array
      * @throws IgnoredException
      * @throws MessageException
      */
-    private function _discardAll(): array
+    protected function _discardAll(): iterable
     {
         $message = $this->read($signature);
 
@@ -52,6 +51,6 @@ trait DiscardAllMessage
         }
 
         $this->serverState->set($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
-        return $message;
+        yield $message;
     }
 }

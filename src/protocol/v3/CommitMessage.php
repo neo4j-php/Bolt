@@ -15,14 +15,14 @@ trait CommitMessage
      * The COMMIT message request that the Explicit Transaction is done.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-commit
-     * @return AProtocol
+     * @return AProtocol|\Bolt\protocol\V3|\Bolt\protocol\V4|\Bolt\protocol\V4_1|\Bolt\protocol\V4_2|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4
      * @throws Exception
      */
     public function commit(): AProtocol
     {
         $this->serverState->is(ServerState::TX_READY, ServerState::TX_STREAMING);
         $this->write($this->packer->pack(0x12));
-        $this->pipelinedMessages[] = 'commit';
+        $this->pipelinedMessages[] = __FUNCTION__;
         $this->serverState->set(ServerState::READY);
 
         return $this;
@@ -30,11 +30,10 @@ trait CommitMessage
 
     /**
      * Read COMMIT response
-     * @return array
      * @throws IgnoredException
      * @throws MessageException
      */
-    private function _commit(): array
+    protected function _commit(): iterable
     {
         $message = $this->read($signature);
 
@@ -49,6 +48,6 @@ trait CommitMessage
         }
 
         $this->serverState->set(ServerState::READY);
-        return $message;
+        yield $message;
     }
 }

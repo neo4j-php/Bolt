@@ -15,25 +15,24 @@ trait RollbackMessage
      * The ROLLBACK message requests that the Explicit Transaction rolls back.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-rollback
-     * @return AProtocol
+     * @return AProtocol|\Bolt\protocol\V3|\Bolt\protocol\V4|\Bolt\protocol\V4_1|\Bolt\protocol\V4_2|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4
      * @throws Exception
      */
     public function rollback(): AProtocol
     {
         $this->serverState->is(ServerState::TX_READY, ServerState::TX_STREAMING);
         $this->write($this->packer->pack(0x13));
-        $this->pipelinedMessages[] = 'rollback';
+        $this->pipelinedMessages[] = __FUNCTION__;
         $this->serverState->set(ServerState::READY);
         return $this;
     }
 
     /**
      * Read ROLLBACK response
-     * @return array
      * @throws IgnoredException
      * @throws MessageException
      */
-    private function _rollback(): array
+    protected function _rollback(): iterable
     {
         $message = $this->read($signature);
 
@@ -48,6 +47,6 @@ trait RollbackMessage
         }
 
         $this->serverState->set(ServerState::READY);
-        return $message;
+        yield $message;
     }
 }

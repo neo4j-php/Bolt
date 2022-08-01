@@ -16,25 +16,24 @@ trait BeginMessage
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-begin
      * @param array $extra
-     * @return AProtocol
+     * @return AProtocol|\Bolt\protocol\V3|\Bolt\protocol\V4|\Bolt\protocol\V4_1|\Bolt\protocol\V4_2|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4
      * @throws Exception
      */
     public function begin(array $extra = []): AProtocol
     {
         $this->serverState->is(ServerState::READY);
         $this->write($this->packer->pack(0x11, (object)$extra));
-        $this->pipelinedMessages[] = 'begin';
+        $this->pipelinedMessages[] = __FUNCTION__;
         $this->serverState->set(ServerState::TX_READY);
         return $this;
     }
 
     /**
      * Read BEGIN response
-     * @return array
      * @throws IgnoredException
      * @throws MessageException
      */
-    private function _begin(): array
+    protected function _begin(): iterable
     {
         $message = $this->read($signature);
 
@@ -49,6 +48,6 @@ trait BeginMessage
         }
 
         $this->serverState->set(ServerState::TX_READY);
-        return $message;
+        yield $message;
     }
 }

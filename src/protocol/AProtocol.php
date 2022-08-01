@@ -28,6 +28,7 @@ abstract class AProtocol
 
     public ServerState $serverState;
 
+    /** @var string[] */
     protected array $pipelinedMessages = [];
 
     /**
@@ -97,18 +98,37 @@ abstract class AProtocol
     }
 
     /**
-     * Fetch all responses from pipelined (executed) messages
-     * @return array
-     * @throws Exception
+     * Read responses from pipelined (executed) messages
+     * @param int|null $limit
+     * @return \Iterator
      */
-    public function fetchPipelineResponse(): array
+    public function getResponse(?int $limit = null): \Iterator
     {
         $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
-        $output = [];
-        foreach ($this->pipelinedMessages as $message) {
-            $output[] = $this->{'_' . $message}();
+
+        if ($limit !== null) {
+            if ($limit <= 0) {
+                $limit = null;
+            }
         }
-        $this->pipelinedMessages = [];
-        return count($output) == 1 ? reset($output) : $output;
+
+        while (count($this->pipelinedMessages) > 0) {
+            $message = reset($this->pipelinedMessages);
+            $gen = $this->{'_' . $message}();
+
+            while ($gen->valid()) {
+                yield $gen->current();
+
+                if ($limit !== null) {
+                    $limit--;
+                    if ($limit == 0)
+                        break 2;
+                }
+
+                $gen->next();
+            }
+
+            array_shift($this->pipelinedMessages);
+        }
     }
 }

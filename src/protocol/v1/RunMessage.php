@@ -17,25 +17,24 @@ trait RunMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-run
      * @param string $query
      * @param array $parameters
-     * @return AProtocol
+     * @return AProtocol|\Bolt\protocol\V1|\Bolt\protocol\V2
      * @throws Exception
      */
     public function run(string $query, array $parameters = []): AProtocol
     {
         $this->serverState->is(ServerState::READY);
         $this->write($this->packer->pack(0x10, $query, (object)$parameters));
-        $this->pipelinedMessages[] = 'run';
+        $this->pipelinedMessages[] = __FUNCTION__;
         $this->serverState->set(ServerState::STREAMING);
         return $this;
     }
 
     /**
      * Read RUN response
-     * @return array
      * @throws IgnoredException
      * @throws MessageException
      */
-    private function _run(): array
+    protected function _run(): iterable
     {
         $message = $this->read($signature);
 
@@ -52,6 +51,6 @@ trait RunMessage
         }
 
         $this->serverState->set(ServerState::STREAMING);
-        return $message;
+        yield $message;
     }
 }
