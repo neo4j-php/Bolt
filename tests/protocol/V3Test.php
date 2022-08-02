@@ -2,6 +2,7 @@
 
 namespace Bolt\tests\protocol;
 
+use Bolt\protocol\ServerState;
 use Bolt\protocol\V3;
 use Exception;
 
@@ -25,8 +26,11 @@ class V3Test extends ATest
      */
     public function test__construct(): V3
     {
-        $cls = new V3(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection(), new \Bolt\protocol\ServerState());
+        $cls = new V3(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection(), new ServerState());
         $this->assertInstanceOf(V3::class, $cls);
+        $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
+            $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
+        };
         return $cls;
     }
 
@@ -52,7 +56,9 @@ class V3Test extends ATest
         ];
 
         try {
+            $cls->serverState->set(ServerState::CONNECTED);
             $this->assertIsArray($cls->hello(\Bolt\helpers\Auth::basic('user', 'password')));
+            $this->assertEquals(ServerState::READY, $cls->serverState->get());
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -80,9 +86,13 @@ class V3Test extends ATest
             hex2bin('0002b00e')
         ];
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
-        $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'));
+        try {
+            $cls->serverState->set(ServerState::CONNECTED);
+            $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'));
+        } catch (Exception $e) {
+            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
+            $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
+        }
     }
 
     /**
@@ -101,7 +111,9 @@ class V3Test extends ATest
         ];
 
         try {
+            $cls->serverState->set(ServerState::READY);
             $this->assertIsArray($cls->run('RETURN 1'));
+            $this->assertEquals(ServerState::STREAMING, $cls->serverState->get());
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -123,13 +135,18 @@ class V3Test extends ATest
             hex2bin('0002b00f0000')
         ];
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
-        $cls->run('RETURN 1');
+        try {
+            $cls->serverState->set(ServerState::READY);
+            $cls->run('RETURN 1');
+        } catch (Exception $e) {
+            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
+            $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+        }
     }
 
+    // @todo add runIgnored
+
     /**
-     * @doesNotPerformAssertions
      * @depends test__construct
      * @param V3 $cls
      */
@@ -143,10 +160,13 @@ class V3Test extends ATest
 
         try {
             $cls->reset();
+            $this->assertEquals(ServerState::READY, $cls->serverState->get());
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
     }
+
+    // @todo add reset failed
 
     /**
      * @depends test__construct
@@ -162,7 +182,9 @@ class V3Test extends ATest
         ];
 
         try {
+            $cls->serverState->set(ServerState::READY);
             $this->assertIsArray($cls->begin());
+            $this->assertEquals(ServerState::TX_READY, $cls->serverState->get());
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -182,10 +204,16 @@ class V3Test extends ATest
             hex2bin('0002b00f')
         ];
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
-        $cls->begin();
+        try {
+            $cls->serverState->set(ServerState::READY);
+            $cls->begin();
+        } catch (Exception $e) {
+            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
+            $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+        }
     }
+
+    // @todo begin ignored
 
     /**
      * @depends test__construct
@@ -200,7 +228,9 @@ class V3Test extends ATest
         ];
 
         try {
+            $cls->serverState->set(ServerState::TX_READY);
             $this->assertIsArray($cls->commit());
+            $this->assertEquals(ServerState::READY, $cls->serverState->get());
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -219,10 +249,16 @@ class V3Test extends ATest
             hex2bin('0002b00f')
         ];
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
-        $cls->commit();
+        try {
+            $cls->serverState->set(ServerState::TX_READY);
+            $cls->commit();
+        } catch (Exception $e) {
+            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
+            $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+        }
     }
+
+    // @todo commit ignored
 
     /**
      * @depends test__construct
@@ -237,7 +273,9 @@ class V3Test extends ATest
         ];
 
         try {
+            $cls->serverState->set(ServerState::TX_READY);
             $this->assertIsArray($cls->rollback());
+            $this->assertEquals(ServerState::READY, $cls->serverState->get());
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -256,10 +294,16 @@ class V3Test extends ATest
             hex2bin('0002b00f')
         ];
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
-        $cls->rollback();
+        try {
+            $cls->serverState->set(ServerState::TX_READY);
+            $cls->rollback();
+        } catch (Exception $e) {
+            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
+            $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+        }
     }
+
+    // @todo rollback ignored
 
     /**
      * @doesNotPerformAssertions

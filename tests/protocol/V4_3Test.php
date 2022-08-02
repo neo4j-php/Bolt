@@ -27,6 +27,9 @@ class V4_3Test extends ATest
     {
         $cls = new V4_3(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection(), new \Bolt\protocol\ServerState());
         $this->assertInstanceOf(V4_3::class, $cls);
+        $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
+            $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
+        };
         return $cls;
     }
 

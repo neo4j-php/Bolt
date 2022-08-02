@@ -2,6 +2,7 @@
 
 namespace Bolt\tests\protocol;
 
+use Bolt\protocol\ServerState;
 use Bolt\protocol\V4;
 use Exception;
 
@@ -25,8 +26,11 @@ class V4Test extends ATest
      */
     public function test__construct(): V4
     {
-        $cls = new V4(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection(), new \Bolt\protocol\ServerState());
+        $cls = new V4(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection(), new ServerState());
         $this->assertInstanceOf(V4::class, $cls);
+        $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
+            $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
+        };
         return $cls;
     }
 
@@ -48,6 +52,7 @@ class V4Test extends ATest
         ];
 
         try {
+            $cls->serverState->set(ServerState::STREAMING);
             $res = $cls->pull(['n' => -1, 'qid' => -1]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -55,6 +60,7 @@ class V4Test extends ATest
 
         $this->assertIsArray($res);
         $this->assertCount(2, $res);
+        $this->assertEquals(ServerState::READY, $cls->serverState->get());
     }
 
     /**
@@ -80,6 +86,8 @@ class V4Test extends ATest
         $cls->pull(['n' => -1, 'qid' => -1]);
     }
 
+    // @todo pull ignored
+
     /**
      * @depends test__construct
      * @param V4 $cls
@@ -103,5 +111,7 @@ class V4Test extends ATest
             $this->markTestIncomplete($e->getMessage());
         }
     }
+
+    // @todo discard failed and ignored
 
 }

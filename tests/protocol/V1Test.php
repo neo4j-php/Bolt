@@ -2,6 +2,8 @@
 
 namespace Bolt\tests\protocol;
 
+use Bolt\error\MessageException;
+use Bolt\protocol\ServerState;
 use Bolt\protocol\V1;
 use Exception;
 
@@ -17,8 +19,6 @@ use Exception;
  * @covers \Bolt\PackStream\v1\Unpacker
  *
  * @package Bolt\tests\protocol
- * @requires PHP >= 7.1
- * @requires extension mbstring
  */
 class V1Test extends ATest
 {
@@ -28,8 +28,11 @@ class V1Test extends ATest
      */
     public function test__construct(): V1
     {
-        $cls = new V1(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection(), new \Bolt\protocol\ServerState());
+        $cls = new V1(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection(), new ServerState());
         $this->assertInstanceOf(V1::class, $cls);
+        $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
+            $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
+        };
         return $cls;
     }
 
@@ -39,7 +42,9 @@ class V1Test extends ATest
      */
     public function testInit(V1 $cls)
     {
-        self::$readArray = [1, 2, 0];
+        self::$readArray = [
+            [0x70, (object)[]]
+        ];
         self::$writeBuffer = [
             hex2bin('0001b2'),
             hex2bin('000101'),
@@ -54,7 +59,9 @@ class V1Test extends ATest
         ];
 
         try {
+            $cls->serverState->set(ServerState::CONNECTED);
             $this->assertIsArray($cls->init(\Bolt\helpers\Auth::basic('user', 'password')));
+            $this->assertEquals(ServerState::READY, $cls->serverState->get());
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -66,7 +73,9 @@ class V1Test extends ATest
      */
     public function testInitFail(V1 $cls)
     {
-        self::$readArray = [4, 5, 0];
+        self::$readArray = [
+            [0x7F, (object)['message' => 'some error message', 'code' => 'Neo.ClientError.Statement.SyntaxError']]
+        ];
         self::$writeBuffer = [
             hex2bin('0001b2'),
             hex2bin('000101'),
@@ -81,9 +90,13 @@ class V1Test extends ATest
             hex2bin('0002b00e0000')
         ];
 
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
-        $cls->init(\Bolt\helpers\Auth::basic('user', 'password'));
+        try {
+            $cls->serverState->set(ServerState::CONNECTED);
+            $cls->init(\Bolt\helpers\Auth::basic('user', 'password'));
+        } catch (MessageException $e) {
+            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
+            $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
+        }
     }
 
     /**
@@ -92,7 +105,9 @@ class V1Test extends ATest
      */
     public function testRun(V1 $cls)
     {
-        self::$readArray = [1, 2, 0];
+        self::$readArray = [
+            [0x70, (object)[]]
+        ];
         self::$writeBuffer = [
             hex2bin('0001b2'),
             hex2bin('000110'),
@@ -101,7 +116,9 @@ class V1Test extends ATest
         ];
 
         try {
+            $cls->serverState->set(ServerState::READY);
             $this->assertIsArray($cls->run('RETURN 1'));
+            $this->assertEquals(ServerState::STREAMING, $cls->serverState->get());
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -113,7 +130,10 @@ class V1Test extends ATest
      */
     public function testRunFail(V1 $cls)
     {
-        self::$readArray = [4, 5, 0, 1, 2, 0];
+        self::$readArray = [
+            [0x7F, (object)['message' => 'some error message', 'code' => 'Neo.ClientError.Statement.SyntaxError']],
+            [0x70, (object)[]]
+        ];
         self::$writeBuffer = [
             hex2bin('0001b2'),
             hex2bin('000110'),
@@ -123,10 +143,16 @@ class V1Test extends ATest
             hex2bin('00010e')
         ];
 
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
-        $cls->run('RETURN 1');
+        try {
+            $cls->serverState->set(ServerState::READY);
+            $cls->run('RETURN 1');
+        } catch (Exception $e) {
+            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
+            $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+        }
     }
+
+    // @todo add runIgnored
 
     /**
      * @depends test__construct
@@ -134,13 +160,17 @@ class V1Test extends ATest
      */
     public function testPullAll(V1 $cls)
     {
-        self::$readArray = [1, 3, 0, 1, 2, 0];
+        self::$readArray = [
+            [0x71, (object)[]],
+            [0x70, (object)[]]
+        ];
         self::$writeBuffer = [
             hex2bin('0001b0'),
             hex2bin('00013f'),
         ];
 
         try {
+            $cls->serverState->set(ServerState::STREAMING);
             $res = $cls->pullAll();
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
@@ -148,6 +178,7 @@ class V1Test extends ATest
 
         $this->assertIsArray($res);
         $this->assertCount(2, $res);
+        $this->assertEquals(ServerState::READY, $cls->serverState->get());
     }
 
     /**
@@ -156,7 +187,10 @@ class V1Test extends ATest
      */
     public function testPullAllFail(V1 $cls)
     {
-        self::$readArray = [4, 5, 0, 1, 2, 0];
+        self::$readArray = [
+            [0x7F, (object)['message' => 'some error message', 'code' => 'Neo.ClientError.Statement.SyntaxError']],
+            [0x70, (object)[]]
+        ];
         self::$writeBuffer = [
             hex2bin('0001b0'),
             hex2bin('00013f'),
@@ -164,39 +198,51 @@ class V1Test extends ATest
             hex2bin('00010e')
         ];
 
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('some error message (Neo.ClientError.Statement.SyntaxError)');
-        $cls->pullAll();
+        try {
+            $cls->serverState->set(ServerState::STREAMING);
+            $cls->pullAll();
+        } catch (Exception $e) {
+            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
+            $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+        }
     }
 
+    // @todo add pullAll ignored
+
     /**
-     * @doesNotPerformAssertions
      * @depends test__construct
      * @param V1 $cls
      */
     public function testDiscardAll(V1 $cls)
     {
-        self::$readArray = [1, 2, 0];
+        self::$readArray = [
+            [0x70, (object)[]]
+        ];
         self::$writeBuffer = [
             hex2bin('0001b0'),
             hex2bin('00012f'),
         ];
 
         try {
+            $cls->serverState->set(ServerState::STREAMING);
             $cls->discardAll();
+            $this->assertEquals(ServerState::READY, $cls->serverState->get());
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
     }
 
+    // @todo add discardAll failed and ignored
+
     /**
-     * @doesNotPerformAssertions
      * @depends test__construct
      * @param V1 $cls
      */
     public function testReset(V1 $cls)
     {
-        self::$readArray = [1, 2, 0];
+        self::$readArray = [
+            [0x70, (object)[]]
+        ];
         self::$writeBuffer = [
             hex2bin('0001b0'),
             hex2bin('00010f'),
@@ -204,9 +250,14 @@ class V1Test extends ATest
 
         try {
             $cls->reset();
+            $this->assertEquals(ServerState::READY, $cls->serverState->get());
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
     }
+
+    // @todo add reset failed
+
+    // @todo ackFailure success and fail
 
 }
