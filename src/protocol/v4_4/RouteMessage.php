@@ -2,10 +2,9 @@
 
 namespace Bolt\protocol\v4_4;
 
-use Bolt\error\IgnoredException;
-use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
 use Bolt\protocol\AProtocol;
+use Bolt\protocol\Response;
 use Exception;
 
 trait RouteMessage
@@ -31,22 +30,11 @@ trait RouteMessage
 
     /**
      * Read ROUTE response
-     * @throws IgnoredException
-     * @throws MessageException
+     * @throws Exception
      */
     protected function _route(): iterable
     {
         $message = $this->read($signature);
-
-        if ($signature === self::FAILURE) {
-            throw new MessageException($message['message'], $message['code']);
-        }
-
-        if ($signature == self::IGNORED) {
-            $this->serverState->set(ServerState::INTERRUPTED);
-            throw new IgnoredException(__FUNCTION__);
-        }
-
-        yield $message;
+        yield new Response(Response::MESSAGE_ROUTE, $signature, $message);
     }
 }

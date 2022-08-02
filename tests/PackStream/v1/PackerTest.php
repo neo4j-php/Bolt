@@ -4,7 +4,7 @@ namespace Bolt\tests\PackStream\v1;
 
 use Bolt\protocol\AProtocol;
 use Bolt\Bolt;
-use Bolt\protocol\{V4_3, V4_4};
+use Bolt\protocol\{Response, V4_3, V4_4};
 use Exception;
 use PHPUnit\Framework\TestCase;
 
@@ -39,7 +39,7 @@ class PackerTest extends TestCase
             $protocol = $bolt->build();
             $this->assertInstanceOf(AProtocol::class, $protocol);
 
-            $this->assertNotEmpty($protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
+            $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
 
             return $protocol;
         } catch (Exception $e) {
@@ -58,9 +58,10 @@ class PackerTest extends TestCase
                 $protocol
                     ->run('RETURN $n IS NULL', ['n' => null], ['mode' => 'r'])
                     ->pull()
-                    ->getResponse()
+                    ->getResponses(),
+                false
             );
-            $this->assertTrue($res[1][0]);
+            $this->assertTrue($res[1]->getContent()[0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -77,17 +78,19 @@ class PackerTest extends TestCase
                 $protocol
                     ->run('RETURN $b = true', ['b' => true], ['mode' => 'r'])
                     ->pull()
-                    ->getResponse()
+                    ->getResponses(),
+                false
             );
-            $this->assertTrue($res[1][0]);
+            $this->assertTrue($res[1]->getContent()[0]);
 
             $res = iterator_to_array(
                 $protocol
                     ->run('RETURN $b = false', ['b' => false], ['mode' => 'r'])
                     ->pull()
-                    ->getResponse()
+                    ->getResponses(),
+                false
             );
-            $this->assertTrue($res[1][0]);
+            $this->assertTrue($res[1]->getContent()[0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -106,9 +109,10 @@ class PackerTest extends TestCase
                 $protocol
                     ->run('RETURN $i = ' . $i, ['i' => $i], ['mode' => 'r'])
                     ->pull()
-                    ->getResponse()
+                    ->getResponses(),
+                false
             );
-            $this->assertTrue($res[1][0]);
+            $this->assertTrue($res[1]->getContent()[0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -135,9 +139,10 @@ class PackerTest extends TestCase
                     $protocol
                         ->run('RETURN ' . $num . ' + 0.000001 > $n > ' . $num . ' - 0.000001', ['n' => $num], ['mode' => 'r'])
                         ->pull()
-                        ->getResponse()
+                        ->getResponses(),
+                    false
                 );
-                $this->assertTrue($res[1][0]);
+                $this->assertTrue($res[1]->getContent()[0]);
             } catch (Exception $e) {
                 $this->markTestIncomplete($e->getMessage());
             }
@@ -164,9 +169,10 @@ class PackerTest extends TestCase
                     $protocol
                         ->run('RETURN $s = "' . str_replace(['\\', '"'], ['\\\\', '\\"'], $str) . '"', ['s' => $str], ['mode' => 'r'])
                         ->pull()
-                        ->getResponse()
+                        ->getResponses(),
+                    false
                 );
-                $this->assertTrue($res[1][0]);
+                $this->assertTrue($res[1]->getContent()[0]);
             } catch (Exception $e) {
                 $this->markTestIncomplete($e->getMessage());
             }
@@ -186,9 +192,10 @@ class PackerTest extends TestCase
                     $protocol
                         ->run('RETURN size($arr) = ' . count($arr), ['arr' => $arr], ['mode' => 'r'])
                         ->pull()
-                        ->getResponse()
+                        ->getResponses(),
+                    false
                 );
-                $this->assertTrue($res[1][0]);
+                $this->assertTrue($res[1]->getContent()[0]);
             } catch (Exception $e) {
                 $this->markTestIncomplete($e->getMessage());
             }
@@ -217,9 +224,10 @@ class PackerTest extends TestCase
                     $protocol
                         ->run('RETURN size(keys($arr)) = ' . count($arr), ['arr' => (object)$arr], ['mode' => 'r'])
                         ->pull()
-                        ->getResponse()
+                        ->getResponses(),
+                    false
                 );
-                $this->assertTrue($res[1][0]);
+                $this->assertTrue($res[1]->getContent()[0]);
             } catch (Exception $e) {
                 $this->markTestIncomplete($e->getMessage());
             }
@@ -243,10 +251,11 @@ class PackerTest extends TestCase
                 $protocol
                     ->run('UNWIND $list AS row RETURN row', ['list' => $list])
                     ->pull()
-                    ->getResponse()
+                    ->getResponses(),
+                false
             );
             foreach ($data as $i => $value)
-                $this->assertEquals($value, $result[1 + $i][0]);
+                $this->assertEquals($value, $result[1 + $i]->getContent()[0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -269,9 +278,10 @@ class PackerTest extends TestCase
                 $protocol
                     ->run('RETURN $dict', ['dict' => $dict])
                     ->pull()
-                    ->getResponse()
+                    ->getResponses(),
+                false
             );
-            $this->assertEquals($data, $result[1][0]);
+            $this->assertEquals($data, $result[1]->getContent()[0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }

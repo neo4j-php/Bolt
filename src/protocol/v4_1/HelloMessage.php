@@ -2,6 +2,7 @@
 
 namespace Bolt\protocol\v4_1;
 
+use Bolt\protocol\Response;
 use Exception;
 
 trait HelloMessage
@@ -16,10 +17,10 @@ trait HelloMessage
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-hello
      * @param array $extra Use \Bolt\helpers\Auth to generate appropiate array
-     * @return array
+     * @return Response
      * @throws Exception
      */
-    public function hello(array $extra): array
+    public function hello(array $extra): Response
     {
         if (isset($extra['routing']) && is_array($extra['routing']))
             $extra['routing'] = (object)$extra['routing'];

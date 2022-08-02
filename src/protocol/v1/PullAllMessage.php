@@ -2,10 +2,9 @@
 
 namespace Bolt\protocol\v1;
 
-use Bolt\error\IgnoredException;
-use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
 use Bolt\protocol\AProtocol;
+use Bolt\protocol\Response;
 use Exception;
 
 trait PullAllMessage
@@ -31,29 +30,20 @@ trait PullAllMessage
 
     /**
      * Read PULL_ALL response
-     * @throws IgnoredException
-     * @throws MessageException
+     * @throws Exception
      */
     protected function _pullAll(): iterable
     {
         do {
             $message = $this->read($signature);
 
-            if ($signature == self::FAILURE) {
-                $this->serverState->set(ServerState::FAILED);
-                if (method_exists($this, 'ackFailure'))
-                    $this->ackFailure();
-                throw new MessageException($message['message'], $message['code']);
+            if ($signature == Response::SIGNATURE_SUCCESS) {
+                $this->serverState->set($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
+            } elseif ($signature == Response::SIGNATURE_FAILURE && method_exists($this, 'ackFailure')) {
+                $message = $this->ackFailure();
             }
 
-            if ($signature == self::IGNORED) {
-                $this->serverState->set(ServerState::INTERRUPTED);
-                throw new IgnoredException(__FUNCTION__);
-            }
-
-            yield $message;
-        } while ($signature == self::RECORD);
-
-        $this->serverState->set($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
+            yield new Response(Response::MESSAGE_PULL_ALL, $signature, $message);
+        } while ($signature == Response::SIGNATURE_RECORD);
     }
 }

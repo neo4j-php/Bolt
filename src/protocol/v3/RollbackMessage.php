@@ -2,10 +2,9 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\error\IgnoredException;
-use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
 use Bolt\protocol\AProtocol;
+use Bolt\protocol\Response;
 use Exception;
 
 trait RollbackMessage
@@ -29,24 +28,16 @@ trait RollbackMessage
 
     /**
      * Read ROLLBACK response
-     * @throws IgnoredException
-     * @throws MessageException
+     * @throws Exception
      */
     protected function _rollback(): iterable
     {
         $message = $this->read($signature);
 
-        if ($signature == self::FAILURE) {
-            $this->serverState->set(ServerState::FAILED);
-            throw new MessageException($message['message'], $message['code']);
+        if ($signature == Response::SIGNATURE_SUCCESS) {
+            $this->serverState->set(ServerState::READY);
         }
 
-        if ($signature == self::IGNORED) {
-            $this->serverState->set(ServerState::INTERRUPTED);
-            throw new IgnoredException(__FUNCTION__);
-        }
-
-        $this->serverState->set(ServerState::READY);
-        yield $message;
+        yield new Response(Response::MESSAGE_ROLLBACK, $signature, $message);
     }
 }

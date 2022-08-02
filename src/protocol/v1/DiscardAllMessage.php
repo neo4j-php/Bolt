@@ -2,10 +2,9 @@
 
 namespace Bolt\protocol\v1;
 
-use Bolt\error\IgnoredException;
-use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
 use Bolt\protocol\AProtocol;
+use Bolt\protocol\Response;
 use Exception;
 
 trait DiscardAllMessage
@@ -31,26 +30,18 @@ trait DiscardAllMessage
 
     /**
      * Read DISCARD_ALL response
-     * @throws IgnoredException
-     * @throws MessageException
+     * @throws Exception
      */
     protected function _discardAll(): iterable
     {
         $message = $this->read($signature);
 
-        if ($signature == self::FAILURE) {
-            $this->serverState->set(ServerState::FAILED);
-            if (method_exists($this, 'ackFailure'))
-                $this->ackFailure();
-            throw new MessageException($message['message'], $message['code']);
+        if ($signature == Response::SIGNATURE_SUCCESS) {
+            $this->serverState->set($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
+        } elseif ($signature == Response::SIGNATURE_FAILURE && method_exists($this, 'ackFailure')) {
+            $message = $this->ackFailure();
         }
 
-        if ($signature == self::IGNORED) {
-            $this->serverState->set(ServerState::INTERRUPTED);
-            throw new IgnoredException(__FUNCTION__);
-        }
-
-        $this->serverState->set($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
-        yield $message;
+        yield new Response(Response::MESSAGE_DISCARD_ALL, $signature, $message);
     }
 }

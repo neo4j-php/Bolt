@@ -2,8 +2,8 @@
 
 namespace Bolt\protocol\v1;
 
-use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
+use Bolt\protocol\Response;
 use Exception;
 
 trait InitMessage
@@ -15,24 +15,24 @@ trait InitMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-init
      * @param string $userAgent
      * @param array $authToken
-     * @return array
+     * @return Response
      * @throws Exception
      */
-    public function init(string $userAgent, array $authToken): array
+    public function init(string $userAgent, array $authToken): Response
     {
         $this->serverState->is(ServerState::CONNECTED);
 
         $this->write($this->packer->pack(0x01, $userAgent, $authToken));
         $message = $this->read($signature);
 
-        if ($signature == self::FAILURE) {
+        if ($signature == Response::SIGNATURE_SUCCESS) {
+            $this->serverState->set(ServerState::READY);
+        } elseif ($signature == Response::SIGNATURE_FAILURE) {
             // ..but must immediately close the connection after the failure has been sent.
             $this->connection->disconnect();
             $this->serverState->set(ServerState::DEFUNCT);
-            throw new MessageException($message['message'], $message['code']);
         }
 
-        $this->serverState->set(ServerState::READY);
-        return $message;
+        return new Response(Response::MESSAGE_INIT, $signature, $message);
     }
 }

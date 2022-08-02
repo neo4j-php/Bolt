@@ -2,10 +2,9 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\error\IgnoredException;
-use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
 use Bolt\protocol\AProtocol;
+use Bolt\protocol\Response;
 use Exception;
 
 trait RunMessage
@@ -39,24 +38,16 @@ trait RunMessage
 
     /**
      * Read RUN response
-     * @throws IgnoredException
-     * @throws MessageException
+     * @throws Exception
      */
     protected function _run(): iterable
     {
         $message = $this->read($signature);
 
-        if ($signature == self::FAILURE) {
-            $this->serverState->set(ServerState::FAILED);
-            throw new MessageException($message['message'], $message['code']);
+        if ($signature == Response::SIGNATURE_SUCCESS) {
+            $this->serverState->set($this->serverState->get() === ServerState::READY ? ServerState::STREAMING : ServerState::TX_STREAMING);
         }
 
-        if ($signature == self::IGNORED) {
-            $this->serverState->set(ServerState::INTERRUPTED);
-            throw new IgnoredException(__FUNCTION__);
-        }
-
-        $this->serverState->set($this->serverState->get() === ServerState::READY ? ServerState::STREAMING : ServerState::TX_STREAMING);
-        yield $message;
+        yield new Response(Response::MESSAGE_RUN, $signature, $message);
     }
 }

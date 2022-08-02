@@ -2,9 +2,9 @@
 
 namespace Bolt\protocol\v1;
 
-use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
 use Bolt\protocol\AProtocol;
+use Bolt\protocol\Response;
 use Exception;
 
 trait ResetMessage
@@ -27,19 +27,19 @@ trait ResetMessage
 
     /**
      * Read RESET response
-     * @throws MessageException
+     * @throws Exception
      */
     protected function _reset(): iterable
     {
         $message = $this->read($signature);
 
-        if ($signature == self::FAILURE) {
+        if ($signature == Response::SIGNATURE_SUCCESS) {
+            $this->serverState->set(ServerState::READY);
+        } elseif ($signature == Response::SIGNATURE_FAILURE) {
             $this->connection->disconnect();
             $this->serverState->set(ServerState::DEFUNCT);
-            throw new MessageException($message['message'], $message['code']);
         }
 
-        $this->serverState->set(ServerState::READY);
-        yield $message;
+        yield new Response(Response::MESSAGE_RESET, $signature, $message);
     }
 }

@@ -6,7 +6,7 @@ use Bolt\Bolt;
 use Bolt\protocol\AProtocol;
 use Exception;
 use PHPUnit\Framework\TestCase;
-use Bolt\protocol\{V4_3, V4_4};
+use Bolt\protocol\{Response, V4_3, V4_4};
 
 /**
  * Class BoltTest
@@ -23,6 +23,7 @@ use Bolt\protocol\{V4_3, V4_4};
  * @covers \Bolt\PackStream\v1\Unpacker
  * @covers \Bolt\protocol\V4_3
  * @covers \Bolt\protocol\V4_4
+ * @covers \Bolt\protocol\Response
  *
  * @package Bolt\tests
  * @requires PHP >= 7.1
@@ -48,7 +49,7 @@ class BoltTest extends TestCase
             $protocol = $bolt->build();
             $this->assertInstanceOf(AProtocol::class, $protocol);
 
-            $this->assertIsArray($protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
+            $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
 
             $protocol->goodbye();
         } catch (Exception $e) {
@@ -72,7 +73,7 @@ class BoltTest extends TestCase
             $protocol = $bolt->build();
             $this->assertInstanceOf(AProtocol::class, $protocol);
 
-            $this->assertIsArray($protocol->hello(\Bolt\helpers\Auth::basic('movies', 'movies')));
+            $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic('movies', 'movies'))->getSignature());
 
             $protocol->goodbye();
         } catch (Exception $e) {
@@ -96,7 +97,7 @@ class BoltTest extends TestCase
             $protocol = $bolt->build();
             $this->assertInstanceOf(AProtocol::class, $protocol);
 
-            $this->assertNotEmpty($protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
+            $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
 
             return $protocol;
         } catch (Exception $e) {
@@ -111,17 +112,15 @@ class BoltTest extends TestCase
     public function testPull(AProtocol $protocol)
     {
         try {
-            $res = iterator_to_array(
-                $protocol
-                    ->run('RETURN 1 AS num, 2 AS cnt', [], ['mode' => 'r'])
-                    ->pull()
-                    ->getResponse()
-            );
+            $protocol
+                ->run('RETURN 1 AS num, 2 AS cnt', [], ['mode' => 'r'])
+                ->pull();
 
-            $this->assertIsArray($res);
-            $this->assertArrayHasKey('fields', $res[0]);
-            $this->assertEquals(1, $res[1][0] ?? 0);
-            $this->assertEquals(2, $res[1][1] ?? 0);
+            $this->assertArrayHasKey('fields', $protocol->getResponse()->getContent());
+
+            $res = $protocol->getResponse()->getContent();
+            $this->assertEquals(1, $res[0] ?? 0);
+            $this->assertEquals(2, $res[1] ?? 0);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -138,8 +137,8 @@ class BoltTest extends TestCase
             $gen = $protocol
                 ->run('MATCH (a:Test) RETURN *', [], ['mode' => 'r'])
                 ->discard()
-                ->getResponse();
-            iterator_to_array($gen);
+                ->getResponses();
+            iterator_to_array($gen, false);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -163,10 +162,11 @@ class BoltTest extends TestCase
                     ->run('CREATE (a:Test) RETURN a, ID(a)')
                     ->pull()
                     ->rollback()
-                    ->getResponse()
+                    ->getResponses(),
+                false
             );
 
-            $id = $res[2][1];
+            $id = $res[2]->getContent()[1];
             $this->assertIsInt($id);
 
             $res = iterator_to_array(
@@ -177,10 +177,11 @@ class BoltTest extends TestCase
                         'a' => $id
                     ])
                     ->pull()
-                    ->getResponse()
+                    ->getResponses(),
+                false
             );
 
-            $this->assertEquals(0, $res[1][0]);
+            $this->assertEquals(0, $res[1]->getContent()[0]);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -199,8 +200,8 @@ class BoltTest extends TestCase
                     ->route([
                         'address' => ($GLOBALS['NEO_HOST'] ?? '127.0.0.1') . ':' . ($GLOBALS['NEO_PORT'] ?? 7687)
                     ])
-                    ->getResponse();
-                iterator_to_array($gen);
+                    ->getResponses();
+                iterator_to_array($gen, false);
             } catch (Exception $e) {
                 $this->markTestIncomplete($e->getMessage());
             }
@@ -219,8 +220,8 @@ class BoltTest extends TestCase
         try {
             $gen = $protocol
                 ->reset()
-                ->getResponse();
-            iterator_to_array($gen);
+                ->getResponses();
+            iterator_to_array($gen, false);
         } catch (Exception $e) {
             $this->markTestIncomplete($e->getMessage());
         }
@@ -238,8 +239,8 @@ class BoltTest extends TestCase
             ->begin()
             ->run('CREATE (a:Test) RETURN ID(a)')
             ->pull()
-            ->getResponse();
-        $id = iterator_to_array($gen)[2][0];
+            ->getResponses();
+        $id = iterator_to_array($gen, false)[2]->getContent()[0];
 
         $data = [];
         while (strlen(serialize($data)) < 65535 * 2) {
@@ -251,10 +252,10 @@ class BoltTest extends TestCase
                         'data' => (object)$data
                     ])
                     ->pull()
-                    ->getResponse();
-                $result = iterator_to_array($gen);
-                $this->assertInstanceOf(\Bolt\structures\Node::class, $result[1][0]);
-                $this->assertCount(count($data), $result[1][0]->properties());
+                    ->getResponses();
+                $result = iterator_to_array($gen, false);
+                $this->assertInstanceOf(\Bolt\structures\Node::class, $result[1]->getContent()[0]);
+                $this->assertCount(count($data), $result[1]->getContent()[0]->properties());
             } catch (Exception $e) {
                 $this->markTestIncomplete();
             }
@@ -275,7 +276,7 @@ class BoltTest extends TestCase
         };
 
         $this->expectException(Exception::class);
-        $gen = $protocol->run('RETURN 1 as num')->getResponse();
-        iterator_to_array($gen);
+        $gen = $protocol->run('RETURN 1 as num')->getResponses();
+        iterator_to_array($gen, false);
     }
 }

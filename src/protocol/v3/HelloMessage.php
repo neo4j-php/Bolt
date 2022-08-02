@@ -2,8 +2,8 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
+use Bolt\protocol\Response;
 use Exception;
 
 trait HelloMessage
@@ -14,23 +14,23 @@ trait HelloMessage
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-hello
      * @param array $extra Use \Bolt\helpers\Auth to generate appropriate array
-     * @return array
+     * @return Response
      * @throws Exception
      */
-    public function hello(array $extra): array
+    public function hello(array $extra): Response
     {
         $this->serverState->is(ServerState::CONNECTED);
 
         $this->write($this->packer->pack(0x01, $extra));
         $message = $this->read($signature);
 
-        if ($signature == self::FAILURE) {
+        if ($signature == Response::SIGNATURE_SUCCESS) {
+            $this->serverState->set(ServerState::READY);
+        } elseif ($signature == Response::SIGNATURE_FAILURE) {
             $this->connection->disconnect();
             $this->serverState->set(ServerState::DEFUNCT);
-            throw new MessageException($message['message'], $message['code']);
         }
 
-        $this->serverState->set(ServerState::READY);
-        return $message;
+        return new Response(Response::MESSAGE_HELLO, $signature, $message);
     }
 }

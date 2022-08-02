@@ -2,7 +2,6 @@
 
 namespace Bolt\protocol;
 
-use Bolt\error\{IgnoredException, MessageException};
 use Bolt\helpers\ServerState;
 use Bolt\PackStream\{IPacker, IUnpacker};
 use Bolt\connection\IConnection;
@@ -17,11 +16,6 @@ use Exception;
  */
 abstract class AProtocol
 {
-    protected const SUCCESS = 0x70;
-    protected const FAILURE = 0x7F;
-    protected const IGNORED = 0x7E;
-    protected const RECORD = 0x71;
-
     protected IPacker $packer;
     protected IUnpacker $unpacker;
     protected IConnection $connection;
@@ -79,6 +73,11 @@ abstract class AProtocol
         if (!empty($msg)) {
             $output = $this->unpacker->unpack($msg);
             $signature = $this->unpacker->getSignature();
+
+            if ($signature == Response::SIGNATURE_FAILURE)
+                $this->serverState->set(ServerState::FAILED);
+            elseif ($signature == Response::SIGNATURE_IGNORED)
+                $this->serverState->set(ServerState::INTERRUPTED);
         }
 
         return $output;
@@ -98,37 +97,31 @@ abstract class AProtocol
     }
 
     /**
-     * Read responses from pipelined (executed) messages
-     * @param int|null $limit
-     * @return \Iterator
+     * Read responses from host output buffer.
+     * @return \Iterator|Response[]
      */
-    public function getResponse(?int $limit = null): \Iterator
+    public function getResponses(): \Iterator
     {
         $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
-
-        if ($limit !== null) {
-            if ($limit <= 0) {
-                $limit = null;
-            }
-        }
-
         while (count($this->pipelinedMessages) > 0) {
             $message = reset($this->pipelinedMessages);
-            $gen = $this->{'_' . $message}();
-
-            while ($gen->valid()) {
-                yield $gen->current();
-
-                if ($limit !== null) {
-                    $limit--;
-                    if ($limit == 0)
-                        break 2;
-                }
-
-                $gen->next();
-            }
-
+            yield from $this->{'_' . $message}();
             array_shift($this->pipelinedMessages);
         }
+    }
+
+    /**
+     * Read one response from host output buffer
+     * @return Response
+     */
+    public function getResponse(): Response
+    {
+        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
+        $message = reset($this->pipelinedMessages);
+        /** @var Response $response */
+        $response = $this->{'_' . $message}()->current();
+        if ($response->getSignature() != Response::SIGNATURE_RECORD)
+            array_shift($this->pipelinedMessages);
+        return $response;
     }
 }

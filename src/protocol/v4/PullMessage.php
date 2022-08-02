@@ -2,10 +2,9 @@
 
 namespace Bolt\protocol\v4;
 
-use Bolt\error\IgnoredException;
-use Bolt\error\MessageException;
 use Bolt\helpers\ServerState;
 use Bolt\protocol\AProtocol;
+use Bolt\protocol\Response;
 use Exception;
 
 trait PullMessage
@@ -36,27 +35,18 @@ trait PullMessage
     /**
      * Read PULL response
      * @return array
-     * @throws IgnoredException
-     * @throws MessageException
+     * @throws Exception
      */
     protected function _pull(): iterable
     {
         do {
             $message = $this->read($signature);
 
-            if ($signature == self::FAILURE) {
-                $this->serverState->set(ServerState::FAILED);
-                throw new MessageException($message['message'], $message['code']);
+            if ($signature == Response::SIGNATURE_SUCCESS) {
+                $this->serverState->set(($message['has_more'] ?? false) ? $this->serverState->get() : ($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY));
             }
 
-            if ($signature == self::IGNORED) {
-                $this->serverState->set(ServerState::INTERRUPTED);
-                throw new IgnoredException(__FUNCTION__);
-            }
-
-            yield $message;
-        } while ($signature == self::RECORD);
-
-        $this->serverState->set(($message['has_more'] ?? false) ? $this->serverState->get() : ($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY));
+            yield new Response(Response::MESSAGE_PULL, $signature, $message);
+        } while ($signature == Response::SIGNATURE_RECORD);
     }
 }
