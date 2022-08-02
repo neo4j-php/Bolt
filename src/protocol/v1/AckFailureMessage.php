@@ -17,7 +17,7 @@ trait AckFailureMessage
      * @return array
      * @throws Exception
      */
-    private function ackFailure(): array
+    public function ackFailure(): array
     {
         $this->write($this->packer->pack(0x0E));
         $message = $this->read($signature);

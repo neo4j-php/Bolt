@@ -38,8 +38,6 @@ trait DiscardAllMessage
 
         if ($signature == Response::SIGNATURE_SUCCESS) {
             $this->serverState->set($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
-        } elseif ($signature == Response::SIGNATURE_FAILURE && method_exists($this, 'ackFailure')) {
-            $message = $this->ackFailure();
         }
 
         yield new Response(Response::MESSAGE_DISCARD_ALL, $signature, $message);
