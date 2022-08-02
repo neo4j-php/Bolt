@@ -5,7 +5,6 @@ namespace Bolt\protocol;
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
 use Bolt\error\PackException;
-use Bolt\helpers\ServerState;
 use Exception;
 
 /**
