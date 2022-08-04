@@ -5,7 +5,6 @@ namespace Bolt\protocol;
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
 use Bolt\error\PackException;
-use Bolt\helpers\ServerState;
 use Exception;
 
 /**
@@ -39,6 +38,7 @@ class V4_3 extends V4_2
         $message = $this->read($signature);
 
         if ($signature === self::FAILURE) {
+            $this->serverState->set(ServerState::FAILED);
             throw new MessageException($message['message'], $message['code']);
         }
 

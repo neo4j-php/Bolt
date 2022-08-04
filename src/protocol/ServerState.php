@@ -1,6 +1,6 @@
 <?php
 
-namespace Bolt\helpers;
+namespace Bolt\protocol;
 
 /**
  * Class ServerState ..keep track of assumed server state

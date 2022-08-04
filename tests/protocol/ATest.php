@@ -14,21 +14,23 @@ use Bolt\connection\AConnection;
 abstract class ATest extends TestCase
 {
     /**
-     * @var int Internal pointer for "readArray"
+     * @var string Temporal buffer for packed message to be read
      */
-    static $readIndex = 0;
+    private static string $readBuffer = '';
     /**
      * @var array Order of consecutive returns from "read" method calls
      */
-    static $readArray = [];
+    protected static array $readArray = [];
     /**
      * @var int Internal pointer for "writeBuffer"
      */
-    static $writeIndex = 0;
+    private static int $writeIndex = 0;
     /**
      * @var array Expected write buffers or keep empty to skip verification
      */
-    static $writeBuffer = [];
+    protected static array $writeBuffer = [];
+
+    private static \Bolt\PackStream\v1\Packer $packer;
 
     /**
      * Mock Socket class with "write" and "read" methods
@@ -57,7 +59,7 @@ abstract class ATest extends TestCase
                         return true;
 
                     //verify expected buffer
-                    return (self::$writeBuffer[$i] ?? '') === $buffer;
+                    return hex2bin(str_replace(' ', '', self::$writeBuffer[$i] ?? '')) === $buffer;
                 })
             );
 
@@ -71,32 +73,24 @@ abstract class ATest extends TestCase
 
     /**
      * Mocked Socket read method
+     * @param int $length
      * @return string
      */
-    public function readCallback(): string
+    public function readCallback(int $length = 2048): string
     {
-        switch (self::$readArray[self::$readIndex]) {
-            case 1:
-                $output = hex2bin('0003'); // header of length 3
-                break;
-            case 2:
-                $output = hex2bin('B170A0'); // success {}
-                break;
-            case 3:
-                $output = hex2bin('B171A0'); // record {}
-                break;
-            case 4:
-                $output = hex2bin('004b'); // failure header
-                break;
-            case 5:
-                $output = hex2bin('b17fa284636f6465d0254e656f2e436c69656e744572726f722e53746174656d656e742e53796e7461784572726f72876d657373616765d012736f6d65206572726f72206d657373616765'); // failure message
-                break;
-            default:
-                $output = hex2bin('0000'); // end
+        if (empty(self::$readBuffer)) {
+            $params = array_shift(self::$readArray);
+            $gen = self::$packer->pack(...$params);
+            foreach ($gen as $s) {
+                self::$readBuffer .= mb_strcut($s, 2, null, '8bit');
+            }
+
+            self::$readBuffer = pack('n', mb_strlen(self::$readBuffer, '8bit')) . self::$readBuffer . chr(0x00) . chr(0x00);
         }
 
-        self::$readIndex++;
-        return (string)$output;
+        $output = mb_strcut(self::$readBuffer, 0, $length, '8bit');
+        self::$readBuffer = mb_strcut(self::$readBuffer, mb_strlen($output, '8bit'), null, '8bit');
+        return $output;
     }
 
     /**
@@ -104,9 +98,11 @@ abstract class ATest extends TestCase
      */
     protected function setUp(): void
     {
-        self::$readIndex = 0;
+        self::$readBuffer = '';
         self::$readArray = [];
         self::$writeIndex = 0;
         self::$writeBuffer = [];
+
+        self::$packer = new \Bolt\PackStream\v1\Packer();
     }
 }

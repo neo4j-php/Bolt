@@ -3,7 +3,6 @@
 namespace Bolt\protocol;
 
 use Bolt\error\IgnoredException;
-use Bolt\helpers\ServerState;
 use Exception;
 use Bolt\error\MessageException;
 

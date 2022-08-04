@@ -2,7 +2,6 @@
 
 namespace Bolt\protocol;
 
-use Bolt\helpers\ServerState;
 use Bolt\PackStream\{IPacker, IUnpacker};
 use Bolt\connection\IConnection;
 use Exception;

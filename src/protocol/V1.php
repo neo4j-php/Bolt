@@ -5,7 +5,6 @@ namespace Bolt\protocol;
 use Bolt\error\IgnoredException;
 use Bolt\error\MessageException;
 use Bolt\error\PackException;
-use Bolt\helpers\ServerState;
 use Exception;
 
 /**
@@ -74,7 +73,6 @@ class V1 extends AProtocol
 
         if ($signature == self::FAILURE) {
             $this->serverState->set(ServerState::FAILED);
-            $this->ackFailure();
             throw new MessageException($message['message'], $message['code']);
         }
 
@@ -110,7 +108,6 @@ class V1 extends AProtocol
 
         if ($signature == self::FAILURE) {
             $this->serverState->set(ServerState::FAILED);
-            $this->ackFailure();
             throw new MessageException($message['message'], $message['code']);
         }
 
@@ -141,7 +138,6 @@ class V1 extends AProtocol
 
         if ($signature == self::FAILURE) {
             $this->serverState->set(ServerState::FAILED);
-            $this->ackFailure();
             throw new MessageException($message['message'], $message['code']);
         }
 
@@ -162,7 +158,7 @@ class V1 extends AProtocol
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-ack-failure
      * @throws Exception
      */
-    private function ackFailure()
+    public function ackFailure()
     {
         $this->write($this->packer->pack(0x0E));
         $message = $this->read($signature);
