@@ -208,10 +208,10 @@ class V1Test extends ATest
             '00012f',
 
             '0001b0',
-            '00013f',
+            '00012f',
 
             '0001b0',
-            '00013f',
+            '00012f',
         ];
 
         try {
@@ -224,7 +224,7 @@ class V1Test extends ATest
 
         try {
             $cls->serverState->set(ServerState::STREAMING);
-            $cls->pullAll();
+            $cls->discardAll();
         } catch (Exception $e) {
             $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
             $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
@@ -232,7 +232,7 @@ class V1Test extends ATest
 
         try {
             $cls->serverState->set(ServerState::STREAMING);
-            $cls->pullAll();
+            $cls->discardAll();
         } catch (Exception $e) {
             $this->assertInstanceOf(IgnoredException::class, $e);
             $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
