@@ -254,7 +254,7 @@ class V1Test extends ATest
             '00010f',
 
             '0001b0',
-            '00013f',
+            '00010f',
         ];
 
         try {
@@ -266,7 +266,7 @@ class V1Test extends ATest
 
         try {
             $cls->serverState->set(ServerState::STREAMING);
-            $cls->pullAll();
+            $cls->reset();
         } catch (Exception $e) {
             $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
             $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
