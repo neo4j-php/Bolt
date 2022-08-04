@@ -14,8 +14,6 @@ use Bolt\protocol\V4_2;
  * @covers \Bolt\protocol\V4_2
  *
  * @package Bolt\tests\protocol
- * @requires PHP >= 7.1
- * @requires mbstring
  */
 class V4_2Test extends ATest
 {

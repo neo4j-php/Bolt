@@ -59,7 +59,7 @@ abstract class ATest extends TestCase
                         return true;
 
                     //verify expected buffer
-                    return (self::$writeBuffer[$i] ?? '') === $buffer;
+                    return hex2bin(str_replace(' ', '', self::$writeBuffer[$i] ?? '')) === $buffer;
                 })
             );
 

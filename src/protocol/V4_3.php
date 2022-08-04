@@ -38,6 +38,7 @@ class V4_3 extends V4_2
         $message = $this->read($signature);
 
         if ($signature === self::FAILURE) {
+            $this->serverState->set(ServerState::FAILED);
             throw new MessageException($message['message'], $message['code']);
         }
 
