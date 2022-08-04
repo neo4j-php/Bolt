@@ -265,11 +265,10 @@ class V1Test extends ATest
         }
 
         try {
-            $cls->serverState->set(ServerState::STREAMING);
             $cls->reset();
         } catch (Exception $e) {
             $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
-            $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+            $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
         }
     }
 
