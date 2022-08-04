@@ -23,8 +23,11 @@ class V2Test extends ATest
      */
     public function test__construct(): V2
     {
-        $cls = new V2(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection(), new \Bolt\helpers\ServerState());
+        $cls = new V2(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection(), new \Bolt\protocol\ServerState());
         $this->assertInstanceOf(V2::class, $cls);
+        $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
+            $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
+        };
         return $cls;
     }
 }

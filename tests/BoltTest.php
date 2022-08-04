@@ -21,9 +21,11 @@ use Bolt\protocol\{Response, V4_3, V4_4};
  * @covers \Bolt\helpers\Auth
  * @covers \Bolt\PackStream\v1\Packer
  * @covers \Bolt\PackStream\v1\Unpacker
+ * @covers \Bolt\protocol\AProtocol
  * @covers \Bolt\protocol\V4_3
  * @covers \Bolt\protocol\V4_4
  * @covers \Bolt\protocol\Response
+ * @covers \Bolt\protocol\ServerState
  *
  * @package Bolt\tests
  * @requires PHP >= 7.1
@@ -270,7 +272,7 @@ class BoltTest extends TestCase
      */
     public function testServerStateMismatchCallback(AProtocol $protocol)
     {
-        $protocol->serverState->set(\Bolt\helpers\ServerState::FAILED);
+        $protocol->serverState->set(\Bolt\protocol\ServerState::FAILED);
         $protocol->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
             throw new Exception('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
         };

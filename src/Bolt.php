@@ -4,9 +4,8 @@ namespace Bolt;
 
 use Bolt\error\{ConnectException, PackException, UnpackException};
 use Exception;
-use Bolt\helpers\ServerState;
 use Bolt\PackStream\{IPacker, IUnpacker};
-use Bolt\protocol\AProtocol;
+use Bolt\protocol\{AProtocol, ServerState};
 use Bolt\connection\IConnection;
 
 /**
