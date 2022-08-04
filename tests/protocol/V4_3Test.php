@@ -2,10 +2,9 @@
 
 namespace Bolt\tests\protocol;
 
-use Bolt\error\IgnoredException;
+use Bolt\protocol\Response;
 use Bolt\protocol\ServerState;
 use Bolt\protocol\V4_3;
-use Exception;
 
 /**
  * Class V4_3Test
@@ -52,47 +51,21 @@ class V4_3Test extends ATest
             '000f8e6c6f63616c686f73743a37363837',
             '000190',
             '0001c0',
-
-            '0001b3',
-            '000166',
-            '0001a1',
-            '00088761646472657373',
-            '000f8e6c6f63616c686f73743a37363837',
-            '000190',
-            '0001c0',
-
-            '0001b3',
-            '000166',
-            '0001a1',
-            '00088761646472657373',
-            '000f8e6c6f63616c686f73743a37363837',
-            '000190',
-            '0001c0',
         ];
 
-        try {
-            $cls->serverState->set(ServerState::READY);
-            $this->assertIsArray($cls->route(['address' => 'localhost:7687'], [], null));
-            $this->assertEquals(ServerState::READY, $cls->serverState->get());
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $cls->serverState->set(ServerState::READY);
+        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->route(['address' => 'localhost:7687'])->getResponse()->getSignature());
+        $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
-        try {
-            $cls->serverState->set(ServerState::READY);
-            $cls->route(['address' => 'localhost:7687'], [], null);
-        } catch (Exception $e) {
-            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
-            $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
-        }
+        $cls->serverState->set(ServerState::READY);
+        $response = $cls->route(['address' => 'localhost:7687'])->getResponse();
+        $this->checkFailure($response);
+        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
 
-        try {
-            $cls->serverState->set(ServerState::READY);
-            $cls->route(['address' => 'localhost:7687'], [], null);
-        } catch (Exception $e) {
-            $this->assertInstanceOf(IgnoredException::class, $e);
-            $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
-        }
+        $cls->serverState->set(ServerState::READY);
+        $response = $cls->route(['address' => 'localhost:7687'])->getResponse();
+        $this->assertEquals(Response::SIGNATURE_IGNORED, $response->getSignature());
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 
 }

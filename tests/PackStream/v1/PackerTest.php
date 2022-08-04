@@ -5,7 +5,6 @@ namespace Bolt\tests\PackStream\v1;
 use Bolt\protocol\AProtocol;
 use Bolt\Bolt;
 use Bolt\protocol\{Response, V4_3, V4_4};
-use Exception;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -28,23 +27,19 @@ class PackerTest extends TestCase
      */
     public function testInit(): AProtocol
     {
-        try {
-            $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
-            $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
+        $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
+        $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
 
-            $bolt = new Bolt($conn);
-            $this->assertInstanceOf(Bolt::class, $bolt);
+        $bolt = new Bolt($conn);
+        $this->assertInstanceOf(Bolt::class, $bolt);
 
-            /** @var V4_3|V4_4 $protocol */
-            $protocol = $bolt->build();
-            $this->assertInstanceOf(AProtocol::class, $protocol);
+        /** @var V4_3|V4_4 $protocol */
+        $protocol = $bolt->build();
+        $this->assertInstanceOf(AProtocol::class, $protocol);
 
-            $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
+        $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
 
-            return $protocol;
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        return $protocol;
     }
 
     /**
@@ -53,18 +48,14 @@ class PackerTest extends TestCase
      */
     public function testNull(AProtocol $protocol)
     {
-        try {
-            $res = iterator_to_array(
-                $protocol
-                    ->run('RETURN $n IS NULL', ['n' => null], ['mode' => 'r'])
-                    ->pull()
-                    ->getResponses(),
-                false
-            );
-            $this->assertTrue($res[1]->getContent()[0]);
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $res = iterator_to_array(
+            $protocol
+                ->run('RETURN $n IS NULL', ['n' => null], ['mode' => 'r'])
+                ->pull()
+                ->getResponses(),
+            false
+        );
+        $this->assertTrue($res[1]->getContent()[0]);
     }
 
     /**
@@ -73,27 +64,23 @@ class PackerTest extends TestCase
      */
     public function testBoolean(AProtocol $protocol)
     {
-        try {
-            $res = iterator_to_array(
-                $protocol
-                    ->run('RETURN $b = true', ['b' => true], ['mode' => 'r'])
-                    ->pull()
-                    ->getResponses(),
-                false
-            );
-            $this->assertTrue($res[1]->getContent()[0]);
+        $res = iterator_to_array(
+            $protocol
+                ->run('RETURN $b = true', ['b' => true], ['mode' => 'r'])
+                ->pull()
+                ->getResponses(),
+            false
+        );
+        $this->assertTrue($res[1]->getContent()[0]);
 
-            $res = iterator_to_array(
-                $protocol
-                    ->run('RETURN $b = false', ['b' => false], ['mode' => 'r'])
-                    ->pull()
-                    ->getResponses(),
-                false
-            );
-            $this->assertTrue($res[1]->getContent()[0]);
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $res = iterator_to_array(
+            $protocol
+                ->run('RETURN $b = false', ['b' => false], ['mode' => 'r'])
+                ->pull()
+                ->getResponses(),
+            false
+        );
+        $this->assertTrue($res[1]->getContent()[0]);
     }
 
     /**
@@ -104,18 +91,14 @@ class PackerTest extends TestCase
      */
     public function testInteger(int $i, AProtocol $protocol)
     {
-        try {
-            $res = iterator_to_array(
-                $protocol
-                    ->run('RETURN $i = ' . $i, ['i' => $i], ['mode' => 'r'])
-                    ->pull()
-                    ->getResponses(),
-                false
-            );
-            $this->assertTrue($res[1]->getContent()[0]);
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $res = iterator_to_array(
+            $protocol
+                ->run('RETURN $i = ' . $i, ['i' => $i], ['mode' => 'r'])
+                ->pull()
+                ->getResponses(),
+            false
+        );
+        $this->assertTrue($res[1]->getContent()[0]);
     }
 
     public function providerInteger(): \Generator
@@ -134,18 +117,14 @@ class PackerTest extends TestCase
     {
         for ($i = 0; $i < 10; $i++) {
             $num = mt_rand(-mt_getrandmax(), mt_getrandmax()) / mt_getrandmax();
-            try {
-                $res = iterator_to_array(
-                    $protocol
-                        ->run('RETURN ' . $num . ' + 0.000001 > $n > ' . $num . ' - 0.000001', ['n' => $num], ['mode' => 'r'])
-                        ->pull()
-                        ->getResponses(),
-                    false
-                );
-                $this->assertTrue($res[1]->getContent()[0]);
-            } catch (Exception $e) {
-                $this->markTestIncomplete($e->getMessage());
-            }
+            $res = iterator_to_array(
+                $protocol
+                    ->run('RETURN ' . $num . ' + 0.000001 > $n > ' . $num . ' - 0.000001', ['n' => $num], ['mode' => 'r'])
+                    ->pull()
+                    ->getResponses(),
+                false
+            );
+            $this->assertTrue($res[1]->getContent()[0]);
         }
     }
 
@@ -164,18 +143,14 @@ class PackerTest extends TestCase
 
         foreach ([0, 10, 200, 60000, 200000] as $length) {
             $str = $randomString($length);
-            try {
-                $res = iterator_to_array(
-                    $protocol
-                        ->run('RETURN $s = "' . str_replace(['\\', '"'], ['\\\\', '\\"'], $str) . '"', ['s' => $str], ['mode' => 'r'])
-                        ->pull()
-                        ->getResponses(),
-                    false
-                );
-                $this->assertTrue($res[1]->getContent()[0]);
-            } catch (Exception $e) {
-                $this->markTestIncomplete($e->getMessage());
-            }
+            $res = iterator_to_array(
+                $protocol
+                    ->run('RETURN $s = "' . str_replace(['\\', '"'], ['\\\\', '\\"'], $str) . '"', ['s' => $str], ['mode' => 'r'])
+                    ->pull()
+                    ->getResponses(),
+                false
+            );
+            $this->assertTrue($res[1]->getContent()[0]);
         }
     }
 
@@ -187,18 +162,14 @@ class PackerTest extends TestCase
     {
         foreach ([0, 10, 200, 60000, 200000] as $size) {
             $arr = $this->randomArray($size);
-            try {
-                $res = iterator_to_array(
-                    $protocol
-                        ->run('RETURN size($arr) = ' . count($arr), ['arr' => $arr], ['mode' => 'r'])
-                        ->pull()
-                        ->getResponses(),
-                    false
-                );
-                $this->assertTrue($res[1]->getContent()[0]);
-            } catch (Exception $e) {
-                $this->markTestIncomplete($e->getMessage());
-            }
+            $res = iterator_to_array(
+                $protocol
+                    ->run('RETURN size($arr) = ' . count($arr), ['arr' => $arr], ['mode' => 'r'])
+                    ->pull()
+                    ->getResponses(),
+                false
+            );
+            $this->assertTrue($res[1]->getContent()[0]);
         }
     }
 
@@ -219,18 +190,14 @@ class PackerTest extends TestCase
     {
         foreach ([0, 10, 200, 60000, 200000] as $size) {
             $arr = $this->randomArray($size);
-            try {
-                $res = iterator_to_array(
-                    $protocol
-                        ->run('RETURN size(keys($arr)) = ' . count($arr), ['arr' => (object)$arr], ['mode' => 'r'])
-                        ->pull()
-                        ->getResponses(),
-                    false
-                );
-                $this->assertTrue($res[1]->getContent()[0]);
-            } catch (Exception $e) {
-                $this->markTestIncomplete($e->getMessage());
-            }
+            $res = iterator_to_array(
+                $protocol
+                    ->run('RETURN size(keys($arr)) = ' . count($arr), ['arr' => (object)$arr], ['mode' => 'r'])
+                    ->pull()
+                    ->getResponses(),
+                false
+            );
+            $this->assertTrue($res[1]->getContent()[0]);
         }
     }
 
@@ -246,19 +213,15 @@ class PackerTest extends TestCase
             'third'
         ];
         $list = new \Bolt\tests\PackStream\v1\generators\ListGenerator($data);
-        try {
-            $result = iterator_to_array(
-                $protocol
-                    ->run('UNWIND $list AS row RETURN row', ['list' => $list])
-                    ->pull()
-                    ->getResponses(),
-                false
-            );
-            foreach ($data as $i => $value)
-                $this->assertEquals($value, $result[1 + $i]->getContent()[0]);
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $result = iterator_to_array(
+            $protocol
+                ->run('UNWIND $list AS row RETURN row', ['list' => $list])
+                ->pull()
+                ->getResponses(),
+            false
+        );
+        foreach ($data as $i => $value)
+            $this->assertEquals($value, $result[1 + $i]->getContent()[0]);
     }
 
     /**
@@ -273,18 +236,14 @@ class PackerTest extends TestCase
             'c' => 'third'
         ];
         $dict = new \Bolt\tests\PackStream\v1\generators\DictionaryGenerator($data);
-        try {
-            $result = iterator_to_array(
-                $protocol
-                    ->run('RETURN $dict', ['dict' => $dict])
-                    ->pull()
-                    ->getResponses(),
-                false
-            );
-            $this->assertEquals($data, $result[1]->getContent()[0]);
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $result = iterator_to_array(
+            $protocol
+                ->run('RETURN $dict', ['dict' => $dict])
+                ->pull()
+                ->getResponses(),
+            false
+        );
+        $this->assertEquals($data, $result[1]->getContent()[0]);
     }
 
 }

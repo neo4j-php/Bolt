@@ -2,8 +2,7 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\helpers\ServerState;
-use Bolt\protocol\Response;
+use Bolt\protocol\{ServerState, Response};
 use Exception;
 
 trait HelloMessage

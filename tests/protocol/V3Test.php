@@ -2,10 +2,9 @@
 
 namespace Bolt\tests\protocol;
 
-use Bolt\error\IgnoredException;
+use Bolt\protocol\Response;
 use Bolt\protocol\ServerState;
 use Bolt\protocol\V3;
-use Exception;
 
 /**
  * Class V3Test
@@ -55,36 +54,16 @@ class V3Test extends ATest
             '00058475736572',
             '000c8b63726564656e7469616c73',
             '00098870617373776f7264',
-
-            '0001b1',
-            '000101',
-            '0001a4',
-            '000b8a757365725f6167656e74',
-            '000988626f6c742d706870',
-            '000786736368656d65',
-            '0006856261736963',
-            '000a897072696e636970616c',
-            '00058475736572',
-            '000c8b63726564656e7469616c73',
-            '00098870617373776f7264',
-            '0002b00e',
         ];
 
-        try {
-            $cls->serverState->set(ServerState::CONNECTED);
-            $this->assertIsArray($cls->hello(\Bolt\helpers\Auth::basic('user', 'password')));
-            $this->assertEquals(ServerState::READY, $cls->serverState->get());
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $cls->serverState->set(ServerState::CONNECTED);
+        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'))->getSignature());
+        $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
-        try {
-            $cls->serverState->set(ServerState::CONNECTED);
-            $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'));
-        } catch (Exception $e) {
-            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
-            $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
-        }
+        $cls->serverState->set(ServerState::CONNECTED);
+        $response = $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'));
+        $this->checkFailure($response);
+        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
     }
 
     /**
@@ -118,29 +97,19 @@ class V3Test extends ATest
             '00 01 a0',
         ];
 
-        try {
-            $cls->serverState->set(ServerState::READY);
-            $this->assertIsArray($cls->run('RETURN 1'));
-            $this->assertEquals(ServerState::STREAMING, $cls->serverState->get());
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $cls->serverState->set(ServerState::READY);
+        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->run('RETURN 1')->getResponse()->getSignature());
+        $this->assertEquals(ServerState::STREAMING, $cls->serverState->get());
 
-        try {
-            $cls->serverState->set(ServerState::READY);
-            $cls->run('not a CQL');
-        } catch (Exception $e) {
-            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
-            $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
-        }
+        $cls->serverState->set(ServerState::READY);
+        $response = $cls->run('not a CQL')->getResponse();
+        $this->checkFailure($response);
+        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
 
-        try {
-            $cls->serverState->set(ServerState::READY);
-            $cls->run('not a CQL');
-        } catch (Exception $e) {
-            $this->assertInstanceOf(IgnoredException::class, $e);
-            $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
-        }
+        $cls->serverState->set(ServerState::READY);
+        $response = $cls->run('not a CQL')->getResponse();
+        $this->assertEquals(Response::SIGNATURE_IGNORED, $response->getSignature());
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 
     /**
@@ -155,42 +124,24 @@ class V3Test extends ATest
             [0x7E, (object)[]]
         ];
         self::$writeBuffer = [
-            '0001b1',
-            '000111',
-            '0001a0',
-
-            '0001b1',
-            '000111',
-            '0001a0',
-
             '00 01 b1',
             '00 01 11',
             '00 01 a0',
         ];
 
-        try {
-            $cls->serverState->set(ServerState::READY);
-            $this->assertIsArray($cls->begin());
-            $this->assertEquals(ServerState::TX_READY, $cls->serverState->get());
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $cls->serverState->set(ServerState::READY);
+        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->begin()->getResponse()->getSignature());
+        $this->assertEquals(ServerState::TX_READY, $cls->serverState->get());
 
-        try {
-            $cls->serverState->set(ServerState::READY);
-            $cls->begin();
-        } catch (Exception $e) {
-            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
-            $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
-        }
+        $cls->serverState->set(ServerState::READY);
+        $response = $cls->begin()->getResponse();
+        $this->checkFailure($response);
+        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
 
-        try {
-            $cls->serverState->set(ServerState::READY);
-            $cls->begin();
-        } catch (Exception $e) {
-            $this->assertInstanceOf(IgnoredException::class, $e);
-            $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
-        }
+        $cls->serverState->set(ServerState::READY);
+        $response = $cls->begin()->getResponse();
+        $this->assertEquals(Response::SIGNATURE_IGNORED, $response->getSignature());
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 
     /**
@@ -205,38 +156,23 @@ class V3Test extends ATest
             [0x7E, (object)[]]
         ];
         self::$writeBuffer = [
-            '0001b0',
-            '000112',
-            '0001b0',
-            '00 01 12',
             '00 01 b0',
             '00 01 12',
         ];
 
-        try {
-            $cls->serverState->set(ServerState::TX_READY);
-            $this->assertIsArray($cls->commit());
-            $this->assertEquals(ServerState::READY, $cls->serverState->get());
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $cls->serverState->set(ServerState::TX_READY);
+        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->commit()->getResponse()->getSignature());
+        $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
-        try {
-            $cls->serverState->set(ServerState::TX_READY);
-            $cls->commit();
-        } catch (Exception $e) {
-            var_dump($e->getMessage());
-            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
-            $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
-        }
+        $cls->serverState->set(ServerState::TX_READY);
+        $response = $cls->commit()->getResponse();
+        $this->checkFailure($response);
+        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
 
-        try {
-            $cls->serverState->set(ServerState::TX_READY);
-            $cls->commit();
-        } catch (Exception $e) {
-            $this->assertInstanceOf(IgnoredException::class, $e);
-            $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
-        }
+        $cls->serverState->set(ServerState::TX_READY);
+        $response = $cls->commit()->getResponse();
+        $this->assertEquals(Response::SIGNATURE_IGNORED, $response->getSignature());
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 
     /**
@@ -251,38 +187,23 @@ class V3Test extends ATest
             [0x7E, (object)[]]
         ];
         self::$writeBuffer = [
-            '0001b0',
-            '000113',
-            '0001b0',
-            '00 01 13',
             '00 01 b0',
             '00 01 13',
         ];
 
-        try {
-            $cls->serverState->set(ServerState::TX_READY);
-            $this->assertIsArray($cls->rollback());
-            $this->assertEquals(ServerState::READY, $cls->serverState->get());
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $cls->serverState->set(ServerState::TX_READY);
+        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->rollback()->getResponse()->getSignature());
+        $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
-        try {
-            $cls->serverState->set(ServerState::TX_READY);
-            $cls->rollback();
-        } catch (Exception $e) {
-            var_dump($e->getMessage());
-            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
-            $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
-        }
+        $cls->serverState->set(ServerState::TX_READY);
+        $response = $cls->rollback()->getResponse();
+        $this->checkFailure($response);
+        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
 
-        try {
-            $cls->serverState->set(ServerState::TX_READY);
-            $cls->rollback();
-        } catch (Exception $e) {
-            $this->assertInstanceOf(IgnoredException::class, $e);
-            $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
-        }
+        $cls->serverState->set(ServerState::TX_READY);
+        $response = $cls->rollback()->getResponse();
+        $this->assertEquals(Response::SIGNATURE_IGNORED, $response->getSignature());
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 
     /**
@@ -297,12 +218,8 @@ class V3Test extends ATest
             '000102',
         ];
 
-        try {
-            $cls->goodbye();
-            $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $cls->goodbye();
+        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
     }
 
 }

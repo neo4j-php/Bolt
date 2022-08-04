@@ -2,9 +2,7 @@
 
 namespace Bolt\protocol\v4_4;
 
-use Bolt\helpers\ServerState;
-use Bolt\protocol\AProtocol;
-use Bolt\protocol\Response;
+use Bolt\protocol\{AProtocol, ServerState, Response};
 use Exception;
 
 trait RouteMessage

@@ -2,10 +2,9 @@
 
 namespace Bolt\tests\protocol;
 
-use Bolt\error\IgnoredException;
+use Bolt\protocol\Response;
 use Bolt\protocol\ServerState;
 use Bolt\protocol\V4;
-use Exception;
 
 /**
  * Class V4Test
@@ -53,50 +52,23 @@ class V4Test extends ATest
             '00 01 ff',
             '00 04 83 71    69 64',
             '00 01 ff',
-
-            '00 01 b1',
-            '00 01 3f',
-            '00 01 a2',
-            '00 02 81 6e',
-            '00 01 ff',
-            '00 04 83 71    69 64',
-            '00 01 ff',
-
-            '00 01 b1',
-            '00 01 3f',
-            '00 01 a2',
-            '00 02 81 6e',
-            '00 01 ff',
-            '00 04 83 71    69 64',
-            '00 01 ff',
         ];
 
-        try {
-            $cls->serverState->set(ServerState::STREAMING);
-            $res = $cls->pull(['n' => -1, 'qid' => -1]);
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
-
+        $cls->serverState->set(ServerState::STREAMING);
+        $res = iterator_to_array($cls->pull(['n' => -1, 'qid' => -1])->getResponses(), false);
         $this->assertIsArray($res);
         $this->assertCount(2, $res);
         $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
-        try {
-            $cls->serverState->set(ServerState::STREAMING);
-            $res = $cls->pull(['n' => -1, 'qid' => -1]);
-        } catch (Exception $e) {
-            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
-            $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
-        }
+        $cls->serverState->set(ServerState::STREAMING);
+        $responses = iterator_to_array($cls->pull(['n' => -1, 'qid' => -1])->getResponses(), false);
+        $this->checkFailure($responses[0]);
+        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
 
-        try {
-            $cls->serverState->set(ServerState::STREAMING);
-            $res = $cls->pull(['n' => -1, 'qid' => -1]);
-        } catch (Exception $e) {
-            $this->assertInstanceOf(IgnoredException::class, $e);
-            $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
-        }
+        $cls->serverState->set(ServerState::STREAMING);
+        $responses = iterator_to_array($cls->pull(['n' => -1, 'qid' => -1])->getResponses(), false);
+        $this->assertEquals(Response::SIGNATURE_IGNORED, $responses[0]->getSignature());
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 
     /**
@@ -118,46 +90,20 @@ class V4Test extends ATest
             '0001ff',
             '000483716964',
             '0001ff',
-
-            '0001b1',
-            '00012f',
-            '0001a2',
-            '0002816e',
-            '0001ff',
-            '000483716964',
-            '0001ff',
-
-            '0001b1',
-            '00012f',
-            '0001a2',
-            '0002816e',
-            '0001ff',
-            '000483716964',
-            '0001ff',
         ];
 
-        try {
-            $cls->serverState->set(ServerState::STREAMING);
-            $this->assertIsArray($cls->discard(['n' => -1, 'qid' => -1]));
-            $this->assertEquals(ServerState::READY, $cls->serverState->get());
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $cls->serverState->set(ServerState::STREAMING);
+        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->discard(['n' => -1, 'qid' => -1])->getResponse()->getSignature());
+        $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
-        try {
-            $cls->serverState->set(ServerState::STREAMING);
-            $cls->discard(['n' => -1, 'qid' => -1]);
-        } catch (Exception $e) {
-            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
-            $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
-        }
+        $cls->serverState->set(ServerState::STREAMING);
+        $response = $cls->discard(['n' => -1, 'qid' => -1])->getResponse();
+        $this->checkFailure($response);
+        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
 
-        try {
-            $cls->serverState->set(ServerState::STREAMING);
-            $cls->discard(['n' => -1, 'qid' => -1]);
-        } catch (Exception $e) {
-            $this->assertInstanceOf(IgnoredException::class, $e);
-            $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
-        }
+        $cls->serverState->set(ServerState::STREAMING);
+        $response = $cls->discard(['n' => -1, 'qid' => -1])->getResponse();
+        $this->assertEquals(Response::SIGNATURE_IGNORED, $response->getSignature());
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 }

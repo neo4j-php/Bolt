@@ -2,9 +2,9 @@
 
 namespace Bolt\tests\protocol;
 
+use Bolt\protocol\Response;
 use Bolt\protocol\ServerState;
 use Bolt\protocol\V4_1;
-use Exception;
 
 /**
  * Class V4_1Test
@@ -54,34 +54,15 @@ class V4_1Test extends ATest
             '00058475736572',
             '000c8b63726564656e7469616c73',
             '00098870617373776f7264',
-
-            '0001b1',
-            '000101',
-            '0001a4',
-            '000b8a757365725f6167656e74',
-            '000988626f6c742d706870',
-            '000786736368656d65',
-            '0006856261736963',
-            '000a897072696e636970616c',
-            '00058475736572',
-            '000c8b63726564656e7469616c73',
-            '00098870617373776f7264',
         ];
 
-        try {
-            $cls->serverState->set(ServerState::CONNECTED);
-            $this->assertIsArray($cls->hello(\Bolt\helpers\Auth::basic('user', 'password'), []));
-            $this->assertEquals(ServerState::READY, $cls->serverState->get());
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $cls->serverState->set(ServerState::CONNECTED);
+        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'))->getSignature());
+        $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
-        try {
-            $cls->serverState->set(ServerState::CONNECTED);
-            $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'));
-        } catch (Exception $e) {
-            $this->assertEquals('some error message (Neo.ClientError.Statement.SyntaxError)', $e->getMessage());
-            $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
-        }
+        $cls->serverState->set(ServerState::CONNECTED);
+        $response = $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'));
+        $this->checkFailure($response);
+        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
     }
 }

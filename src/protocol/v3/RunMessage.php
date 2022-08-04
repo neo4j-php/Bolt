@@ -2,9 +2,7 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\helpers\ServerState;
-use Bolt\protocol\AProtocol;
-use Bolt\protocol\Response;
+use Bolt\protocol\{AProtocol, ServerState, Response};
 use Exception;
 
 trait RunMessage
@@ -22,7 +20,7 @@ trait RunMessage
      */
     public function run(string $query, array $parameters = [], array $extra = []): AProtocol
     {
-        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::TX_STREAMING);
+        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
 
         $this->write($this->packer->pack(
             0x10,
@@ -32,7 +30,7 @@ trait RunMessage
         ));
 
         $this->pipelinedMessages[] = __FUNCTION__;
-        $this->serverState->set($this->serverState->get() == ServerState::READY ? ServerState::STREAMING : ServerState::TX_STREAMING);
+        $this->serverState->set(substr($this->serverState->get(), 0, 3) == 'TX_' ? ServerState::TX_STREAMING : ServerState::STREAMING);
         return $this;
     }
 
@@ -45,7 +43,7 @@ trait RunMessage
         $message = $this->read($signature);
 
         if ($signature == Response::SIGNATURE_SUCCESS) {
-            $this->serverState->set($this->serverState->get() === ServerState::READY ? ServerState::STREAMING : ServerState::TX_STREAMING);
+            $this->serverState->set(substr($this->serverState->get(), 0, 3) == 'TX_' ? ServerState::TX_STREAMING : ServerState::STREAMING);
         }
 
         yield new Response(Response::MESSAGE_RUN, $signature, $message);

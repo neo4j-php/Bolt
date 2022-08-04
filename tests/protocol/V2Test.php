@@ -3,7 +3,6 @@
 namespace Bolt\tests\protocol;
 
 use Bolt\protocol\V2;
-use Exception;
 
 /**
  * Class V2Test

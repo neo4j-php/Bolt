@@ -2,9 +2,7 @@
 
 namespace Bolt\protocol\v4;
 
-use Bolt\helpers\ServerState;
-use Bolt\protocol\AProtocol;
-use Bolt\protocol\Response;
+use Bolt\protocol\{AProtocol, ServerState, Response};
 use Exception;
 
 trait PullMessage
@@ -20,7 +18,7 @@ trait PullMessage
      */
     public function pull(array $extra = []): AProtocol
     {
-        $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
+        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
 
         if (!array_key_exists('n', $extra))
             $extra['n'] = -1;
@@ -28,7 +26,8 @@ trait PullMessage
         $this->write($this->packer->pack(0x3F, $extra));
 
         $this->pipelinedMessages[] = __FUNCTION__;
-        $this->serverState->set($this->serverState->get() == ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
+        //we assume all records were pulled
+        $this->serverState->set(substr($this->serverState->get(), 0, 3) == 'TX_' ? ServerState::TX_READY : ServerState::READY);
         return $this;
     }
 
@@ -43,7 +42,11 @@ trait PullMessage
             $message = $this->read($signature);
 
             if ($signature == Response::SIGNATURE_SUCCESS) {
-                $this->serverState->set(($message['has_more'] ?? false) ? $this->serverState->get() : ($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY));
+                if ($message['has_more'] ?? false) {
+                    $this->serverState->set(substr($this->serverState->get(), 0, 3) == 'TX_' ? ServerState::TX_STREAMING : ServerState::STREAMING);
+                } else {
+                    $this->serverState->set(substr($this->serverState->get(), 0, 3) == 'TX_' ? ServerState::TX_READY : ServerState::READY);
+                }
             }
 
             yield new Response(Response::MESSAGE_PULL, $signature, $message);

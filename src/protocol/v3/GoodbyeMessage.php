@@ -2,7 +2,7 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\helpers\ServerState;
+use Bolt\protocol\ServerState;
 use Exception;
 
 trait GoodbyeMessage

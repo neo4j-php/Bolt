@@ -2,6 +2,7 @@
 
 namespace Bolt\tests\error;
 
+use Bolt\protocol\Response;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -11,7 +12,6 @@ use PHPUnit\Framework\TestCase;
  * @link https://github.com/neo4j-php/Bolt
  *
  * @covers \Bolt\error\ConnectException
- * @covers \Bolt\error\MessageException
  * @covers \Bolt\error\PackException
  * @covers \Bolt\error\UnpackException
  *
@@ -30,26 +30,6 @@ class ErrorsTest extends TestCase
         $conn->connect();
     }
 
-    public function testMessageException()
-    {
-        $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
-        $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
-
-        $bolt = null;
-        try {
-            $bolt = new \Bolt\Bolt($conn);
-            $this->assertInstanceOf(\Bolt\Bolt::class, $bolt);
-
-            $protocol = $bolt->build();
-        } catch (\Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
-
-        $this->expectException(\Bolt\error\MessageException::class);
-        $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
-        $protocol->run('Wrong message');
-    }
-
     public function testPackException1()
     {
         $packer = new \Bolt\PackStream\v1\Packer();
@@ -66,12 +46,8 @@ class ErrorsTest extends TestCase
         $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
 
         $bolt = null;
-        try {
-            $bolt = new \Bolt\Bolt($conn);
-            $this->assertInstanceOf(\Bolt\Bolt::class, $bolt);
-        } catch (\Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $bolt = new \Bolt\Bolt($conn);
+        $this->assertInstanceOf(\Bolt\Bolt::class, $bolt);
 
         $this->expectException(\Bolt\error\PackException::class);
         $bolt->setPackStreamVersion(2);

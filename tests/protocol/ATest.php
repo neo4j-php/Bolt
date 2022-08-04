@@ -2,6 +2,7 @@
 
 namespace Bolt\tests\protocol;
 
+use Bolt\protocol\Response;
 use PHPUnit\Framework\TestCase;
 use Bolt\connection\AConnection;
 
@@ -26,7 +27,7 @@ abstract class ATest extends TestCase
      */
     private static int $writeIndex = 0;
     /**
-     * @var array Expected write buffers or keep empty to skip verification
+     * @var array Expected write buffers or keep empty to skip verification. When hits last item from buffer it resets and start from beginning.
      */
     protected static array $writeBuffer = [];
 
@@ -51,12 +52,14 @@ abstract class ATest extends TestCase
                     if (bin2hex($buffer) == '0000')
                         return true;
 
-                    $i = self::$writeIndex;
-                    self::$writeIndex++;
-
                     //skip write buffer check
                     if (empty(self::$writeBuffer))
                         return true;
+
+                    $i = self::$writeIndex;
+                    self::$writeIndex++;
+                    if (self::$writeIndex >= count(self::$writeBuffer))
+                        self::$writeIndex = 0;
 
                     //verify expected buffer
                     return hex2bin(str_replace(' ', '', self::$writeBuffer[$i] ?? '')) === $buffer;
@@ -104,5 +107,12 @@ abstract class ATest extends TestCase
         self::$writeBuffer = [];
 
         self::$packer = new \Bolt\PackStream\v1\Packer();
+    }
+
+    protected function checkFailure(Response $response)
+    {
+        $this->assertEquals(Response::SIGNATURE_FAILURE, $response->getSignature());
+        $this->assertEquals('some error message', $response->getContent()['message']);
+        $this->assertEquals('Neo.ClientError.Statement.SyntaxError', $response->getContent()['code']);
     }
 }

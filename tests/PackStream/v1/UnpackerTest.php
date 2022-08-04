@@ -4,6 +4,7 @@ namespace Bolt\tests\PackStream\v1;
 
 use Bolt\Bolt;
 use Bolt\protocol\AProtocol;
+use Bolt\protocol\Response;
 use Exception;
 use PHPUnit\Framework\TestCase;
 
@@ -24,73 +25,101 @@ class UnpackerTest extends TestCase
 {
     public function testInit(): AProtocol
     {
-        try {
-            $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
-            $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
+        $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
+        $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
 
-            $bolt = new Bolt($conn);
-            $this->assertInstanceOf(Bolt::class, $bolt);
+        $bolt = new Bolt($conn);
+        $this->assertInstanceOf(Bolt::class, $bolt);
 
-            $protocol = $bolt->build();
-            $this->assertInstanceOf(AProtocol::class, $protocol);
+        /** @var AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol */
+        $protocol = $bolt->build();
+        $this->assertInstanceOf(AProtocol::class, $protocol);
 
-            $this->assertNotEmpty($protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
+        $this->assertNotEmpty($protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
 
-            $conn->setTimeout(120);
-            return $protocol;
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $conn->setTimeout(120);
+        return $protocol;
     }
 
     /**
      * @depends testInit
-     * @param AProtocol $protocol
+     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
      */
     public function testNull(AProtocol $protocol)
     {
-        $protocol->run('RETURN null', [], ['mode' => 'r']);
-        $res = $protocol->pull();
-        $this->assertNull($res[0][0]);
-    }
+        $gen = $protocol
+            ->run('RETURN null', [], ['mode' => 'r'])
+            ->pull()
+            ->getResponses();
 
-    /**
-     * @depends testInit
-     * @param AProtocol $protocol
-     */
-    public function testBoolean(AProtocol $protocol)
-    {
-        $protocol->run('RETURN true, false', [], ['mode' => 'r']);
-        $res = $protocol->pull();
-        $this->assertTrue($res[0][0]);
-        $this->assertFalse($res[0][1]);
-    }
-
-    /**
-     * @depends testInit
-     * @param AProtocol $protocol
-     */
-    public function testInteger(AProtocol $protocol)
-    {
-        $protocol->run('RETURN -16, 0, 127, -17, -128, 128, 32767, 32768, 2147483647, 2147483648, 9223372036854775807, -129, -32768, -32769, -2147483648, -2147483649, -9223372036854775808', [], ['mode' => 'r']);
-        $res = $protocol->pull();
-
-        foreach ([-16, 0, 127, -17, -128, 128, 32767, 32768, 2147483647, 2147483648, 9223372036854775807, -129, -32768, -32769, -2147483648, -2147483649, -9223372036854775808] as $i => $value) {
-            $this->assertEquals($value, $res[0][$i]);
+        /** @var Response $response */
+        foreach ($gen as $response) {
+            if ($response->getSignature() == Response::SIGNATURE_RECORD)
+                $this->assertNull($response->getContent()[0]);
         }
     }
 
     /**
      * @depends testInit
-     * @param AProtocol $protocol
+     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     */
+    public function testBoolean(AProtocol $protocol)
+    {
+        $gen = $protocol
+            ->run('RETURN true, false', [], ['mode' => 'r'])
+            ->pull()
+            ->getResponses();
+
+        /** @var Response $response */
+        foreach ($gen as $response) {
+            if ($response->getSignature() == Response::SIGNATURE_RECORD) {
+                $this->assertTrue($response->getContent()[0]);
+                $this->assertFalse($response->getContent()[1]);
+            }
+        }
+    }
+
+    /**
+     * @depends testInit
+     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     */
+    public function testInteger(AProtocol $protocol)
+    {
+        $gen = $protocol
+            ->run('RETURN -16, 0, 127, -17, -128, 128, 32767, 32768, 2147483647, 2147483648, 9223372036854775807, -129, -32768, -32769, -2147483648, -2147483649, -9223372036854775808', [], ['mode' => 'r'])
+            ->pull()
+            ->getResponses();
+
+        /** @var Response $response */
+        foreach ($gen as $response) {
+            if ($response->getSignature() == Response::SIGNATURE_RECORD) {
+                foreach ([-16, 0, 127, -17, -128, 128, 32767, 32768, 2147483647, 2147483648, 9223372036854775807, -129, -32768, -32769, -2147483648, -2147483649, -9223372036854775808] as $i => $value) {
+                    $this->assertEquals($value, $response->getContent()[$i]);
+                }
+            }
+        }
+    }
+
+    /**
+     * @depends testInit
+     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
      */
     public function testFloat(AProtocol $protocol)
     {
         for ($i = 0; $i < 10; $i++) {
             $num = mt_rand(-mt_getrandmax(), mt_getrandmax()) / mt_getrandmax();
-            $protocol->run('RETURN ' . $num, [], ['mode' => 'r']);
-            $res = $protocol->pull();
-            $this->assertEqualsWithDelta($num, $res[0][0], 0.000001);
+
+            $gen = $protocol
+                ->run('RETURN ' . $num, [], ['mode' => 'r'])
+                ->pull()
+                ->getResponses();
+
+            /** @var Response $response */
+            foreach ($gen as $response) {
+                if ($response->getSignature() == Response::SIGNATURE_RECORD) {
+                    $this->assertEqualsWithDelta($num, $response->getContent()[0], 0.000001);
+                }
+            }
         }
     }
 
@@ -98,13 +127,21 @@ class UnpackerTest extends TestCase
      * @depends      testInit
      * @dataProvider stringProvider
      * @param string $str
-     * @param AProtocol $protocol
+     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
      */
     public function testString(string $str, AProtocol $protocol)
     {
-        $protocol->run('RETURN "' . str_replace(['\\', '"'], ['\\\\', '\\"'], $str) . '" AS a', [], ['mode' => 'r']);
-        $res = $protocol->pull();
-        $this->assertEquals($str, $res[0][0]);
+        $gen = $protocol
+            ->run('RETURN "' . str_replace(['\\', '"'], ['\\\\', '\\"'], $str) . '" AS a', [], ['mode' => 'r'])
+            ->pull()
+            ->getResponses();
+
+        /** @var Response $response */
+        foreach ($gen as $response) {
+            if ($response->getSignature() == Response::SIGNATURE_RECORD) {
+                $this->assertEquals($str, $response->getContent()[0]);
+            }
+        }
     }
 
     public function stringProvider(): \Generator
@@ -125,13 +162,21 @@ class UnpackerTest extends TestCase
      * @depends      testInit
      * @dataProvider listProvider
      * @param int $size
-     * @param AProtocol $protocol
+     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
      */
     public function testList(int $size, AProtocol $protocol)
     {
-        $protocol->run('RETURN range(0, ' . $size . ') AS a', [], ['mode' => 'r']);
-        $res = $protocol->pull();
-        $this->assertEquals(range(0, $size), $res[0][0]);
+        $gen = $protocol
+            ->run('RETURN range(0, ' . $size . ') AS a', [], ['mode' => 'r'])
+            ->pull()
+            ->getResponses();
+
+        /** @var Response $response */
+        foreach ($gen as $response) {
+            if ($response->getSignature() == Response::SIGNATURE_RECORD) {
+                $this->assertEquals(range(0, $size), $response->getContent()[0]);
+            }
+        }
     }
 
     public function listProvider(): \Generator
@@ -145,13 +190,21 @@ class UnpackerTest extends TestCase
      * @dataProvider dictionaryProvider
      * @param string $query
      * @param int $size
-     * @param AProtocol $protocol
+     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
      */
     public function testDictionary(string $query, int $size, AProtocol $protocol)
     {
-        $protocol->run($query, [], ['mode' => 'r']);
-        $res = $protocol->pull();
-        $this->assertCount($size, $res[0][0]);
+        $gen = $protocol
+            ->run($query, [], ['mode' => 'r'])
+            ->pull()
+            ->getResponses();
+
+        /** @var Response $response */
+        foreach ($gen as $response) {
+            if ($response->getSignature() == Response::SIGNATURE_RECORD) {
+                $this->assertCount($size, $response->getContent()[0]);
+            }
+        }
     }
 
     public function dictionaryProvider(): \Generator

@@ -2,9 +2,7 @@
 
 namespace Bolt\protocol\v1;
 
-use Bolt\helpers\ServerState;
-use Bolt\protocol\AProtocol;
-use Bolt\protocol\Response;
+use Bolt\protocol\{AProtocol, ServerState, Response};
 use Exception;
 
 trait DiscardAllMessage
@@ -19,12 +17,10 @@ trait DiscardAllMessage
      */
     public function discardAll(): AProtocol
     {
-        $this->serverState->is(ServerState::STREAMING, ServerState::TX_STREAMING);
+        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
         $this->write($this->packer->pack(0x2F));
         $this->pipelinedMessages[] = __FUNCTION__;
-        if ($this->serverState->get() == ServerState::STREAMING) {
-            $this->serverState->set(ServerState::READY);
-        }
+        $this->serverState->set(substr($this->serverState->get(), 0, 3) == 'TX_' ? ServerState::TX_READY : ServerState::READY);
         return $this;
     }
 
@@ -37,7 +33,7 @@ trait DiscardAllMessage
         $message = $this->read($signature);
 
         if ($signature == Response::SIGNATURE_SUCCESS) {
-            $this->serverState->set($this->serverState->get() === ServerState::STREAMING ? ServerState::READY : ServerState::TX_READY);
+            $this->serverState->set(substr($this->serverState->get(), 0, 3) == 'TX_' ? ServerState::TX_READY : ServerState::READY);
         }
 
         yield new Response(Response::MESSAGE_DISCARD_ALL, $signature, $message);

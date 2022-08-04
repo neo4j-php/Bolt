@@ -20,38 +20,38 @@ class PerformanceTest extends TestCase
     {
         $amount = 50000;
 
-        try {
-            $conn = new StreamSocket($GLOBALS['NEO_HOST'] ?? 'localhost', $GLOBALS['NEO_PORT'] ?? 7687, 60);
-            /** @var \Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol */
-            $protocol = (new Bolt($conn))->build();
-            $this->assertEquals(\Bolt\protocol\Response::SIGNATURE_SUCCESS, $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
+        $conn = new StreamSocket($GLOBALS['NEO_HOST'] ?? 'localhost', $GLOBALS['NEO_PORT'] ?? 7687, 60);
+        /** @var \Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol */
+        $protocol = (new Bolt($conn))->build();
+        $this->assertEquals(\Bolt\protocol\Response::SIGNATURE_SUCCESS, $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
 
-            $generator = new RandomDataGenerator($amount);
-            $protocol->run('UNWIND $x as x RETURN x', ['x' => $generator])->getResponse();
+        $generator = new RandomDataGenerator($amount);
+        $protocol
+            ->run('UNWIND $x as x RETURN x', ['x' => $generator])
+            ->getResponse();
 
-            $count = 0;
-            while (true) {
-                $gen = $protocol->pull(['n' => 1])->getResponses();
+        $count = 0;
+        while (true) {
+            $gen = $protocol
+                ->pull(['n' => 1])
+                ->getResponses();
 
-                if ($gen->current()->getSignature() != \Bolt\protocol\Response::SIGNATURE_RECORD)
-                    $this->markTestIncomplete('Response does not contains record message');
+            if ($gen->current()->getSignature() != \Bolt\protocol\Response::SIGNATURE_RECORD)
+                $this->markTestIncomplete('Response does not contains record message');
 
-                $gen->next();
+            $gen->next();
 
-                if ($gen->current()->getSignature() != \Bolt\protocol\Response::SIGNATURE_SUCCESS)
-                    $this->markTestIncomplete('Response does not contains success message');
+            if ($gen->current()->getSignature() != \Bolt\protocol\Response::SIGNATURE_SUCCESS)
+                $this->markTestIncomplete('Response does not contains success message');
 
-                $count++;
+            $count++;
 
-                if ($gen->current()->getContent()['has_more'] ?? false)
-                    continue;
-                else
-                    break;
-            }
-
-            $this->assertEquals($amount, $count);
-        } catch (\Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
+            if ($gen->current()->getContent()['has_more'] ?? false)
+                continue;
+            else
+                break;
         }
+
+        $this->assertEquals($amount, $count);
     }
 }
