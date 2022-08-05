@@ -210,8 +210,8 @@ class StructuresTest extends TestCase
             $this->assertEquals($datetime, $dateTimeZoneIdStructure, 'pack ' . $datetime . ' != ' . $dateTimeZoneIdStructure);
         } catch (Exception $e) {
             if (strpos($e->getMessage(), 'Invalid value for TimeZone: Text \'' . $timezone . '\'') === 0) {
-                $protocol->reset();
-                $this->markTestSkipped('Test skipped because Neo4j missing timezone ID ' . $timezone);
+                $protocol->reset()->getResponse();
+                $this->markTestSkipped('Test skipped because database is missing timezone ID ' . $timezone);
             } else {
                 $this->markTestIncomplete($e->getMessage());
             }
