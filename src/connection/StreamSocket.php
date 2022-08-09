@@ -17,6 +17,7 @@ use Bolt\error\ConnectionTimeoutException;
 class StreamSocket extends AConnection
 {
     private array $sslContextOptions = [];
+    private bool $autoSSL = true;
 
     /**
      * @var resource
@@ -31,6 +32,7 @@ class StreamSocket extends AConnection
     public function setSslContextOptions(array $options)
     {
         $this->sslContextOptions = $options;
+        $this->autoSSL = false;
     }
 
     /**
@@ -44,11 +46,30 @@ class StreamSocket extends AConnection
             'socket' => [
                 'tcp_nodelay' => true,
             ],
-            'ssl' => $this->sslContextOptions
+            'ssl' => $this->autoSSL ? [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'SNI_enabled' => false,
+                'allow_self_signed' => true,
+                'capture_peer_cert' => true,
+                'capture_peer_cert_chain' => true
+            ] : $this->sslContextOptions
         ]);
 
-        $this->stream = @stream_socket_client('tcp://' . $this->ip . ':' . $this->port, $errno, $errstr, $this->timeout, STREAM_CLIENT_CONNECT, $context);
+        $this->createStreamSocketClient($context);
+        $this->enableSSL();
+        $this->configureTimeout();
 
+        return true;
+    }
+
+    /**
+     * @param resource $context
+     * @throws ConnectException
+     */
+    private function createStreamSocketClient($context)
+    {
+        $this->stream = @stream_socket_client('tcp://' . $this->ip . ':' . $this->port, $errno, $errstr, $this->timeout, STREAM_CLIENT_CONNECT, $context);
         if ($this->stream === false) {
             throw new ConnectException($errstr, $errno);
         }
@@ -56,16 +77,48 @@ class StreamSocket extends AConnection
         if (!stream_set_blocking($this->stream, true)) {
             throw new ConnectException('Cannot set socket into blocking mode');
         }
+    }
 
-        if (!empty($this->sslContextOptions)) {
-            if (stream_socket_enable_crypto($this->stream, true, STREAM_CRYPTO_METHOD_ANY_CLIENT) !== true) {
-                throw new ConnectException('Enable encryption error');
+    /**
+     * @throws ConnectException
+     */
+    private function enableSSL()
+    {
+        if ($this->autoSSL || !empty($this->sslContextOptions)) {
+            $enableCrypto = @stream_socket_enable_crypto($this->stream, true, STREAM_CRYPTO_METHOD_ANY_CLIENT);
+
+            if ($this->autoSSL) {
+                if ($enableCrypto === true) {
+                    $this->autoSSL();
+                } elseif (feof($this->stream)) {
+                    $this->createStreamSocketClient(stream_context_create([
+                        'socket' => [
+                            'tcp_nodelay' => true,
+                        ]
+                    ]));
+                }
             }
         }
+    }
 
-        $this->configureTimeout();
-
-        return true;
+    /**
+     * Set stream socket ssl parameters by received certificate
+     */
+    private function autoSSL()
+    {
+        $params = stream_context_get_params($this->stream);
+        if (isset($params['options']['ssl']['peer_certificate']) && is_resource($params['options']['ssl']['peer_certificate'])) {
+            $cert = openssl_x509_parse($params['options']['ssl']['peer_certificate']);
+            stream_context_set_params($this->stream, [
+                'ssl' => [
+                    'verify_peer' => true,
+                    'verify_peer_name' => true,
+                    'SNI_enabled' => true,
+                    'peer_name' => $cert['subject']['CN'],
+                    'allow_self_signed' => count($params['options']['ssl']['peer_certificate_chain']) == 1 && $cert['subject'] == $cert['issuer']
+                ]
+            ]);
+        }
     }
 
     /**
