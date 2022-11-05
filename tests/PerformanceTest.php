@@ -5,7 +5,7 @@ namespace Bolt\tests;
 use Bolt\Bolt;
 use Bolt\connection\StreamSocket;
 use Bolt\helpers\Auth;
-use Bolt\tests\PackStream\v1\generators\RandomDataGenerator;
+use Bolt\tests\packstream\v1\generators\RandomDataGenerator;
 use PHPUnit\Framework\TestCase;
 
 /**

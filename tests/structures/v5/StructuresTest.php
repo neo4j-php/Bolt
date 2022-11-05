@@ -25,8 +25,8 @@ use Bolt\protocol\v1\structures\Path;
  * @covers \Bolt\protocol\v5\structures\DateTime
  * @covers \Bolt\protocol\v5\structures\DateTimeZoneId
  *
- * @covers \Bolt\PackStream\v1\Packer
- * @covers \Bolt\PackStream\v1\Unpacker
+ * @covers \Bolt\packstream\v1\Packer
+ * @covers \Bolt\packstream\v1\Unpacker
  *
  * @package Bolt\tests\protocol\v5
  */

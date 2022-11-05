@@ -5,6 +5,7 @@ namespace Bolt\tests\protocol;
 use Bolt\protocol\Response;
 use PHPUnit\Framework\TestCase;
 use Bolt\connection\AConnection;
+use Bolt\packstream\v1\Packer;
 
 /**
  * Class ATest
@@ -31,7 +32,7 @@ abstract class ATest extends TestCase
      */
     protected static array $writeBuffer = [];
 
-    private static \Bolt\PackStream\v1\Packer $packer;
+    private static Packer $packer;
 
     /**
      * Mock Socket class with "write" and "read" methods
@@ -106,7 +107,7 @@ abstract class ATest extends TestCase
         self::$writeIndex = 0;
         self::$writeBuffer = [];
 
-        self::$packer = new \Bolt\PackStream\v1\Packer();
+        self::$packer = new Packer();
     }
 
     protected function checkFailure(Response $response)

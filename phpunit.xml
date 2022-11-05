@@ -5,7 +5,7 @@
             <directory>./tests/connection</directory>
             <file>./tests/BoltTest.php</file>
             <directory>./tests/error</directory>
-            <directory>./tests/PackStream</directory>
+            <directory>./tests/packstream</directory>
             <directory>./tests/structures</directory>
         </testsuite>
         <testsuite name="NoDatabase">

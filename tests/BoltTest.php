@@ -19,8 +19,8 @@ use Bolt\protocol\{Response, V4_3, V4_4};
  * @covers \Bolt\connection\Socket
  * @covers \Bolt\connection\StreamSocket
  * @covers \Bolt\helpers\Auth
- * @covers \Bolt\PackStream\v1\Packer
- * @covers \Bolt\PackStream\v1\Unpacker
+ * @covers \Bolt\packstream\v1\Packer
+ * @covers \Bolt\packstream\v1\Unpacker
  * @covers \Bolt\protocol\AProtocol
  * @covers \Bolt\protocol\V4_3
  * @covers \Bolt\protocol\V4_4

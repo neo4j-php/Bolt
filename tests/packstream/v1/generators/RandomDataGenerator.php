@@ -1,14 +1,14 @@
 <?php
 
-namespace Bolt\tests\PackStream\v1\generators;
+namespace Bolt\tests\packstream\v1\generators;
 
-use Bolt\PackStream\IPackListGenerator;
+use Bolt\packstream\IPackListGenerator;
 
 /**
  * Class ListGenerator
  * @author Ghlen Nagels
  * @link https://github.com/neo4j-php/Bolt
- * @package Bolt\tests\PackStream\v1\generators
+ * @package Bolt\tests\packstream\v1\generators
  */
 class RandomDataGenerator implements IPackListGenerator
 {

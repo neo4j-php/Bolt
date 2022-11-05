@@ -1,17 +1,17 @@
 <?php
 
-namespace Bolt\PackStream\v1;
+namespace Bolt\packstream\v1;
 
 use Bolt\error\UnpackException;
-use Bolt\PackStream\Bytes;
-use Bolt\PackStream\IUnpacker;
+use Bolt\packstream\Bytes;
+use Bolt\packstream\IUnpacker;
 
 /**
  * Class Unpacker of PackStream version 1
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- * @package Bolt\PackStream\v1
+ * @package Bolt\packstream\v1
  */
 class Unpacker implements IUnpacker
 {

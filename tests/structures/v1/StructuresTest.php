@@ -41,8 +41,8 @@ use Bolt\protocol\v1\structures\{
  * @covers \Bolt\protocol\v1\structures\Time
  * @covers \Bolt\protocol\v1\structures\UnboundRelationship
  *
- * @covers \Bolt\PackStream\v1\Packer
- * @covers \Bolt\PackStream\v1\Unpacker
+ * @covers \Bolt\packstream\v1\Packer
+ * @covers \Bolt\packstream\v1\Unpacker
  *
  * @package Bolt\tests
  */

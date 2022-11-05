@@ -1,15 +1,15 @@
 <?php
 
-namespace Bolt\tests\PackStream\v1\generators;
+namespace Bolt\tests\packstream\v1\generators;
 
 /**
- * Class ListGenerator
+ * Class DictionaryGenerator
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- * @package Bolt\tests\PackStream\v1\generators
+ * @package Bolt\tests\packstream\v1\generators
  */
-class ListGenerator implements \Bolt\PackStream\IPackListGenerator
+class DictionaryGenerator implements \Bolt\packstream\IPackDictionaryGenerator
 {
     private int $position;
     public array $array;
@@ -27,12 +27,12 @@ class ListGenerator implements \Bolt\PackStream\IPackListGenerator
 
     public function current()
     {
-        return $this->array[$this->position];
+        return array_values($this->array)[$this->position];
     }
 
     public function key()
     {
-        return $this->position;
+        return array_keys($this->array)[$this->position];
     }
 
     public function next(): void
@@ -42,7 +42,7 @@ class ListGenerator implements \Bolt\PackStream\IPackListGenerator
 
     public function valid(): bool
     {
-        return array_key_exists($this->position, $this->array);
+        return array_key_exists($this->position, array_values($this->array));
     }
 
     public function count(): int

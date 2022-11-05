@@ -29,8 +29,8 @@ class ErrorsTest extends TestCase
 
     public function testPackException1()
     {
-        $packer = new \Bolt\PackStream\v1\Packer();
-        $this->assertInstanceOf(\Bolt\PackStream\v1\Packer::class, $packer);
+        $packer = new \Bolt\packstream\v1\Packer();
+        $this->assertInstanceOf(\Bolt\packstream\v1\Packer::class, $packer);
         $this->expectException(\Bolt\error\PackException::class);
         foreach ($packer->pack(0x00, fopen('php://input', 'r')) as $chunk) {
             //expecting exception

@@ -5,6 +5,7 @@ namespace Bolt\tests\protocol;
 use Bolt\protocol\Response;
 use Bolt\protocol\ServerState;
 use Bolt\protocol\V3;
+use Bolt\packstream\v1\{Packer, Unpacker};
 
 /**
  * Class V3Test
@@ -24,7 +25,7 @@ class V3Test extends ATest
      */
     public function test__construct(): V3
     {
-        $cls = new V3(new \Bolt\PackStream\v1\Packer, new \Bolt\PackStream\v1\Unpacker, $this->mockConnection(), new ServerState());
+        $cls = new V3(new Packer, new Unpacker, $this->mockConnection(), new ServerState());
         $this->assertInstanceOf(V3::class, $cls);
         $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
             $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');

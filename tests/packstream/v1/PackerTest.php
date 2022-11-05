@@ -1,6 +1,6 @@
 <?php
 
-namespace Bolt\tests\PackStream\v1;
+namespace Bolt\tests\packstream\v1;
 
 use Bolt\protocol\AProtocol;
 use Bolt\Bolt;
@@ -13,9 +13,9 @@ use PHPUnit\Framework\TestCase;
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
  *
- * @covers \Bolt\PackStream\v1\Packer
+ * @covers \Bolt\packstream\v1\Packer
  *
- * @package Bolt\tests\PackStream\v1
+ * @package Bolt\tests\packstream\v1
  */
 class PackerTest extends TestCase
 {
@@ -209,7 +209,7 @@ class PackerTest extends TestCase
             'second',
             'third'
         ];
-        $list = new \Bolt\tests\PackStream\v1\generators\ListGenerator($data);
+        $list = new \Bolt\tests\packstream\v1\generators\ListGenerator($data);
         $result = iterator_to_array(
             $protocol
                 ->run('UNWIND $list AS row RETURN row', ['list' => $list])
@@ -232,7 +232,7 @@ class PackerTest extends TestCase
             'b' => 'second',
             'c' => 'third'
         ];
-        $dict = new \Bolt\tests\PackStream\v1\generators\DictionaryGenerator($data);
+        $dict = new \Bolt\tests\packstream\v1\generators\DictionaryGenerator($data);
         $result = iterator_to_array(
             $protocol
                 ->run('RETURN $dict', ['dict' => $dict])

@@ -1,6 +1,6 @@
 <?php
 
-namespace Bolt\tests\PackStream\v1;
+namespace Bolt\tests\packstream\v1;
 
 use Bolt\Bolt;
 use Bolt\protocol\AProtocol;
@@ -14,9 +14,9 @@ use PHPUnit\Framework\TestCase;
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
  *
- * @covers \Bolt\PackStream\v1\Unpacker
+ * @covers \Bolt\packstream\v1\Unpacker
  *
- * @package Bolt\tests\PackStream\v1
+ * @package Bolt\tests\packstream\v1
  */
 class UnpackerTest extends TestCase
 {

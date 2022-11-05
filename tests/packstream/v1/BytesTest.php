@@ -1,16 +1,16 @@
 <?php
 
-namespace Bolt\tests\PackStream\v1;
+namespace Bolt\tests\packstream\v1;
 
 use Bolt\Bolt;
-use Bolt\PackStream\Bytes;
+use Bolt\packstream\Bytes;
 use Bolt\protocol\AProtocol;
 use Bolt\protocol\Response;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class BytesTest
- * @package Bolt\tests\PackStream\v1
+ * @package Bolt\tests\packstream\v1
  */
 class BytesTest extends TestCase
 {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Bolt\PackStream\v1;
+namespace Bolt\packstream\v1;
 
 use Bolt\error\PackException;
-use Bolt\PackStream\{Bytes, IPackDictionaryGenerator, IPackListGenerator, IPacker};
+use Bolt\packstream\{Bytes, IPackDictionaryGenerator, IPackListGenerator, IPacker};
 use Bolt\protocol\IStructure;
 
 /**
@@ -11,7 +11,7 @@ use Bolt\protocol\IStructure;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- * @package Bolt\PackStream\v1
+ * @package Bolt\packstream\v1
  */
 class Packer implements IPacker
 {
