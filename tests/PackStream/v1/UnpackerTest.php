@@ -190,17 +190,6 @@ class UnpackerTest extends TestCase
      */
     public function testDictionary(string $query, int $size, AProtocol $protocol)
     {
-        $apocRequest = iterator_to_array(
-            $protocol
-                ->run('SHOW PROCEDURES YIELD name WHERE name STARTS WITH "apoc." RETURN count(*) > 0 AS apoc')
-                ->pull()
-                ->getResponses(),
-            false
-        );
-        if (!$apocRequest[1]->getContent()[0]) {
-            $this->markTestSkipped('Neo4j not running with apoc');
-        }
-
         $gen = $protocol
             ->run($query, [], ['mode' => 'r'])
             ->pull()
@@ -219,7 +208,14 @@ class UnpackerTest extends TestCase
     public function dictionaryProvider(): \Generator
     {
         foreach ([0, 10, 200, 20000, 70000] as $size) {
-            yield 'dictionary size: ' . $size => ['RETURN apoc.map.fromLists(apoc.convert.toStringList(range(1, ' . $size . ')), range(1, ' . $size . ')) AS a', $size];
+            $str = '';
+            if ($size > 0) {
+                foreach (range(1, $size) as $i) {
+                    $str .= 'n' . $i . ':' . $i . ',';
+                }
+            }
+
+            yield 'dictionary size: ' . $size => ['RETURN {' . rtrim($str, ',') . '} AS a', $size];
         }
     }
 
