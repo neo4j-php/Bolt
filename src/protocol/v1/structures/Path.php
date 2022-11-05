@@ -1,6 +1,8 @@
 <?php
 
-namespace Bolt\structures;
+namespace Bolt\protocol\v1\structures;
+
+use Bolt\protocol\IStructure;
 
 /**
  * Class Path
@@ -8,8 +10,8 @@ namespace Bolt\structures;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- * @link https://www.neo4j.com/docs/bolt/current/packstream/#structure-path
- * @package Bolt\structures
+ * @link https://www.neo4j.com/docs/bolt/current/bolt/structure-semantics/#structure-path
+ * @package Bolt\protocol\v1\structures
  */
 class Path implements IStructure
 {

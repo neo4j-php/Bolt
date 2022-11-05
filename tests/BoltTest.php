@@ -223,7 +223,7 @@ class BoltTest extends TestCase
                 ->pull()
                 ->getResponses();
             $result = iterator_to_array($gen, false);
-            $this->assertInstanceOf(\Bolt\structures\Node::class, $result[1]->getContent()[0]);
+            $this->assertInstanceOf(\Bolt\protocol\v1\structures\Node::class, $result[1]->getContent()[0]);
             $this->assertCount(count($data), $result[1]->getContent()[0]->properties());
         }
 

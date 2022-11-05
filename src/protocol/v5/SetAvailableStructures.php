@@ -1,20 +1,22 @@
 <?php
 
-namespace Bolt\protocol\v1;
+namespace Bolt\protocol\v5;
 
 use Bolt\protocol\v1\structures\{
     Date,
-    DateTime,
-    DateTimeZoneId,
     Duration,
     LocalDateTime,
     LocalTime,
-    Node,
     Path,
     Point2D,
     Point3D,
-    Relationship,
     Time,
+};
+use Bolt\protocol\v5\structures\{
+    DateTime,
+    DateTimeZoneId,
+    Node,
+    Relationship,
     UnboundRelationship
 };
 
@@ -37,8 +39,8 @@ trait SetAvailableStructures
             0x44 => Date::class,
             0x54 => Time::class,
             0x74 => LocalTime::class,
-            0x46 => DateTime::class,
-            0x66 => DateTimeZoneId::class,
+            0x49 => DateTime::class,
+            0x69 => DateTimeZoneId::class,
             0x64 => LocalDateTime::class,
             0x45 => Duration::class,
             0x58 => Point2D::class,
@@ -53,8 +55,8 @@ trait SetAvailableStructures
             0x44 => Date::class,
             0x54 => Time::class,
             0x74 => LocalTime::class,
-            0x46 => DateTime::class,
-            0x66 => DateTimeZoneId::class,
+            0x49 => DateTime::class,
+            0x69 => DateTimeZoneId::class,
             0x64 => LocalDateTime::class,
             0x45 => Duration::class,
             0x58 => Point2D::class,

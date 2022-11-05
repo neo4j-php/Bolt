@@ -2,22 +2,9 @@
 
 namespace Bolt\PackStream\v1;
 
-use Bolt\PackStream\IPacker;
 use Bolt\error\PackException;
-use Bolt\PackStream\{IPackListGenerator, IPackDictionaryGenerator};
-use Bolt\structures\{
-    IStructure,
-    Date,
-    Time,
-    LocalTime,
-    DateTime,
-    DateTimeZoneId,
-    LocalDateTime,
-    Duration,
-    Point2D,
-    Point3D,
-    Bytes
-};
+use Bolt\PackStream\{Bytes, IPackDictionaryGenerator, IPackListGenerator, IPacker};
+use Bolt\protocol\IStructure;
 
 /**
  * Class Packer of PackStream version 1

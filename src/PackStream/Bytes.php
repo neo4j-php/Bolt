@@ -1,16 +1,16 @@
 <?php
 
-namespace Bolt\structures;
+namespace Bolt\PackStream;
 
 use ArrayAccess, Countable;
 
 /**
- * Class ByteArray
+ * Class Bytes
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
  * @link https://www.neo4j.com/docs/bolt/current/packstream/#data-type-bytes
- * @package Bolt\structures
+ * @package Bolt\PackStream
  */
 class Bytes implements ArrayAccess, Countable
 {

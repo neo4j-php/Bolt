@@ -1,35 +1,40 @@
 <?php
 
-namespace Bolt\structures;
+namespace Bolt\protocol\v1\structures;
+
+use Bolt\protocol\IStructure;
 
 /**
- * Class Point2D
+ * Class Point3D
  * Immutable
  *
- * Represents a single location in 2-dimensional space.
+ * Represents a single location in space.
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- * @link https://www.neo4j.com/docs/bolt/current/packstream/#structure-point2d
- * @package Bolt\structures
+ * @link https://www.neo4j.com/docs/bolt/current/bolt/structure-semantics/#structure-point3d
+ * @package Bolt\protocol\v1\structures
  */
-class Point2D implements IStructure
+class Point3D implements IStructure
 {
     private int $srid;
     private float $x;
     private float $y;
+    private float $z;
 
     /**
-     * Point2D constructor.
+     * Point3D constructor.
      * @param int $srid
      * @param float $x
      * @param float $y
+     * @param float $z
      */
-    public function __construct(int $srid, float $x, float $y)
+    public function __construct(int $srid, float $x, float $y, float $z)
     {
         $this->srid = $srid;
         $this->x = $x;
         $this->y = $y;
+        $this->z = $z;
     }
 
     /**
@@ -57,8 +62,17 @@ class Point2D implements IStructure
         return $this->y;
     }
 
+    /**
+     * @return float
+     */
+    public function z(): float
+    {
+        return $this->z;
+    }
+
     public function __toString(): string
     {
-        return 'point({srid: ' . $this->srid . ', ' . 'x: ' . $this->x . ', y: ' . $this->y . '})';
+        return 'point({srid: ' . $this->srid . ', ' . 'x: ' . $this->x . ', y: ' . $this->y . ', z: ' . $this->z . '})';
     }
+
 }

@@ -3,9 +3,10 @@
 namespace Bolt\tests\PackStream\v1;
 
 use Bolt\Bolt;
+use Bolt\PackStream\Bytes;
 use Bolt\protocol\AProtocol;
 use Bolt\protocol\Response;
-use Bolt\structures\{
+use Bolt\protocol\v1\structures\{
     Node,
     Relationship,
     UnboundRelationship,
@@ -18,8 +19,7 @@ use Bolt\structures\{
     LocalDateTime,
     Duration,
     Point2D,
-    Point3D,
-    Bytes
+    Point3D
 };
 use PHPUnit\Framework\TestCase;
 use Exception;
@@ -30,19 +30,19 @@ use Exception;
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
  *
- * @covers \Bolt\structures\Date
- * @covers \Bolt\structures\DateTime
- * @covers \Bolt\structures\DateTimeZoneId
- * @covers \Bolt\structures\Duration
- * @covers \Bolt\structures\LocalDateTime
- * @covers \Bolt\structures\LocalTime
- * @covers \Bolt\structures\Node
- * @covers \Bolt\structures\Path
- * @covers \Bolt\structures\Point2D
- * @covers \Bolt\structures\Point3D
- * @covers \Bolt\structures\Relationship
- * @covers \Bolt\structures\Time
- * @covers \Bolt\structures\UnboundRelationship
+ * @covers \Bolt\protocol\v1\structures\Date
+ * @covers \Bolt\protocol\v1\structures\DateTime
+ * @covers \Bolt\protocol\v1\structures\DateTimeZoneId
+ * @covers \Bolt\protocol\v1\structures\Duration
+ * @covers \Bolt\protocol\v1\structures\LocalDateTime
+ * @covers \Bolt\protocol\v1\structures\LocalTime
+ * @covers \Bolt\protocol\v1\structures\Node
+ * @covers \Bolt\protocol\v1\structures\Path
+ * @covers \Bolt\protocol\v1\structures\Point2D
+ * @covers \Bolt\protocol\v1\structures\Point3D
+ * @covers \Bolt\protocol\v1\structures\Relationship
+ * @covers \Bolt\protocol\v1\structures\Time
+ * @covers \Bolt\protocol\v1\structures\UnboundRelationship
  *
  * @covers \Bolt\PackStream\v1\Packer
  * @covers \Bolt\PackStream\v1\Unpacker
@@ -559,7 +559,7 @@ class StructuresTest extends TestCase
     /**
      * @depends      testInit
      * @dataProvider providerByteArray
-     * @param Bytes $arr
+     * @param \Bolt\PackStream\Bytes $arr
      * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
      */
     public function testByteArray(Bytes $arr, AProtocol $protocol)

@@ -1,6 +1,8 @@
 <?php
 
-namespace Bolt\structures;
+namespace Bolt\protocol\v1\structures;
+
+use Bolt\protocol\IStructure;
 
 /**
  * Class Relationship
@@ -8,8 +10,8 @@ namespace Bolt\structures;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- * @link https://www.neo4j.com/docs/bolt/current/packstream/#structure-relationship
- * @package Bolt\structures
+ * @link https://www.neo4j.com/docs/bolt/current/bolt/structure-semantics/#structure-relationship
+ * @package Bolt\protocol\v1\structures
  */
 class Relationship implements IStructure
 {

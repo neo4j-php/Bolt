@@ -1,32 +1,34 @@
 <?php
 
-namespace Bolt\structures;
+namespace Bolt\protocol\v1\structures;
+
+use Bolt\protocol\IStructure;
 
 /**
- * Class UnboundRelationship
+ * Class Node
  * Immutable
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- * @link https://www.neo4j.com/docs/bolt/current/packstream/#structure-unbound
- * @package Bolt\structures
+ * @link https://www.neo4j.com/docs/bolt/current/bolt/structure-semantics/#structure-node
+ * @package Bolt\protocol\v1\structures
  */
-class UnboundRelationship implements IStructure
+class Node implements IStructure
 {
     private int $id;
-    private string $type;
+    private array $labels;
     private array $properties;
 
     /**
-     * UnboundRelationship constructor.
+     * Node constructor.
      * @param int $id
-     * @param string $type
+     * @param array $labels
      * @param array $properties
      */
-    public function __construct(int $id, string $type, array $properties)
+    public function __construct(int $id, array $labels, array $properties)
     {
         $this->id = $id;
-        $this->type = $type;
+        $this->labels = $labels;
         $this->properties = $properties;
     }
 
@@ -39,11 +41,11 @@ class UnboundRelationship implements IStructure
     }
 
     /**
-     * @return string
+     * @return array
      */
-    public function type(): string
+    public function labels(): array
     {
-        return $this->type;
+        return $this->labels;
     }
 
     /**
@@ -58,7 +60,7 @@ class UnboundRelationship implements IStructure
     {
         return json_encode([
             'identity' => $this->id,
-            'type' => $this->type,
+            'labels' => $this->labels,
             'properties' => $this->properties
         ]);
     }

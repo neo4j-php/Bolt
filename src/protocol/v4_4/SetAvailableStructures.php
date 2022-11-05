@@ -2,7 +2,7 @@
 
 namespace Bolt\protocol\v4_4;
 
-use Bolt\structures\{
+use Bolt\protocol\v1\structures\{
     Date,
     DateTime,
     DateTimeZoneId,
@@ -16,6 +16,10 @@ use Bolt\structures\{
     Relationship,
     Time,
     UnboundRelationship
+};
+use Bolt\protocol\v5\structures\{
+    DateTime as v5_DateTime,
+    DateTimeZoneId as v5_DateTimeZoneId
 };
 
 /**
@@ -38,9 +42,9 @@ trait SetAvailableStructures
             0x54 => Time::class,
             0x74 => LocalTime::class,
             0x46 => DateTime::class,
-            0x49 => DateTime::class, //todo new class
+            0x49 => v5_DateTime::class,
             0x66 => DateTimeZoneId::class,
-            0x69 => DateTimeZoneId::class, //todo new class
+            0x69 => v5_DateTimeZoneId::class,
             0x64 => LocalDateTime::class,
             0x45 => Duration::class,
             0x58 => Point2D::class,
@@ -56,9 +60,9 @@ trait SetAvailableStructures
             0x54 => Time::class,
             0x74 => LocalTime::class,
             0x46 => DateTime::class,
-            0x49 => DateTime::class, //todo new class
+            0x49 => v5_DateTime::class,
             0x66 => DateTimeZoneId::class,
-            0x69 => DateTimeZoneId::class, //todo new class
+            0x69 => v5_DateTimeZoneId::class,
             0x64 => LocalDateTime::class,
             0x45 => Duration::class,
             0x58 => Point2D::class,

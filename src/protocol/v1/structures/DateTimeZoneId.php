@@ -1,6 +1,8 @@
 <?php
 
-namespace Bolt\structures;
+namespace Bolt\protocol\v1\structures;
+
+use Bolt\protocol\IStructure;
 
 /**
  * Class DateTimeZoneId
@@ -14,8 +16,8 @@ namespace Bolt\structures;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- * @link https://www.neo4j.com/docs/bolt/current/packstream/#structure-datetimezoneid
- * @package Bolt\structures
+ * @link https://www.neo4j.com/docs/bolt/current/bolt/structure-semantics/#structure-legacy-datetimezoneid
+ * @package Bolt\protocol\v1\structures
  */
 class DateTimeZoneId implements IStructure
 {

@@ -2,25 +2,9 @@
 
 namespace Bolt\PackStream\v1;
 
-use Bolt\structures\{
-    IStructure,
-    Node,
-    Relationship,
-    UnboundRelationship,
-    Path,
-    Date,
-    Time,
-    LocalTime,
-    DateTime,
-    DateTimeZoneId,
-    LocalDateTime,
-    Duration,
-    Point2D,
-    Point3D,
-    Bytes
-};
-use Bolt\PackStream\IUnpacker;
 use Bolt\error\UnpackException;
+use Bolt\PackStream\Bytes;
+use Bolt\PackStream\IUnpacker;
 
 /**
  * Class Unpacker of PackStream version 1
@@ -135,7 +119,7 @@ class Unpacker implements IUnpacker
 
     /**
      * @param int $marker
-     * @return array|IStructure|null
+     * @return array|\Bolt\protocol\IStructure|null
      * @throws UnpackException
      */
     private function unpackStruct(int $marker)
