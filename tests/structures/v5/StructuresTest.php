@@ -43,6 +43,10 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
+        if (version_compare($protocol->getVersion(), '5', '<')) {
+            $this->markTestSkipped('Tests available only for version 5 and higher.');
+        }
+
         $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
 
         return $protocol;
