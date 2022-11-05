@@ -17,4 +17,9 @@ interface IPacker
      * @return iterable
      */
     public function pack($signature, ...$params): iterable;
+
+    /**
+     * @param array $structures [signature => classFQN]
+     */
+    public function setAvailableStructures(array $structures);
 }

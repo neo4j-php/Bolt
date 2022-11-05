@@ -23,4 +23,9 @@ interface IUnpacker
      * @return int
      */
     public function getSignature(): int;
+
+    /**
+     * @param array $structures [signature => classFQN]
+     */
+    public function setAvailableStructures(array $structures);
 }

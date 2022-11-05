@@ -12,6 +12,8 @@ namespace Bolt\protocol;
  */
 class V3 extends AProtocol
 {
+    use \Bolt\protocol\v1\SetAvailableStructures;
+
     use \Bolt\protocol\v1\PullAllMessage;
     use \Bolt\protocol\v1\DiscardAllMessage;
     use \Bolt\protocol\v1\ResetMessage;

@@ -36,21 +36,15 @@ class Unpacker implements IUnpacker
     private bool $littleEndian;
     private int $signature;
 
-    private array $structuresLt = [
-        0x4E => [Node::class, 'unpackInteger', 'unpackList', 'unpackDictionary'],
-        0x52 => [Relationship::class, 'unpackInteger', 'unpackInteger', 'unpackInteger', 'unpackString', 'unpackDictionary'],
-        0x72 => [UnboundRelationship::class, 'unpackInteger', 'unpackString', 'unpackDictionary'],
-        0x50 => [Path::class, 'unpackList', 'unpackList', 'unpackList'],
-        0x44 => [Date::class, 'unpackInteger'],
-        0x54 => [Time::class, 'unpackInteger', 'unpackInteger'],
-        0x74 => [LocalTime::class, 'unpackInteger'],
-        0x46 => [DateTime::class, 'unpackInteger', 'unpackInteger', 'unpackInteger'],
-        0x66 => [DateTimeZoneId::class, 'unpackInteger', 'unpackInteger', 'unpackString'],
-        0x64 => [LocalDateTime::class, 'unpackInteger', 'unpackInteger'],
-        0x45 => [Duration::class, 'unpackInteger', 'unpackInteger', 'unpackInteger', 'unpackInteger'],
-        0x58 => [Point2D::class, 'unpackInteger', 'unpackFloat', 'unpackFloat'],
-        0x59 => [Point3D::class, 'unpackInteger', 'unpackFloat', 'unpackFloat', 'unpackFloat']
-    ];
+    private array $structuresLt = [];
+
+    /**
+     * @inheritDoc
+     */
+    public function setAvailableStructures(array $structures)
+    {
+        $this->structuresLt = $structures;
+    }
 
     /**
      * @inheritDoc
@@ -159,34 +153,20 @@ class Unpacker implements IUnpacker
         $signature = ord($this->next(1));
 
         if (array_key_exists($signature, $this->structuresLt)) {
-            if ($size + 1 !== count($this->structuresLt[$signature]))
-                throw new UnpackException('Incorrect amount of structure fields for ' . reset($this->structuresLt[$signature]));
-            return $this->unpackSpecificStructure(...$this->structuresLt[$signature]);
+            $values = [];
+            for ($i = 0; $i < $size; $i++) {
+                $values[] = $this->u();
+            }
+
+            $class = $this->structuresLt[$signature];
+            $reflection = new \ReflectionClass($class);
+            if ($reflection->getConstructor()->getNumberOfParameters() != count($values))
+                throw new UnpackException('Incorrect amount of structure fields for ' . $class);
+            return new $class(...$values);
         } else {
             $this->signature = $signature;
             return $this->u();
         }
-    }
-
-    /**
-     * Dynamic predefined specific structure unpacking
-     * @param string $class
-     * @param string ...$methods
-     * @return IStructure
-     * @throws UnpackException
-     */
-    private function unpackSpecificStructure(string $class, string ...$methods): IStructure
-    {
-        $values = [];
-        foreach ($methods as $method) {
-            $marker = ord($this->next(1));
-            $value = $this->{$method}($marker);
-            if ($value === null)
-                throw new UnpackException('Structure call for method "' . $method . '" generated unpack error');
-            $values[] = $value;
-        }
-
-        return new $class(...$values);
     }
 
     /**

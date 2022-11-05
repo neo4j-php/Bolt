@@ -12,6 +12,8 @@ namespace Bolt\protocol;
  */
 class V4_1 extends AProtocol
 {
+    use \Bolt\protocol\v1\SetAvailableStructures;
+
     use \Bolt\protocol\v1\ResetMessage;
 
     use \Bolt\protocol\v3\RunMessage;

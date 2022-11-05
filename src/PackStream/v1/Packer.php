@@ -34,18 +34,15 @@ class Packer implements IPacker
     private const HUGE = 4294967295;
 
     private bool $littleEndian;
+    private array $structuresLt = [];
 
-    private array $structuresLt = [
-        Date::class => [0x44, 'days' => 'packInteger'],
-        Time::class => [0x54, 'nanoseconds' => 'packInteger', 'tz_offset_seconds' => 'packInteger'],
-        LocalTime::class => [0x74, 'nanoseconds' => 'packInteger'],
-        DateTime::class => [0x46, 'seconds' => 'packInteger', 'nanoseconds' => 'packInteger', 'tz_offset_seconds' => 'packInteger'],
-        DateTimeZoneId::class => [0x66, 'seconds' => 'packInteger', 'nanoseconds' => 'packInteger', 'tz_id' => 'packString'],
-        LocalDateTime::class => [0x64, 'seconds' => 'packInteger', 'nanoseconds' => 'packInteger'],
-        Duration::class => [0x45, 'months' => 'packInteger', 'days' => 'packInteger', 'seconds' => 'packInteger', 'nanoseconds' => 'packInteger'],
-        Point2D::class => [0x58, 'srid' => 'packInteger', 'x' => 'packFloat', 'y' => 'packFloat'],
-        Point3D::class => [0x59, 'srid' => 'packInteger', 'x' => 'packFloat', 'y' => 'packFloat', 'z' => 'packFloat']
-    ];
+    /**
+     * @inheritDoc
+     */
+    public function setAvailableStructures(array $structures)
+    {
+        $this->structuresLt = $structures;
+    }
 
     /**
      * Pack message with parameters
@@ -254,15 +251,29 @@ class Packer implements IPacker
      */
     private function packStructure(IStructure $structure): iterable
     {
-        $arr = $this->structuresLt[get_class($structure)] ?? null;
-        if ($arr === null) {
+        $signature = array_search(get_class($structure), $this->structuresLt);
+        if ($signature === false) {
             throw new PackException('Provided structure as parameter is not supported');
         }
 
-        $signature = chr(array_shift($arr));
-        yield pack('C', 0b10110000 | count($arr)) . $signature;
-        foreach ($arr as $structureMethod => $packerMethod) {
-            yield from $this->{$packerMethod}($structure->{$structureMethod}());
+        $reflection = new \ReflectionClass($structure);
+
+        yield pack('C', 0b10110000 | $reflection->getConstructor()->getNumberOfParameters()) . chr($signature);
+
+        foreach ($reflection->getConstructor()->getParameters() as $parameter) {
+            $type = $parameter->getType();
+            if (is_null($type)) {
+                throw new PackException('Undefined parameter type in structure ' . $structure);
+            }
+
+            $packerMethod = $type->getName();
+            if ($packerMethod === 'int') {
+                $packerMethod = 'integer';
+            }
+            $packerMethod = 'pack' . ucfirst($packerMethod);
+
+            $methodName = $parameter->getName();
+            yield from $this->{$packerMethod}($structure->{$methodName}());
         }
     }
 

@@ -37,6 +37,10 @@ abstract class AProtocol
         $this->unpacker = $unpacker;
         $this->connection = $connection;
         $this->serverState = $serverState;
+
+        if (method_exists($this, 'setAvailableStructures')) {
+            $this->setAvailableStructures();
+        }
     }
 
     /**
