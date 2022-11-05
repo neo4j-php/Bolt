@@ -28,9 +28,6 @@ use Bolt\protocol\{Response, V4_3, V4_4};
  * @covers \Bolt\protocol\ServerState
  *
  * @package Bolt\tests
- * @requires PHP >= 7.1
- * @requires extension sockets
- * @requires extension mbstring
  */
 class BoltTest extends TestCase
 {

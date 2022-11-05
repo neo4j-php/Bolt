@@ -23,8 +23,6 @@ use PHPUnit\Framework\TestCase;
  * @covers \Bolt\connection\StreamSocket
  *
  * @package Bolt\tests\connection
- * @requires PHP >= 7.1
- * @requires extension sockets
  */
 final class ConnectionTest extends TestCase
 {

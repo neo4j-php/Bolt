@@ -16,9 +16,6 @@ use PHPUnit\Framework\TestCase;
  * @covers \Bolt\PackStream\v1\Packer
  *
  * @package Bolt\tests\PackStream\v1
- * @requires PHP >= 7.1
- * @requires extension mbstring
- * @requires extension json
  */
 class PackerTest extends TestCase
 {

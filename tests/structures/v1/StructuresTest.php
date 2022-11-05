@@ -1,28 +1,25 @@
 <?php
 
-namespace Bolt\tests\PackStream\v1;
+namespace Bolt\tests\structures\v1;
 
 use Bolt\Bolt;
-use Bolt\PackStream\Bytes;
 use Bolt\protocol\AProtocol;
 use Bolt\protocol\Response;
 use Bolt\protocol\v1\structures\{
-    Node,
-    Relationship,
-    UnboundRelationship,
-    Path,
     Date,
-    Time,
-    LocalTime,
     DateTime,
     DateTimeZoneId,
-    LocalDateTime,
     Duration,
+    LocalDateTime,
+    LocalTime,
+    Node,
+    Path,
     Point2D,
-    Point3D
+    Point3D,
+    Relationship,
+    Time,
+    UnboundRelationship
 };
-use PHPUnit\Framework\TestCase;
-use Exception;
 
 /**
  * Class StructuresTest
@@ -48,16 +45,9 @@ use Exception;
  * @covers \Bolt\PackStream\v1\Unpacker
  *
  * @package Bolt\tests
- * @requires PHP >= 7.1
  */
-class StructuresTest extends TestCase
+class StructuresTest extends \Bolt\tests\structures\AStructures
 {
-    /**
-     * How many iterations do for each date/time test
-     * @var int
-     */
-    public static $iterations = 50;
-
     public function testInit(): AProtocol
     {
         $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
@@ -66,7 +56,7 @@ class StructuresTest extends TestCase
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol */
+        $bolt->setProtocolVersions(4.4, 4.3, 4.2, 3);
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
@@ -79,7 +69,7 @@ class StructuresTest extends TestCase
      * @depends      testInit
      * @dataProvider providerTimestamp
      * @param int $timestamp
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testDate(int $timestamp, AProtocol $protocol)
     {
@@ -113,116 +103,17 @@ class StructuresTest extends TestCase
         $this->assertEquals($date, $res[1]->getContent()[0], 'pack ' . $date . ' != ' . $res[1]->getContent()[0]);
     }
 
-    /**
-     * @depends      testInit
-     * @dataProvider providerTimestampTimezone
-     * @param int $timestamp
-     * @param string $timezone
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
-     */
-    public function testDateTime(int $timestamp, string $timezone, AProtocol $protocol)
-    {
-        $timestamp .= '.' . rand(0, 9e5);
-        $datetime = \DateTime::createFromFormat('U.u', $timestamp, new \DateTimeZone($timezone))
-            ->format('Y-m-d\TH:i:s.uP');
+    private string $expectedDateTimeClass = DateTime::class;
+    use DateTimeTrait;
 
-        //unpack
-        $res = iterator_to_array(
-            $protocol->run('RETURN datetime($date)', [
-                'date' => $datetime
-            ], ['mode' => 'r'])
-                ->pull()
-                ->getResponses(),
-            false
-        );
-        $dateTimeStructure = $res[1]->getContent()[0];
-
-        $this->assertInstanceOf(DateTime::class, $dateTimeStructure);
-        $this->assertEquals($datetime, (string)$dateTimeStructure, 'unpack ' . $datetime . ' != ' . $dateTimeStructure);
-
-        //pack
-        $res = iterator_to_array(
-            $protocol
-                ->run('RETURN toString($date)', [
-                    'date' => $dateTimeStructure
-                ], ['mode' => 'r'])
-                ->pull()
-                ->getResponses(),
-            false
-        );
-
-        // neo4j returns fraction of seconds not padded with zeros ... zero timezone offset returns as Z
-        $datetime = preg_replace(["/\.?0+(.\d{2}:\d{2})$/", "/\+00:00$/"], ['$1', 'Z'], $datetime);
-        $this->assertEquals($datetime, $res[1]->getContent()[0], 'pack ' . $datetime . ' != ' . $res[1]->getContent()[0]);
-    }
-
-    /**
-     * @depends      testInit
-     * @dataProvider providerTimestampTimezone
-     * @param int $timestamp
-     * @param string $timezone
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
-     */
-    public function testDateTimeZoneId(int $timestamp, string $timezone, AProtocol $protocol)
-    {
-        try {
-            $timestamp .= '.' . rand(0, 9e5);
-            $datetime = \DateTime::createFromFormat('U.u', $timestamp, new \DateTimeZone($timezone))
-                    ->format('Y-m-d\TH:i:s.u') . '[' . $timezone . ']';
-
-            //unpack
-            $res = iterator_to_array(
-                $protocol
-                    ->run('RETURN datetime($dt)', [
-                        'dt' => $datetime
-                    ], ['mode' => 'r'])
-                    ->pull()
-                    ->getResponses(),
-                false
-            );
-
-            /** @var Response $response */
-            foreach ($res as $response) {
-                if ($response->getSignature() == Response::SIGNATURE_FAILURE) {
-                    throw new Exception($response->getContent()['message']);
-                }
-            }
-
-            $dateTimeZoneIdStructure = $res[1]->getContent()[0];
-
-            $this->assertInstanceOf(DateTimeZoneId::class, $dateTimeZoneIdStructure);
-            $this->assertEquals($datetime, (string)$dateTimeZoneIdStructure, 'unpack ' . $datetime . ' != ' . $dateTimeZoneIdStructure);
-
-            //pack
-            $res = iterator_to_array(
-                $protocol
-                    ->run('RETURN toString($dt)', [
-                        'dt' => $dateTimeZoneIdStructure
-                    ], ['mode' => 'r'])
-                    ->pull()
-                    ->getResponses(),
-                false
-            );
-
-            // neo4j returns fraction of seconds not padded with zeros ... also contains timezone offset before timezone id
-            $datetime = preg_replace("/\.?0+\[/", '[', $datetime);
-            $dateTimeZoneIdStructure = preg_replace("/([+\-]\d{2}:\d{2}|Z)\[/", '[', $res[1]->getContent()[0]);
-            $this->assertEquals($datetime, $dateTimeZoneIdStructure, 'pack ' . $datetime . ' != ' . $dateTimeZoneIdStructure);
-        } catch (Exception $e) {
-            if (strpos($e->getMessage(), 'Invalid value for TimeZone: Text \'' . $timezone . '\'') === 0) {
-                $protocol->reset()->getResponse();
-                $this->markTestSkipped('Test skipped because database is missing timezone ID ' . $timezone);
-            } else {
-                $this->markTestIncomplete($e->getMessage());
-            }
-        }
-    }
+    private string $expectedDateTimeZoneIdClass = DateTimeZoneId::class;
+    use DateTimeZoneIdTrait;
 
     /**
      * @depends      testInit
      * @dataProvider durationProvider
      * @param string $duration
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testDuration(string $duration, AProtocol $protocol)
     {
@@ -271,7 +162,7 @@ class StructuresTest extends TestCase
      * @depends      testInit
      * @dataProvider providerTimestamp
      * @param int $timestamp
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testLocalDateTime(int $timestamp, AProtocol $protocol)
     {
@@ -312,7 +203,7 @@ class StructuresTest extends TestCase
      * @depends      testInit
      * @dataProvider providerTimestamp
      * @param int $timestamp
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testLocalTime(int $timestamp, AProtocol $protocol)
     {
@@ -351,7 +242,7 @@ class StructuresTest extends TestCase
 
     /**
      * @depends testInit
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testNode(AProtocol $protocol)
     {
@@ -360,12 +251,16 @@ class StructuresTest extends TestCase
         //unpack
         $res = iterator_to_array(
             $protocol
-                ->run('CREATE (a:Test) RETURN a')
+                ->run('CREATE (a:Test { param1: 123 }) RETURN a, ID(a)')
                 ->pull()
                 ->getResponses(),
             false
         );
         $this->assertInstanceOf(Node::class, $res[1]->getContent()[0]);
+
+        $this->assertEquals($res[1]->getContent()[1], $res[1]->getContent()[0]->id());
+        $this->assertEquals(['Test'], $res[1]->getContent()[0]->labels());
+        $this->assertEquals(['param1' => 123], $res[1]->getContent()[0]->properties());
 
         //pack not supported
 
@@ -374,7 +269,7 @@ class StructuresTest extends TestCase
 
     /**
      * @depends testInit
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testPath(AProtocol $protocol)
     {
@@ -383,15 +278,20 @@ class StructuresTest extends TestCase
         //unpack
         $res = iterator_to_array(
             $protocol
-                ->run('CREATE p=(:Test)-[:HAS]->(:Test) RETURN p')
+                ->run('CREATE p=(:Test)-[r:HAS { param1: 123 }]->(:Test) RETURN p, ID(r)')
                 ->pull()
                 ->getResponses(),
             false
         );
         $this->assertInstanceOf(Path::class, $res[1]->getContent()[0]);
 
-        foreach ($res[1]->getContent()[0]->rels() as $rel)
+        foreach ($res[1]->getContent()[0]->rels() as $rel) {
             $this->assertInstanceOf(UnboundRelationship::class, $rel);
+
+            $this->assertEquals($res[1]->getContent()[1], $rel->id());
+            $this->assertEquals('HAS', $rel->type());
+            $this->assertEquals(['param1' => 123], $rel->properties());
+        }
 
         //pack not supported
 
@@ -400,7 +300,7 @@ class StructuresTest extends TestCase
 
     /**
      * @depends testInit
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testPoint2D(AProtocol $protocol)
     {
@@ -429,7 +329,7 @@ class StructuresTest extends TestCase
 
     /**
      * @depends testInit
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testPoint3D(AProtocol $protocol)
     {
@@ -458,7 +358,7 @@ class StructuresTest extends TestCase
 
     /**
      * @depends testInit
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testRelationship(AProtocol $protocol)
     {
@@ -467,12 +367,18 @@ class StructuresTest extends TestCase
         //unpack
         $res = iterator_to_array(
             $protocol
-                ->run('CREATE (:Test)-[rel:HAS]->(:Test) RETURN rel')
+                ->run('CREATE (a:Test)-[rel:HAS { param1: 123 }]->(b:Test) RETURN rel, ID(rel), ID(a), ID(b)')
                 ->pull()
                 ->getResponses(),
             false
         );
         $this->assertInstanceOf(Relationship::class, $res[1]->getContent()[0]);
+
+        $this->assertEquals($res[1]->getContent()[1], $res[1]->getContent()[0]->id());
+        $this->assertEquals('HAS', $res[1]->getContent()[0]->type());
+        $this->assertEquals(['param1' => 123], $res[1]->getContent()[0]->properties());
+        $this->assertEquals($res[1]->getContent()[2], $res[1]->getContent()[0]->startNodeId());
+        $this->assertEquals($res[1]->getContent()[3], $res[1]->getContent()[0]->endNodeId());
 
         //pack not supported
 
@@ -484,7 +390,7 @@ class StructuresTest extends TestCase
      * @dataProvider providerTimestampTimezone
      * @param int $timestamp
      * @param string $timezone
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testTime(int $timestamp, string $timezone, AProtocol $protocol)
     {
@@ -522,67 +428,4 @@ class StructuresTest extends TestCase
         $time = preg_replace(["/\.?0+(.\d{2}:\d{2})$/", "/\+00:00$/"], ['$1', 'Z'], $time);
         $this->assertEquals($time, $res[1]->getContent()[0], 'pack ' . $time . ' != ' . $res[1]->getContent()[0]);
     }
-
-    public function providerTimestamp(): \Generator
-    {
-        for ($i = 0; $i < self::$iterations; $i++) {
-            $ts = $this->randomTimestamp();
-            yield 'ts: ' . $ts => [$ts];
-        }
-    }
-
-    public function providerTimestampTimezone(): \Generator
-    {
-        for ($i = 0; $i < self::$iterations; $i++) {
-            $tz = \DateTimeZone::listIdentifiers()[array_rand(\DateTimeZone::listIdentifiers())];
-            $ts = $this->randomTimestamp($tz);
-            yield 'ts: ' . $ts . ' tz: ' . $tz => [$ts, $tz];
-        }
-    }
-
-    /**
-     * @param string $timezone
-     * @return int
-     */
-    private function randomTimestamp(string $timezone = '+0000'): int
-    {
-        try {
-            $zone = new \DateTimeZone($timezone);
-            $start = new \DateTime(date('Y-m-d H:i:s', strtotime('-10 years', 0)), $zone);
-            $end = new \DateTime(date('Y-m-d H:i:s', strtotime('+10 years', 0)), $zone);
-            return rand($start->getTimestamp(), $end->getTimestamp());
-        } catch (Exception $e) {
-            return strtotime('now ' . $timezone);
-        }
-    }
-
-    /**
-     * @depends      testInit
-     * @dataProvider providerByteArray
-     * @param \Bolt\PackStream\Bytes $arr
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
-     */
-    public function testByteArray(Bytes $arr, AProtocol $protocol)
-    {
-        $res = iterator_to_array(
-            $protocol
-                ->run('RETURN $arr', ['arr' => $arr])
-                ->pull()
-                ->getResponses(),
-            false
-        );
-        $this->assertEquals($arr, $res[1]->getContent()[0]);
-    }
-
-    public function providerByteArray(): \Generator
-    {
-        foreach ([1, 200, 60000, 70000] as $size) {
-            $arr = new Bytes();
-            while (count($arr) < $size) {
-                $arr[] = pack('H', mt_rand(0, 255));
-            }
-            yield 'bytes: ' . count($arr) => [$arr];
-        }
-    }
-
 }

@@ -16,9 +16,6 @@ use PHPUnit\Framework\TestCase;
  * @covers \Bolt\error\UnpackException
  *
  * @package Bolt\tests
- * @requires PHP >= 7.1
- * @requires extension sockets
- * @requires extension mbstring
  */
 class ErrorsTest extends TestCase
 {

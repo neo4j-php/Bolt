@@ -17,9 +17,6 @@ use PHPUnit\Framework\TestCase;
  * @covers \Bolt\PackStream\v1\Unpacker
  *
  * @package Bolt\tests\PackStream\v1
- * @requires PHP >= 7.1
- * @requires extension mbstring
- * @requires extension json
  */
 class UnpackerTest extends TestCase
 {
@@ -31,7 +28,6 @@ class UnpackerTest extends TestCase
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
@@ -43,7 +39,7 @@ class UnpackerTest extends TestCase
 
     /**
      * @depends testInit
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testNull(AProtocol $protocol)
     {
@@ -61,7 +57,7 @@ class UnpackerTest extends TestCase
 
     /**
      * @depends testInit
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testBoolean(AProtocol $protocol)
     {
@@ -81,7 +77,7 @@ class UnpackerTest extends TestCase
 
     /**
      * @depends testInit
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testInteger(AProtocol $protocol)
     {
@@ -102,7 +98,7 @@ class UnpackerTest extends TestCase
 
     /**
      * @depends testInit
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testFloat(AProtocol $protocol)
     {
@@ -127,7 +123,7 @@ class UnpackerTest extends TestCase
      * @depends      testInit
      * @dataProvider stringProvider
      * @param string $str
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testString(string $str, AProtocol $protocol)
     {
@@ -162,7 +158,7 @@ class UnpackerTest extends TestCase
      * @depends      testInit
      * @dataProvider listProvider
      * @param int $size
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testList(int $size, AProtocol $protocol)
     {
@@ -190,10 +186,21 @@ class UnpackerTest extends TestCase
      * @dataProvider dictionaryProvider
      * @param string $query
      * @param int $size
-     * @param AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol
+     * @param AProtocol $protocol
      */
     public function testDictionary(string $query, int $size, AProtocol $protocol)
     {
+        $apocRequest = iterator_to_array(
+            $protocol
+                ->run('SHOW PROCEDURES YIELD name WHERE name STARTS WITH "apoc." RETURN count(*) > 0 AS apoc')
+                ->pull()
+                ->getResponses(),
+            false
+        );
+        if (!$apocRequest[1]->getContent()[0]) {
+            $this->markTestSkipped('Neo4j not running with apoc');
+        }
+
         $gen = $protocol
             ->run($query, [], ['mode' => 'r'])
             ->pull()
@@ -203,6 +210,8 @@ class UnpackerTest extends TestCase
         foreach ($gen as $response) {
             if ($response->getSignature() == Response::SIGNATURE_RECORD) {
                 $this->assertCount($size, $response->getContent()[0]);
+            } elseif ($response->getSignature() == Response::SIGNATURE_FAILURE) {
+                $this->markTestIncomplete(print_r($response->getContent(), true));
             }
         }
     }
