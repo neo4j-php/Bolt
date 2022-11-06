@@ -1,6 +1,6 @@
 <?php
 
-namespace Bolt\tests\structures\v4_4;
+namespace Bolt\tests\structures\v4_3;
 
 use Bolt\Bolt;
 use Bolt\protocol\AProtocol;
@@ -26,7 +26,7 @@ use Bolt\tests\structures\v1\{
  * @covers \Bolt\packstream\v1\Packer
  * @covers \Bolt\packstream\v1\Unpacker
  *
- * @package Bolt\tests\protocol\v4_4
+ * @package Bolt\tests\protocol\v4_3
  */
 class StructuresTest extends \Bolt\tests\structures\AStructures
 {

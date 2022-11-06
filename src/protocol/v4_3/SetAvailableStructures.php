@@ -1,6 +1,6 @@
 <?php
 
-namespace Bolt\protocol\v4_4;
+namespace Bolt\protocol\v4_3;
 
 use Bolt\protocol\v1\structures\{
     Date,
@@ -28,7 +28,7 @@ use Bolt\protocol\v5\structures\{
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
  * @see https://www.neo4j.com/docs/bolt/current/bolt/structure-semantics/
- * @package Bolt\protocol
+ * @package Bolt\protocol\v4_3
  */
 trait SetAvailableStructures
 {

@@ -12,7 +12,7 @@ namespace Bolt\protocol;
  */
 class V4_3 extends AProtocol
 {
-    use \Bolt\protocol\v1\SetAvailableStructures;
+    use \Bolt\protocol\v4_3\SetAvailableStructures;
 
     use \Bolt\protocol\v1\ResetMessage;
 
