@@ -208,14 +208,7 @@ class UnpackerTest extends TestCase
     public function dictionaryProvider(): \Generator
     {
         foreach ([0, 10, 200, 20000, 70000] as $size) {
-            $str = '';
-            if ($size > 0) {
-                foreach (range(1, $size) as $i) {
-                    $str .= 'n' . $i . ':' . $i . ',';
-                }
-            }
-
-            yield 'dictionary size: ' . $size => ['RETURN {' . rtrim($str, ',') . '} AS a', $size];
+            yield 'dictionary size: ' . $size => ['RETURN apoc.map.fromLists(toStringList(range(1, ' . $size . ')), range(1, ' . $size . '))', $size];
         }
     }
 
