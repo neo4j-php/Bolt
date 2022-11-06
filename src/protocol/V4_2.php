@@ -10,6 +10,20 @@ namespace Bolt\protocol;
  * @see https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-summary-42
  * @package Bolt\protocol
  */
-class V4_2 extends V4_1
+class V4_2 extends AProtocol
 {
+    use \Bolt\protocol\v1\SetAvailableStructures;
+
+    use \Bolt\protocol\v1\ResetMessage;
+
+    use \Bolt\protocol\v3\RunMessage;
+    use \Bolt\protocol\v3\BeginMessage;
+    use \Bolt\protocol\v3\CommitMessage;
+    use \Bolt\protocol\v3\RollbackMessage;
+    use \Bolt\protocol\v3\GoodbyeMessage;
+
+    use \Bolt\protocol\v4\PullMessage;
+    use \Bolt\protocol\v4\DiscardMessage;
+
+    use \Bolt\protocol\v4_1\HelloMessage;
 }

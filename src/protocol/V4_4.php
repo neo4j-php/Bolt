@@ -10,15 +10,22 @@ namespace Bolt\protocol;
  * @see https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-summary-44
  * @package Bolt\protocol
  */
-class V4_4 extends V4_3
+class V4_4 extends AProtocol
 {
-    /**
-     * @inheritDoc
-     */
-    public function route(...$args): array
-    {
-        if (array_key_exists(2, $args))
-            $args[2] = (object)$args[2];
-        return parent::route(...$args);
-    }
+    use \Bolt\protocol\v4_3\SetAvailableStructures;
+
+    use \Bolt\protocol\v1\ResetMessage;
+
+    use \Bolt\protocol\v3\RunMessage;
+    use \Bolt\protocol\v3\BeginMessage;
+    use \Bolt\protocol\v3\CommitMessage;
+    use \Bolt\protocol\v3\RollbackMessage;
+    use \Bolt\protocol\v3\GoodbyeMessage;
+
+    use \Bolt\protocol\v4\PullMessage;
+    use \Bolt\protocol\v4\DiscardMessage;
+
+    use \Bolt\protocol\v4_1\HelloMessage;
+
+    use \Bolt\protocol\v4_4\RouteMessage;
 }

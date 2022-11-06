@@ -4,7 +4,7 @@ namespace Bolt;
 
 use Bolt\error\{ConnectException, PackException, UnpackException};
 use Exception;
-use Bolt\PackStream\{IPacker, IUnpacker};
+use Bolt\packstream\{IPacker, IUnpacker};
 use Bolt\protocol\{AProtocol, ServerState};
 use Bolt\connection\IConnection;
 
@@ -34,7 +34,7 @@ final class Bolt
     public function __construct(IConnection $connection)
     {
         $this->connection = $connection;
-        $this->setProtocolVersions(4.4, 4.3, 4.2, 3);
+        $this->setProtocolVersions(5.1, 5.0, 4.4, 4.3);
         $this->setPackStreamVersion();
     }
 
@@ -87,13 +87,13 @@ final class Bolt
      */
     public function setPackStreamVersion(int $version = 1): Bolt
     {
-        $packerClass = "\\Bolt\\PackStream\\v" . $version . "\\Packer";
+        $packerClass = "\\Bolt\\packstream\\v" . $version . "\\Packer";
         if (!class_exists($packerClass)) {
             throw new PackException('Requested PackStream version (' . $version . ') not yet implemented');
         }
         $this->packer = new $packerClass();
 
-        $unpackerClass = "\\Bolt\\PackStream\\v" . $version . "\\Unpacker";
+        $unpackerClass = "\\Bolt\\packstream\\v" . $version . "\\Unpacker";
         if (!class_exists($unpackerClass)) {
             throw new UnpackException('Requested PackStream version (' . $version . ') not yet implemented');
         }

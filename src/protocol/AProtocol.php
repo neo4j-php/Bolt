@@ -2,7 +2,7 @@
 
 namespace Bolt\protocol;
 
-use Bolt\PackStream\{IPacker, IUnpacker};
+use Bolt\packstream\{IPacker, IUnpacker};
 use Bolt\connection\IConnection;
 use Exception;
 
@@ -15,16 +15,14 @@ use Exception;
  */
 abstract class AProtocol
 {
-    protected const SUCCESS = 0x70;
-    protected const FAILURE = 0x7F;
-    protected const IGNORED = 0x7E;
-    protected const RECORD = 0x71;
-
     protected IPacker $packer;
     protected IUnpacker $unpacker;
     protected IConnection $connection;
 
     public ServerState $serverState;
+
+    /** @var string[] */
+    protected array $pipelinedMessages = [];
 
     /**
      * AProtocol constructor.
@@ -39,6 +37,10 @@ abstract class AProtocol
         $this->unpacker = $unpacker;
         $this->connection = $connection;
         $this->serverState = $serverState;
+
+        if (method_exists($this, 'setAvailableStructures')) {
+            $this->setAvailableStructures();
+        }
     }
 
     /**
@@ -74,6 +76,11 @@ abstract class AProtocol
         if (!empty($msg)) {
             $output = $this->unpacker->unpack($msg);
             $signature = $this->unpacker->getSignature();
+
+            if ($signature == Response::SIGNATURE_FAILURE)
+                $this->serverState->set(ServerState::FAILED);
+            elseif ($signature == Response::SIGNATURE_IGNORED)
+                $this->serverState->set(ServerState::INTERRUPTED);
         }
 
         return $output;
@@ -90,5 +97,34 @@ abstract class AProtocol
         }
 
         trigger_error('Protocol version class name is not valid', E_USER_ERROR);
+    }
+
+    /**
+     * Read responses from host output buffer.
+     * @return \Iterator|Response[]
+     */
+    public function getResponses(): \Iterator
+    {
+        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
+        while (count($this->pipelinedMessages) > 0) {
+            $message = reset($this->pipelinedMessages);
+            yield from $this->{'_' . $message}();
+            array_shift($this->pipelinedMessages);
+        }
+    }
+
+    /**
+     * Read one response from host output buffer
+     * @return Response
+     */
+    public function getResponse(): Response
+    {
+        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
+        $message = reset($this->pipelinedMessages);
+        /** @var Response $response */
+        $response = $this->{'_' . $message}()->current();
+        if ($response->getSignature() != Response::SIGNATURE_RECORD)
+            array_shift($this->pipelinedMessages);
+        return $response;
     }
 }

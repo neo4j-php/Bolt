@@ -2,11 +2,6 @@
 
 namespace Bolt\protocol;
 
-use Bolt\error\IgnoredException;
-use Bolt\error\MessageException;
-use Bolt\error\PackException;
-use Exception;
-
 /**
  * Class Protocol version 4.3
  *
@@ -15,38 +10,22 @@ use Exception;
  * @see https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-summary-43
  * @package Bolt\protocol
  */
-class V4_3 extends V4_2
+class V4_3 extends AProtocol
 {
-    /**
-     * Send ROUTE message
-     * The ROUTE instructs the server to return the current routing table. In previous versions there was no explicit message for this and a procedure had to be invoked using Cypher through the RUN and PULL messages.
-     *
-     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-route
-     * @param array|string|null ...$args
-     * @return array
-     * @throws Exception
-     */
-    public function route(...$args): array
-    {
-        $this->serverState->is(ServerState::READY);
+    use \Bolt\protocol\v4_3\SetAvailableStructures;
 
-        if (count($args) != 3) {
-            throw new PackException('Wrong arguments count');
-        }
+    use \Bolt\protocol\v1\ResetMessage;
 
-        $this->write($this->packer->pack(0x66, (object)$args[0], $args[1], $args[2]));
-        $message = $this->read($signature);
+    use \Bolt\protocol\v3\RunMessage;
+    use \Bolt\protocol\v3\BeginMessage;
+    use \Bolt\protocol\v3\CommitMessage;
+    use \Bolt\protocol\v3\RollbackMessage;
+    use \Bolt\protocol\v3\GoodbyeMessage;
 
-        if ($signature === self::FAILURE) {
-            $this->serverState->set(ServerState::FAILED);
-            throw new MessageException($message['message'], $message['code']);
-        }
+    use \Bolt\protocol\v4\PullMessage;
+    use \Bolt\protocol\v4\DiscardMessage;
 
-        if ($signature == self::IGNORED) {
-            $this->serverState->set(ServerState::INTERRUPTED);
-            throw new IgnoredException(__FUNCTION__);
-        }
+    use \Bolt\protocol\v4_1\HelloMessage;
 
-        return $message;
-    }
+    use \Bolt\protocol\v4_3\RouteMessage;
 }

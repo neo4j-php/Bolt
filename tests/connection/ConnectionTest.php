@@ -3,15 +3,13 @@
 namespace Bolt\tests\connection;
 
 use Bolt\Bolt;
+use Bolt\protocol\Response;
 use Bolt\connection\{
     IConnection,
     Socket,
     StreamSocket
 };
-use Bolt\error\{
-    ConnectionTimeoutException,
-    MessageException
-};
+use Bolt\error\ConnectionTimeoutException;
 use Bolt\helpers\Auth;
 use PHPUnit\Framework\TestCase;
 
@@ -25,8 +23,6 @@ use PHPUnit\Framework\TestCase;
  * @covers \Bolt\connection\StreamSocket
  *
  * @package Bolt\tests\connection
- * @requires PHP >= 7.1
- * @requires extension sockets
  */
 final class ConnectionTest extends TestCase
 {
@@ -46,10 +42,13 @@ final class ConnectionTest extends TestCase
     {
         $conn = $this->getConnection($alias);
         $conn->setTimeout(1.5);
+        /** @var \Bolt\protocol\AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol */
         $protocol = (new Bolt($conn))->build();
-        $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         $this->expectException(ConnectionTimeoutException::class);
-        $protocol->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )');
+        $protocol
+            ->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )')
+            ->getResponse();
     }
 
     /**
@@ -60,10 +59,13 @@ final class ConnectionTest extends TestCase
     public function testLongNoTimeout(string $alias)
     {
         $conn = $this->getConnection($alias);
+        /** @var \Bolt\protocol\AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol */
         $protocol = (new Bolt($conn))->build();
-        $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         $conn->setTimeout(200);
-        $protocol->run('CALL apoc.util.sleep(150000)', [], ['mode' => 'r', 'tx_timeout' => 120000]);
+        $protocol
+            ->run('CALL apoc.util.sleep(150000)', [], ['mode' => 'r', 'tx_timeout' => 120000])
+            ->getResponse();
     }
 
     /**
@@ -74,10 +76,13 @@ final class ConnectionTest extends TestCase
     {
         $conn = $this->getConnection($alias);
         $conn->setTimeout(1);
+        /** @var \Bolt\protocol\AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol */
         $protocol = (new Bolt($conn))->build();
-        $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         $this->expectException(ConnectionTimeoutException::class);
-        $protocol->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )');
+        $protocol
+            ->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )')
+            ->getResponse();
     }
 
     /**
@@ -87,13 +92,19 @@ final class ConnectionTest extends TestCase
     public function testTimeoutRecoverAndReset(string $alias)
     {
         $conn = $this->getConnection($alias);
+        /** @var \Bolt\protocol\AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol */
         $protocol = (new Bolt($conn))->build();
-        $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 
         $conn->setTimeout(1.5);
         $time = microtime(true);
         try {
-            $protocol->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )');
+            iterator_to_array(
+                $protocol
+                    ->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )')
+                    ->pull()
+                    ->getResponse(),
+                false);
             $this->fail('No timeout error triggered');
         } catch (ConnectionTimeoutException $e) {
             $newTime = microtime(true);
@@ -101,17 +112,21 @@ final class ConnectionTest extends TestCase
         }
 
         $conn->setTimeout(15.0);
-        try {
-            $protocol->reset();
-        } catch (MessageException $e) {
-            $protocol = (new Bolt($conn))->build();
-            $protocol->init(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
-        }
+        $response = $protocol
+            ->reset()
+            ->getResponse();
+
+        $this->assertEquals(Response::SIGNATURE_FAILURE, $response->getSignature());
+        /** @var \Bolt\protocol\AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol */
+        $protocol = (new Bolt($conn))->build();
+        $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 
         $conn->setTimeout(1.5);
         $time = microtime(true);
         try {
-            $protocol->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )');
+            $protocol
+                ->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )')
+                ->getResponse();
             $this->fail('No timeout error triggered');
         } catch (ConnectionTimeoutException $e) {
             $newTime = microtime(true);

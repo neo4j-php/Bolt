@@ -6,6 +6,7 @@ use Bolt\Bolt;
 use Bolt\protocol\AProtocol;
 use Exception;
 use PHPUnit\Framework\TestCase;
+use Bolt\protocol\{Response, V4_3, V4_4};
 
 /**
  * Class BoltTest
@@ -18,23 +19,15 @@ use PHPUnit\Framework\TestCase;
  * @covers \Bolt\connection\Socket
  * @covers \Bolt\connection\StreamSocket
  * @covers \Bolt\helpers\Auth
- * @covers \Bolt\PackStream\v1\Packer
- * @covers \Bolt\PackStream\v1\Unpacker
+ * @covers \Bolt\packstream\v1\Packer
+ * @covers \Bolt\packstream\v1\Unpacker
  * @covers \Bolt\protocol\AProtocol
- * @covers \Bolt\protocol\V1
- * @covers \Bolt\protocol\V2
- * @covers \Bolt\protocol\V3
- * @covers \Bolt\protocol\V4
- * @covers \Bolt\protocol\V4_1
- * @covers \Bolt\protocol\V4_2
  * @covers \Bolt\protocol\V4_3
  * @covers \Bolt\protocol\V4_4
+ * @covers \Bolt\protocol\Response
  * @covers \Bolt\protocol\ServerState
  *
  * @package Bolt\tests
- * @requires PHP >= 7.1
- * @requires extension sockets
- * @requires extension mbstring
  */
 class BoltTest extends TestCase
 {
@@ -44,48 +37,39 @@ class BoltTest extends TestCase
         if (!extension_loaded('sockets'))
             $this->markTestSkipped('Sockets extension not available');
 
-        try {
-            $conn = new \Bolt\connection\Socket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687, 3);
-            $this->assertInstanceOf(\Bolt\connection\Socket::class, $conn);
+        $conn = new \Bolt\connection\Socket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687, 3);
+        $this->assertInstanceOf(\Bolt\connection\Socket::class, $conn);
 
-            $bolt = new Bolt($conn);
-            $this->assertInstanceOf(Bolt::class, $bolt);
+        $bolt = new Bolt($conn);
+        $this->assertInstanceOf(Bolt::class, $bolt);
 
-            $protocol = $bolt->build();
-            $this->assertInstanceOf(AProtocol::class, $protocol);
+        /** @var V4_3|V4_4 $protocol */
+        $protocol = $bolt->build();
+        $this->assertInstanceOf(AProtocol::class, $protocol);
 
-            $this->assertIsArray($protocol->init(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
+        $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
 
-            if (method_exists($protocol, 'goodbye'))
-                $protocol->goodbye();
-            else
-                $conn->disconnect();
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $protocol->goodbye();
     }
 
     public function testAura()
     {
-        try {
-            $conn = new \Bolt\connection\StreamSocket('neo4j+s://demo.neo4jlabs.com');
-            $conn->setSslContextOptions([
-                'verify_peer' => true
-            ]);
-            $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
+        $conn = new \Bolt\connection\StreamSocket('neo4j+s://demo.neo4jlabs.com');
+        $conn->setSslContextOptions([
+            'verify_peer' => true
+        ]);
+        $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
 
-            $bolt = new Bolt($conn);
-            $this->assertInstanceOf(Bolt::class, $bolt);
+        $bolt = new Bolt($conn);
+        $this->assertInstanceOf(Bolt::class, $bolt);
 
-            $protocol = $bolt->build();
-            $this->assertInstanceOf(AProtocol::class, $protocol);
+        /** @var V4_3|V4_4 $protocol */
+        $protocol = $bolt->build();
+        $this->assertInstanceOf(AProtocol::class, $protocol);
 
-            $this->assertIsArray($protocol->hello(\Bolt\helpers\Auth::basic('movies', 'movies')));
+        $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic('movies', 'movies'))->getSignature());
 
-            $protocol->goodbye();
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $protocol->goodbye();
     }
 
     /**
@@ -93,60 +77,57 @@ class BoltTest extends TestCase
      */
     public function testHello(): AProtocol
     {
-        try {
-            $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
-            $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
+        $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
+        $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
 
-            $bolt = new Bolt($conn);
-            $this->assertInstanceOf(Bolt::class, $bolt);
+        $bolt = new Bolt($conn);
+        $this->assertInstanceOf(Bolt::class, $bolt);
 
-            $protocol = $bolt->build();
-            $this->assertInstanceOf(AProtocol::class, $protocol);
+        /** @var V4_3|V4_4 $protocol */
+        $protocol = $bolt->build();
+        $this->assertInstanceOf(AProtocol::class, $protocol);
 
-            $this->assertNotEmpty($protocol->init(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
+        $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
 
-            return $protocol;
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        return $protocol;
     }
 
     /**
      * @depends testHello
-     * @param AProtocol $protocol
+     * @param AProtocol|V4_3|V4_4 $protocol
      */
     public function testPull(AProtocol $protocol)
     {
-        try {
-            $res = $protocol->run('RETURN 1 AS num, 2 AS cnt', [], ['mode' => 'r']);
-            $this->assertIsArray($res);
-            $this->assertArrayHasKey('fields', $res);
+        $protocol
+            ->run('RETURN 1 AS num, 2 AS cnt', [], ['mode' => 'r'])
+            ->pull();
 
-            $res = $protocol->pullAll();
-            $this->assertEquals(1, $res[0][0] ?? 0);
-            $this->assertEquals(2, $res[0][1] ?? 0);
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $this->assertArrayHasKey('fields', $protocol->getResponse()->getContent());
+
+        $res = $protocol->getResponse()->getContent();
+        $this->assertEquals(1, $res[0] ?? 0);
+        $this->assertEquals(2, $res[1] ?? 0);
     }
 
     /**
      * @depends testHello
-     * @param AProtocol $protocol
+     * @param AProtocol|V4_3|V4_4 $protocol
      */
     public function testDiscard(AProtocol $protocol)
     {
-        try {
-            $this->assertNotFalse($protocol->run('MATCH (a:Test) RETURN *', [], ['mode' => 'r']));
-            $this->assertIsArray($protocol->discardAll());
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
+        $gen = $protocol
+            ->run('MATCH (a:Test) RETURN *', [], ['mode' => 'r'])
+            ->discard()
+            ->getResponses();
+
+        foreach ($gen as $response) {
+            $this->assertEquals(Response::SIGNATURE_SUCCESS, $response->getSignature());
         }
     }
 
     /**
      * @depends testHello
-     * @param AProtocol $protocol
+     * @param AProtocol|V4_3|V4_4 $protocol
      * @throws Exception
      */
     public function testTransaction(AProtocol $protocol)
@@ -155,40 +136,47 @@ class BoltTest extends TestCase
             $this->markTestSkipped('Old Neo4j version does not support transactions');
         }
 
-        try {
-            $this->assertIsArray($protocol->begin());
-            $this->assertIsArray($protocol->run('CREATE (a:Test) RETURN a, ID(a)'));
-            $created = $protocol->pullAll();
-            $this->assertIsArray($created);
-            $this->assertIsArray($protocol->rollback());
+        $res = iterator_to_array(
+            $protocol
+                ->begin()
+                ->run('CREATE (a:Test) RETURN a, ID(a)')
+                ->pull()
+                ->rollback()
+                ->getResponses(),
+            false
+        );
 
-            $this->assertIsArray($protocol->run('MATCH (a:Test) WHERE ID(a) = '
-                . (version_compare($protocol->getVersion(), 4, '<') ? '{a}' : '$a')
-                . ' RETURN COUNT(a)', [
-                'a' => $created[0][1]
-            ]));
-            $res = $protocol->pullAll();
-            $this->assertIsArray($res);
-            $this->assertEquals(0, $res[0][0]);
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $id = $res[2]->getContent()[1];
+        $this->assertIsInt($id);
+
+        $res = iterator_to_array(
+            $protocol
+                ->run('MATCH (a:Test) WHERE ID(a) = '
+                    . (version_compare($protocol->getVersion(), 4, '<') ? '{a}' : '$a')
+                    . ' RETURN COUNT(a)', [
+                    'a' => $id
+                ])
+                ->pull()
+                ->getResponses(),
+            false
+        );
+
+        $this->assertEquals(0, $res[1]->getContent()[0]);
     }
 
     /**
      * @depends testHello
-     * @param AProtocol $protocol
+     * @param AProtocol|V4_3|V4_4 $protocol
      */
     public function testRoute(AProtocol $protocol): void
     {
         if (version_compare($protocol->getVersion(), 4.3, '>=')) {
-            try {
-                self::assertIsArray($protocol->route([
+            $response = $protocol
+                ->route([
                     'address' => ($GLOBALS['NEO_HOST'] ?? '127.0.0.1') . ':' . ($GLOBALS['NEO_PORT'] ?? 7687)
-                ], [], []));
-            } catch (Exception $e) {
-                $this->markTestIncomplete($e->getMessage());
-            }
+                ])
+                ->getResponse();
+            $this->assertEquals(Response::SIGNATURE_SUCCESS, $response->getSignature());
         } else {
             $this->markTestSkipped('Old Neo4j version does not support route message');
         }
@@ -196,46 +184,44 @@ class BoltTest extends TestCase
 
     /**
      * @depends testHello
-     * @param AProtocol $protocol
+     * @param AProtocol|V4_3|V4_4 $protocol
      */
     public function testReset(AProtocol $protocol): void
     {
-        try {
-            $this->assertIsArray($protocol->reset());
-        } catch (Exception $e) {
-            $this->markTestIncomplete($e->getMessage());
-        }
+        $response = $protocol
+            ->reset()
+            ->getResponse();
+        $this->assertEquals(Response::SIGNATURE_SUCCESS, $response->getSignature());
     }
 
     /**
      * @large
      * @depends testHello
-     * @param AProtocol $protocol
+     * @param AProtocol|V4_3|V4_4 $protocol
      * @throws Exception
      */
     public function testChunking(AProtocol $protocol)
     {
-        $protocol->begin();
-        $protocol->run('CREATE (a:Test) RETURN ID(a)');
-        $result = $protocol->pullAll();
+        $gen = $protocol
+            ->begin()
+            ->run('CREATE (a:Test) RETURN ID(a)')
+            ->pull()
+            ->getResponses();
+        $id = iterator_to_array($gen, false)[2]->getContent()[0];
 
         $data = [];
         while (strlen(serialize($data)) < 65535 * 2) {
             $data[base64_encode(random_bytes(32))] = base64_encode(random_bytes(128));
-            try {
-                $run = $protocol->run('MATCH (a:Test) WHERE ID(a) = $id SET a += $data RETURN a', [
-                    'id' => $result[0][0],
+            $gen = $protocol
+                ->run('MATCH (a:Test) WHERE ID(a) = $id SET a += $data RETURN a', [
+                    'id' => $id,
                     'data' => (object)$data
-                ]);
-                $this->assertIsArray($run);
-
-                $pull = $protocol->pullAll();
-                $this->assertIsArray($pull);
-                $this->assertInstanceOf(\Bolt\structures\Node::class, $pull[0][0]);
-                $this->assertCount(count($data), $pull[0][0]->properties());
-            } catch (Exception $e) {
-                $this->markTestIncomplete();
-            }
+                ])
+                ->pull()
+                ->getResponses();
+            $result = iterator_to_array($gen, false);
+            $this->assertInstanceOf(\Bolt\protocol\v1\structures\Node::class, $result[1]->getContent()[0]);
+            $this->assertCount(count($data), $result[1]->getContent()[0]->properties());
         }
 
         $protocol->rollback();
@@ -243,7 +229,7 @@ class BoltTest extends TestCase
 
     /**
      * @depends testHello
-     * @param AProtocol $protocol
+     * @param AProtocol|V4_3|V4_4 $protocol
      */
     public function testServerStateMismatchCallback(AProtocol $protocol)
     {
@@ -253,6 +239,7 @@ class BoltTest extends TestCase
         };
 
         $this->expectException(Exception::class);
-        $protocol->run('RETURN 1 as num');
+        $gen = $protocol->run('RETURN 1 as num')->getResponses();
+        iterator_to_array($gen, false);
     }
 }
