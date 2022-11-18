@@ -33,11 +33,11 @@ class StreamSocket extends AConnection
     public function setSslContextOptions(array $options = [])
     {
         $this->sslContextOptions = $options;
-        $this->autoSSL = false;
+        $this->setAutoSslContextOptions(false);
     }
 
     /**
-     * Enable auto resolving SSL context options
+     * Enable or disable auto resolving SSL context options
      */
     public function setAutoSslContextOptions(bool $auto = true)
     {
