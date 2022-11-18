@@ -41,6 +41,9 @@ class ServerState
      */
     public const STREAMING = 'STREAMING';
 
+    /**
+     * When transaction started
+     */
     public const TX_READY = 'TX_READY';
 
     /**
