@@ -17,7 +17,7 @@ use Bolt\error\ConnectionTimeoutException;
 class StreamSocket extends AConnection
 {
     private array $sslContextOptions = [];
-    private bool $autoSSL = true;
+    private bool $autoSSL = false;
 
     /**
      * @var resource
@@ -26,17 +26,25 @@ class StreamSocket extends AConnection
 
     /**
      * Set SSL Context options
+     * It will disable auto resolving SSL context options
      * @link https://www.php.net/manual/en/context.ssl.php
-     * @param array $options
+     * @param array $options If you pass empty array it won't use SSL
      */
-    public function setSslContextOptions(array $options)
+    public function setSslContextOptions(array $options = [])
     {
         $this->sslContextOptions = $options;
         $this->autoSSL = false;
     }
 
     /**
-     * ConnectException
+     * Enable auto resolving SSL context options
+     */
+    public function setAutoSslContextOptions(bool $auto = true)
+    {
+        $this->autoSSL = $auto;
+    }
+
+    /**
      * @return bool
      * @throws ConnectException
      */
@@ -84,19 +92,26 @@ class StreamSocket extends AConnection
      */
     private function enableSSL()
     {
-        if ($this->autoSSL || !empty($this->sslContextOptions)) {
+        if (!empty($this->sslContextOptions)) {
+            $enableCrypto = @stream_socket_enable_crypto($this->stream, true, STREAM_CRYPTO_METHOD_ANY_CLIENT);
+            if (!$enableCrypto === false) {
+                throw new ConnectException('Enable encryption error');
+            }
+        }
+
+        if ($this->autoSSL) {
             $enableCrypto = @stream_socket_enable_crypto($this->stream, true, STREAM_CRYPTO_METHOD_ANY_CLIENT);
 
-            if ($this->autoSSL) {
-                if ($enableCrypto === true) {
-                    $this->autoSSL();
-                } elseif (feof($this->stream)) {
-                    $this->createStreamSocketClient(stream_context_create([
-                        'socket' => [
-                            'tcp_nodelay' => true,
-                        ]
-                    ]));
-                }
+            if ($enableCrypto === true) {
+                $this->autoSSL();
+            } elseif (feof($this->stream)) {
+                //if you try to enable crypto on stream where is not supported you are forcefully disconnected
+                //because we used autoSSL we just reconnect without SSL
+                $this->createStreamSocketClient(stream_context_create([
+                    'socket' => [
+                        'tcp_nodelay' => true,
+                    ]
+                ]));
             }
         }
     }
