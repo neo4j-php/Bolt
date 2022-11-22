@@ -112,8 +112,7 @@ final class Bolt
         if (self::$debug)
             echo 'HANDSHAKE';
 
-        $this->connection->write(chr(0x60) . chr(0x60) . chr(0xb0) . chr(0x17));
-        $this->connection->write($this->packProtocolVersions());
+        $this->connection->write(chr(0x60) . chr(0x60) . chr(0xb0) . chr(0x17) . $this->packProtocolVersions());
 
         $bytes = $this->connection->read(4);
         if ($bytes == 'HTTP')
