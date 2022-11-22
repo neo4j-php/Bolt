@@ -34,7 +34,7 @@ final class Bolt
     public function __construct(IConnection $connection)
     {
         $this->connection = $connection;
-        $this->setProtocolVersions(5.2, 5.1, 5, 4.4);
+        $this->setProtocolVersions(5, 4.4, 4.3);
         $this->setPackStreamVersion();
     }
 

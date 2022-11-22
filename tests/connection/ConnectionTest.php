@@ -3,7 +3,13 @@
 namespace Bolt\tests\connection;
 
 use Bolt\Bolt;
-use Bolt\protocol\Response;
+use Bolt\protocol\{
+    AProtocol,
+    Response,
+    V4_3,
+    V4_4,
+    V5
+};
 use Bolt\connection\{
     IConnection,
     Socket,
@@ -42,7 +48,7 @@ final class ConnectionTest extends TestCase
     {
         $conn = $this->getConnection($alias);
         $conn->setTimeout(1.5);
-        /** @var \Bolt\protocol\AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol */
+        /** @var AProtocol|V4_3|V4_4|V5 $protocol */
         $protocol = (new Bolt($conn))->build();
         $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         $this->expectException(ConnectionTimeoutException::class);
@@ -59,7 +65,7 @@ final class ConnectionTest extends TestCase
     public function testLongNoTimeout(string $alias)
     {
         $conn = $this->getConnection($alias);
-        /** @var \Bolt\protocol\AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol */
+        /** @var AProtocol|V4_3|V4_4|V5 $protocol */
         $protocol = (new Bolt($conn))->build();
         $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         $conn->setTimeout(200);
@@ -76,7 +82,7 @@ final class ConnectionTest extends TestCase
     {
         $conn = $this->getConnection($alias);
         $conn->setTimeout(1);
-        /** @var \Bolt\protocol\AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol */
+        /** @var AProtocol|V4_3|V4_4|V5 $protocol */
         $protocol = (new Bolt($conn))->build();
         $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
         $this->expectException(ConnectionTimeoutException::class);
@@ -92,7 +98,7 @@ final class ConnectionTest extends TestCase
     public function testTimeoutRecoverAndReset(string $alias)
     {
         $conn = $this->getConnection($alias);
-        /** @var \Bolt\protocol\AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol */
+        /** @var AProtocol|V4_3|V4_4|V5 $protocol */
         $protocol = (new Bolt($conn))->build();
         $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 
@@ -117,7 +123,7 @@ final class ConnectionTest extends TestCase
             ->getResponse();
 
         $this->assertEquals(Response::SIGNATURE_FAILURE, $response->getSignature());
-        /** @var \Bolt\protocol\AProtocol|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4 $protocol */
+        /** @var AProtocol|V4_3|V4_4|V5 $protocol */
         $protocol = (new Bolt($conn))->build();
         $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
 

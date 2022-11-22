@@ -3,8 +3,12 @@
 namespace Bolt\tests\structures\v4_3;
 
 use Bolt\Bolt;
-use Bolt\protocol\AProtocol;
-use Bolt\protocol\Response;
+use Bolt\protocol\{
+    AProtocol,
+    Response,
+    V4_3,
+    V4_4
+};
 use Bolt\protocol\v5\structures\{
     DateTime,
     DateTimeZoneId
@@ -38,10 +42,10 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
+        $bolt->setProtocolVersions(4.4, 4.3);
+        /** @var AProtocol|V4_4|V4_3 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
-
-        $bolt->setProtocolVersions(4.4, 4.3);
 
         $extra = \Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
         $extra['patch_bolt'] = ['utc'];

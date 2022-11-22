@@ -4,8 +4,13 @@ namespace Bolt\tests\packstream\v1;
 
 use Bolt\Bolt;
 use Bolt\packstream\Bytes;
-use Bolt\protocol\AProtocol;
-use Bolt\protocol\Response;
+use Bolt\protocol\{
+    AProtocol,
+    Response,
+    V4_3,
+    V4_4,
+    V5
+};
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -22,6 +27,7 @@ class BytesTest extends TestCase
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
+        /** @var AProtocol|V4_3|V4_4|V5 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
