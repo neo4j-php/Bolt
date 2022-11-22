@@ -3,10 +3,15 @@
 namespace Bolt\tests;
 
 use Bolt\Bolt;
-use Bolt\protocol\AProtocol;
 use Exception;
 use PHPUnit\Framework\TestCase;
-use Bolt\protocol\{Response, V4_3, V4_4};
+use Bolt\protocol\{
+    AProtocol,
+    Response,
+    V4_3,
+    V4_4,
+    V5
+};
 
 /**
  * Class BoltTest
@@ -24,6 +29,7 @@ use Bolt\protocol\{Response, V4_3, V4_4};
  * @covers \Bolt\protocol\AProtocol
  * @covers \Bolt\protocol\V4_3
  * @covers \Bolt\protocol\V4_4
+ * @covers \Bolt\protocol\V5
  * @covers \Bolt\protocol\Response
  * @covers \Bolt\protocol\ServerState
  *
@@ -43,7 +49,7 @@ class BoltTest extends TestCase
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var V4_3|V4_4 $protocol */
+        /** @var AProtocol|V4_3|V4_4|V5 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
@@ -63,7 +69,7 @@ class BoltTest extends TestCase
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var V4_3|V4_4 $protocol */
+        /** @var AProtocol|V4_3|V4_4|V5 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
@@ -83,7 +89,7 @@ class BoltTest extends TestCase
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var V4_3|V4_4 $protocol */
+        /** @var AProtocol|V4_3|V4_4|V5 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 

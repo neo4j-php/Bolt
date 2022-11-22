@@ -3,8 +3,13 @@
 namespace Bolt\tests\structures\v5;
 
 use Bolt\Bolt;
-use Bolt\protocol\AProtocol;
-use Bolt\protocol\Response;
+use Bolt\protocol\{
+    AProtocol,
+    Response,
+    V4_3,
+    V4_4,
+    V5
+};
 use Bolt\tests\structures\v1\DateTimeTrait;
 use Bolt\tests\structures\v1\DateTimeZoneIdTrait;
 use Bolt\protocol\v5\structures\{
@@ -40,6 +45,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
+        /** @var AProtocol|V4_3|V4_4|V5 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
