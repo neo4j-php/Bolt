@@ -104,7 +104,7 @@ class ServerState
      * Set current server state
      * @param string $state
      */
-    public function set(string $state)
+    public function set(string $state): void
     {
         if (in_array($state, self::$lt))
             $this->current = $state;

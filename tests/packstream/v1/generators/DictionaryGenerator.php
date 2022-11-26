@@ -11,13 +11,11 @@ namespace Bolt\tests\packstream\v1\generators;
  */
 class DictionaryGenerator implements \Bolt\packstream\IPackDictionaryGenerator
 {
-    private int $position;
-    public array $array;
-
-    public function __construct(array $data)
+    public function __construct(
+        public array $array,
+        private int  $position = 0
+    )
     {
-        $this->array = $data;
-        $this->position = 0;
     }
 
     public function rewind(): void
@@ -25,12 +23,12 @@ class DictionaryGenerator implements \Bolt\packstream\IPackDictionaryGenerator
         $this->position = 0;
     }
 
-    public function current()
+    public function current(): mixed
     {
         return array_values($this->array)[$this->position];
     }
 
-    public function key()
+    public function key(): string|int
     {
         return array_keys($this->array)[$this->position];
     }

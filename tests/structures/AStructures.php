@@ -15,7 +15,6 @@ class AStructures extends TestCase
 {
     /**
      * How many iterations do for each date/time test
-     * @var int
      */
     public static int $iterations = 50;
 
@@ -36,10 +35,6 @@ class AStructures extends TestCase
         }
     }
 
-    /**
-     * @param string $timezone
-     * @return int
-     */
     private function randomTimestamp(string $timezone = '+0000'): int
     {
         try {
@@ -47,7 +42,7 @@ class AStructures extends TestCase
             $start = new \DateTime(date('Y-m-d H:i:s', strtotime('-10 years', 0)), $zone);
             $end = new \DateTime(date('Y-m-d H:i:s', strtotime('+10 years', 0)), $zone);
             return rand($start->getTimestamp(), $end->getTimestamp());
-        } catch (Exception $e) {
+        } catch (Exception) {
             return strtotime('now ' . $timezone);
         }
     }

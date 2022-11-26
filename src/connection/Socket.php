@@ -16,7 +16,7 @@ use Bolt\error\ConnectionTimeoutException;
 class Socket extends AConnection
 {
     /**
-     * @var resource|object|bool
+     * @var resource|\Socket|bool
      */
     private $socket = false;
 
@@ -60,7 +60,7 @@ class Socket extends AConnection
      * @param string $buffer
      * @throws ConnectException
      */
-    public function write(string $buffer)
+    public function write(string $buffer): void
     {
         if ($this->socket === false) {
             throw new ConnectException('Not initialized socket');
@@ -107,7 +107,7 @@ class Socket extends AConnection
     /**
      * Close socket connection
      */
-    public function disconnect()
+    public function disconnect(): void
     {
         if ($this->socket !== false) {
             @socket_shutdown($this->socket);
@@ -115,13 +115,13 @@ class Socket extends AConnection
         }
     }
 
-    public function setTimeout(float $timeout)
+    public function setTimeout(float $timeout): void
     {
         parent::setTimeout($timeout);
         $this->configureTimeout();
     }
 
-    private function configureTimeout()
+    private function configureTimeout(): void
     {
         if ($this->socket === false)
             return;

@@ -21,21 +21,18 @@ use Bolt\protocol\IStructure;
  */
 class DateTime implements IStructure
 {
-    private int $seconds;
-    private int $nanoseconds;
-    private int $tz_offset_seconds;
-
     /**
      * DateTime constructor.
      * @param int $seconds
      * @param int $nanoseconds
      * @param int $tz_offset_seconds
      */
-    public function __construct(int $seconds, int $nanoseconds, int $tz_offset_seconds)
+    public function __construct(
+        private int $seconds,
+        private int $nanoseconds,
+        private int $tz_offset_seconds
+    )
     {
-        $this->seconds = $seconds;
-        $this->nanoseconds = $nanoseconds;
-        $this->tz_offset_seconds = $tz_offset_seconds;
     }
 
     /**

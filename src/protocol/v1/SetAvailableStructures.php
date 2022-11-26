@@ -31,7 +31,7 @@ trait SetAvailableStructures
     /**
      * Set available structures
      */
-    protected function setAvailableStructures()
+    protected function setAvailableStructures(): void
     {
         $this->packer->setAvailableStructures([
             0x44 => Date::class,

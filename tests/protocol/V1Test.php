@@ -12,12 +12,6 @@ use Bolt\packstream\v1\{Packer, Unpacker};
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- *
- * @covers \Bolt\protocol\AProtocol
- * @covers \Bolt\protocol\V1
- * @covers \Bolt\packstream\v1\Packer
- * @covers \Bolt\packstream\v1\Unpacker
- *
  * @package Bolt\tests\protocol
  */
 class V1Test extends ATest
@@ -40,7 +34,7 @@ class V1Test extends ATest
      * @depends test__construct
      * @param V1 $cls
      */
-    public function testInit(V1 $cls)
+    public function testInit(V1 $cls): void
     {
         self::$readArray = [
             [0x70, (object)[]],
@@ -76,7 +70,7 @@ class V1Test extends ATest
      * @depends test__construct
      * @param V1 $cls
      */
-    public function testRun(V1 $cls)
+    public function testRun(V1 $cls): void
     {
         self::$readArray = [
             [0x70, (object)[]],
@@ -119,7 +113,7 @@ class V1Test extends ATest
      * @depends test__construct
      * @param V1 $cls
      */
-    public function testPullAll(V1 $cls)
+    public function testPullAll(V1 $cls): void
     {
         self::$readArray = [
             [0x71, (object)[]],
@@ -153,7 +147,7 @@ class V1Test extends ATest
      * @depends test__construct
      * @param V1 $cls
      */
-    public function testDiscardAll(V1 $cls)
+    public function testDiscardAll(V1 $cls): void
     {
         self::$readArray = [
             [0x70, (object)[]],
@@ -184,7 +178,7 @@ class V1Test extends ATest
      * @depends test__construct
      * @param V1 $cls
      */
-    public function testReset(V1 $cls)
+    public function testReset(V1 $cls): void
     {
         self::$readArray = [
             [0x70, (object)[]],
@@ -207,7 +201,7 @@ class V1Test extends ATest
      * @depends test__construct
      * @param V1 $cls
      */
-    public function testAckFailure(V1 $cls)
+    public function testAckFailure(V1 $cls): void
     {
         self::$readArray = [
             [0x70, (object)[]],

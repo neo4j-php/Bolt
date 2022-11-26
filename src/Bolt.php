@@ -21,26 +21,18 @@ final class Bolt
 {
     private IPacker $packer;
     private IUnpacker $unpacker;
-    private IConnection $connection;
     private array $versions = [];
     public static bool $debug = false;
     public ServerState $serverState;
 
-    /**
-     * Bolt constructor
-     * @param IConnection $connection
-     * @throws Exception
-     */
-    public function __construct(IConnection $connection)
+    public function __construct(private IConnection $connection)
     {
-        $this->connection = $connection;
         $this->setProtocolVersions(5, 4.4, 4.3);
         $this->setPackStreamVersion();
     }
 
     /**
      * Connect via Connection, execute handshake on it, create and return protocol version class
-     * @return AProtocol
      * @throws Exception
      */
     public function build(): AProtocol
@@ -68,11 +60,7 @@ final class Bolt
         return new $protocolClass($this->packer, $this->unpacker, $this->connection, $this->serverState);
     }
 
-    /**
-     * @param int|float|string ...$v
-     * @return Bolt
-     */
-    public function setProtocolVersions(...$v): Bolt
+    public function setProtocolVersions(int|float|string ...$v): Bolt
     {
         $this->versions = array_slice($v, 0, 4);
         while (count($this->versions) < 4)
@@ -80,11 +68,6 @@ final class Bolt
         return $this;
     }
 
-    /**
-     * @param int $version
-     * @return Bolt
-     * @throws Exception
-     */
     public function setPackStreamVersion(int $version = 1): Bolt
     {
         $packerClass = "\\Bolt\\packstream\\v" . $version . "\\Packer";
@@ -104,7 +87,6 @@ final class Bolt
 
     /**
      * @link https://www.neo4j.com/docs/bolt/current/bolt/handshake/
-     * @return string
      * @throws Exception
      */
     private function handshake(): string
@@ -126,8 +108,6 @@ final class Bolt
 
     /**
      * Read and compose selected protocol version
-     * @param string $bytes
-     * @return string|null
      */
     private function unpackProtocolVersion(string $bytes): ?string
     {
@@ -147,7 +127,6 @@ final class Bolt
 
     /**
      * Pack requested protocol versions
-     * @return string
      */
     private function packProtocolVersions(): string
     {

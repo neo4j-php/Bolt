@@ -36,7 +36,6 @@ abstract class ATest extends TestCase
 
     /**
      * Mock Socket class with "write" and "read" methods
-     * @return AConnection
      */
     protected function mockConnection(): AConnection
     {
@@ -77,8 +76,6 @@ abstract class ATest extends TestCase
 
     /**
      * Mocked Socket read method
-     * @param int $length
-     * @return string
      */
     public function readCallback(int $length = 2048): string
     {
@@ -110,7 +107,7 @@ abstract class ATest extends TestCase
         self::$packer = new Packer();
     }
 
-    protected function checkFailure(Response $response)
+    protected function checkFailure(Response $response): void
     {
         $this->assertEquals(Response::SIGNATURE_FAILURE, $response->getSignature());
         $this->assertEquals('some error message', $response->getContent()['message']);

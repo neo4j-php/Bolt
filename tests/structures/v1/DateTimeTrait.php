@@ -9,11 +9,8 @@ trait DateTimeTrait
     /**
      * @depends testInit
      * @dataProvider providerTimestampTimezone
-     * @param int $timestamp
-     * @param string $timezone
-     * @param AProtocol $protocol
      */
-    public function testDateTime(int $timestamp, string $timezone, AProtocol $protocol)
+    public function testDateTime(int $timestamp, string $timezone, AProtocol $protocol): void
     {
         $timestamp .= '.' . rand(0, 9e5);
         $datetime = \DateTime::createFromFormat('U.u', $timestamp, new \DateTimeZone($timezone))

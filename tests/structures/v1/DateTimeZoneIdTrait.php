@@ -11,11 +11,8 @@ trait DateTimeZoneIdTrait
     /**
      * @depends testInit
      * @dataProvider providerTimestampTimezone
-     * @param int $timestamp
-     * @param string $timezone
-     * @param AProtocol $protocol
      */
-    public function testDateTimeZoneId(int $timestamp, string $timezone, AProtocol $protocol)
+    public function testDateTimeZoneId(int $timestamp, string $timezone, AProtocol $protocol): void
     {
         try {
             $timestamp .= '.' . rand(0, 9e5);

@@ -8,7 +8,7 @@
     "license": "MIT",
     "minimum-stability": "stable",
     "require": {
-        "php": ">=7.4",
+        "php": ">=8",
         "ext-mbstring": "*"
     },
     "require-dev": {

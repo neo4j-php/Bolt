@@ -12,10 +12,6 @@ use Bolt\packstream\v1\{Packer, Unpacker};
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- *
- * @covers \Bolt\protocol\AProtocol
- * @covers \Bolt\protocol\V3
- *
  * @package Bolt\tests\protocol
  */
 class V3Test extends ATest
@@ -37,7 +33,7 @@ class V3Test extends ATest
      * @depends test__construct
      * @param V3 $cls
      */
-    public function testHello(V3 $cls)
+    public function testHello(V3 $cls): void
     {
         self::$readArray = [
             [0x70, (object)[]],
@@ -71,7 +67,7 @@ class V3Test extends ATest
      * @depends test__construct
      * @param V3 $cls
      */
-    public function testRun(V3 $cls)
+    public function testRun(V3 $cls): void
     {
         self::$readArray = [
             [0x70, (object)[]],
@@ -117,7 +113,7 @@ class V3Test extends ATest
      * @depends test__construct
      * @param V3 $cls
      */
-    public function testBegin(V3 $cls)
+    public function testBegin(V3 $cls): void
     {
         self::$readArray = [
             [0x70, (object)[]],
@@ -149,7 +145,7 @@ class V3Test extends ATest
      * @depends test__construct
      * @param V3 $cls
      */
-    public function testCommit(V3 $cls)
+    public function testCommit(V3 $cls): void
     {
         self::$readArray = [
             [0x70, (object)[]],
@@ -180,7 +176,7 @@ class V3Test extends ATest
      * @depends test__construct
      * @param V3 $cls
      */
-    public function testRollback(V3 $cls)
+    public function testRollback(V3 $cls): void
     {
         self::$readArray = [
             [0x70, (object)[]],
@@ -211,7 +207,7 @@ class V3Test extends ATest
      * @depends test__construct
      * @param V3 $cls
      */
-    public function testGoodbye(V3 $cls)
+    public function testGoodbye(V3 $cls): void
     {
         self::$readArray = [1, 2, 0];
         self::$writeBuffer = [

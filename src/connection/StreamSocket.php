@@ -28,7 +28,7 @@ class StreamSocket extends AConnection
      * @link https://www.php.net/manual/en/context.ssl.php
      * @param array $options
      */
-    public function setSslContextOptions(array $options)
+    public function setSslContextOptions(array $options): void
     {
         $this->sslContextOptions = $options;
     }
@@ -73,7 +73,7 @@ class StreamSocket extends AConnection
      * @param string $buffer
      * @throws ConnectException
      */
-    public function write(string $buffer)
+    public function write(string $buffer): void
     {
         if (Bolt::$debug)
             $this->printHex($buffer);
@@ -125,13 +125,13 @@ class StreamSocket extends AConnection
     /**
      * Close connection
      */
-    public function disconnect()
+    public function disconnect(): void
     {
         if (is_resource($this->stream))
             stream_socket_shutdown($this->stream, STREAM_SHUT_RDWR);
     }
 
-    public function setTimeout(float $timeout)
+    public function setTimeout(float $timeout): void
     {
         parent::setTimeout($timeout);
         $this->configureTimeout();

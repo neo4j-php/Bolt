@@ -2,7 +2,7 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\protocol\{AProtocol, ServerState, Response};
+use Bolt\protocol\{ServerState, Response, V3, V4, V4_1, V4_2, V4_3, V4_4, V5};
 use Exception;
 
 trait RollbackMessage
@@ -12,10 +12,10 @@ trait RollbackMessage
      * The ROLLBACK message requests that the Explicit Transaction rolls back.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-rollback
-     * @return AProtocol|\Bolt\protocol\V3|\Bolt\protocol\V4|\Bolt\protocol\V4_1|\Bolt\protocol\V4_2|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4
+     * @return V3|V4|V4_1|V4_2|V4_3|V4_4|V5
      * @throws Exception
      */
-    public function rollback(): AProtocol
+    public function rollback(): V3|V4|V4_1|V4_2|V4_3|V4_4|V5
     {
         $this->serverState->is(ServerState::TX_READY, ServerState::TX_STREAMING);
         $this->write($this->packer->pack(0x13));
@@ -30,12 +30,12 @@ trait RollbackMessage
      */
     protected function _rollback(): iterable
     {
-        $message = $this->read($signature);
+        $content = $this->read($signature);
 
         if ($signature == Response::SIGNATURE_SUCCESS) {
             $this->serverState->set(ServerState::READY);
         }
 
-        yield new Response(Response::MESSAGE_ROLLBACK, $signature, $message);
+        yield new Response(Response::MESSAGE_ROLLBACK, $signature, $content);
     }
 }

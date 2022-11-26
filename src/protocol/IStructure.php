@@ -9,7 +9,6 @@ namespace Bolt\protocol;
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\protocol
  */
-interface IStructure
+interface IStructure extends \Stringable
 {
-    public function __toString(): string;
 }

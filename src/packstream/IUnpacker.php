@@ -16,7 +16,7 @@ interface IUnpacker
      * @param string $msg
      * @return mixed
      */
-    public function unpack(string $msg);
+    public function unpack(string $msg): mixed;
 
     /**
      * Get unpacked message status signature
@@ -27,5 +27,5 @@ interface IUnpacker
     /**
      * @param array $structures [signature => classFQN]
      */
-    public function setAvailableStructures(array $structures);
+    public function setAvailableStructures(array $structures): void;
 }

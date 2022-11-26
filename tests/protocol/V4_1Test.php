@@ -12,10 +12,6 @@ use Bolt\packstream\v1\{Packer, Unpacker};
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- *
- * @covers \Bolt\protocol\AProtocol
- * @covers \Bolt\protocol\V4_1
- *
  * @package Bolt\tests\protocol
  */
 class V4_1Test extends ATest
@@ -37,7 +33,7 @@ class V4_1Test extends ATest
      * @depends test__construct
      * @param V4_1 $cls
      */
-    public function testHello(V4_1 $cls)
+    public function testHello(V4_1 $cls): void
     {
         self::$readArray = [
             [0x70, (object)[]],

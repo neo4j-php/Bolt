@@ -21,21 +21,18 @@ use Bolt\protocol\IStructure;
  */
 class DateTimeZoneId implements IStructure
 {
-    private int $seconds;
-    private int $nanoseconds;
-    private string $tz_id;
-
     /**
      * DateTimeZoneId constructor.
      * @param int $seconds
      * @param int $nanoseconds
      * @param string $tz_id
      */
-    public function __construct(int $seconds, int $nanoseconds, string $tz_id)
+    public function __construct(
+        private int    $seconds,
+        private int    $nanoseconds,
+        private string $tz_id
+    )
     {
-        $this->seconds = $seconds;
-        $this->nanoseconds = $nanoseconds;
-        $this->tz_id = $tz_id;
     }
 
     /**

@@ -22,7 +22,7 @@ trait InitMessage
         $this->serverState->is(ServerState::CONNECTED);
 
         $this->write($this->packer->pack(0x01, $userAgent, $authToken));
-        $message = $this->read($signature);
+        $content = $this->read($signature);
 
         if ($signature == Response::SIGNATURE_SUCCESS) {
             $this->serverState->set(ServerState::READY);
@@ -32,6 +32,6 @@ trait InitMessage
             $this->serverState->set(ServerState::DEFUNCT);
         }
 
-        return new Response(Response::MESSAGE_INIT, $signature, $message);
+        return new Response(Response::MESSAGE_INIT, $signature, $content);
     }
 }

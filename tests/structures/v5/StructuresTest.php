@@ -26,18 +26,11 @@ use Bolt\protocol\v1\structures\Path;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- *
- * @covers \Bolt\protocol\v5\structures\DateTime
- * @covers \Bolt\protocol\v5\structures\DateTimeZoneId
- *
- * @covers \Bolt\packstream\v1\Packer
- * @covers \Bolt\packstream\v1\Unpacker
- *
  * @package Bolt\tests\protocol\v5
  */
 class StructuresTest extends \Bolt\tests\structures\AStructures
 {
-    public function testInit(): AProtocol
+    public function testInit(): V4_3|V4_4|V5
     {
         $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
         $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
@@ -45,7 +38,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var AProtocol|V4_3|V4_4|V5 $protocol */
+        /** @var V4_3|V4_4|V5 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
@@ -66,9 +59,8 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
 
     /**
      * @depends testInit
-     * @param AProtocol $protocol
      */
-    public function testNode(AProtocol $protocol)
+    public function testNode(V4_3|V4_4|V5 $protocol)
     {
         $protocol->begin()->getResponse();
 
@@ -94,9 +86,8 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
 
     /**
      * @depends testInit
-     * @param AProtocol $protocol
      */
-    public function testPath(AProtocol $protocol)
+    public function testPath(V4_3|V4_4|V5 $protocol)
     {
         $protocol->begin()->getResponse();
 
@@ -126,9 +117,8 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
 
     /**
      * @depends testInit
-     * @param AProtocol $protocol
      */
-    public function testRelationship(AProtocol $protocol)
+    public function testRelationship(V4_3|V4_4|V5 $protocol)
     {
         $protocol->begin()->getResponse();
 

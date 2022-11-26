@@ -17,21 +17,18 @@ use Bolt\protocol\IStructure;
  */
 class Point2D implements IStructure
 {
-    private int $srid;
-    private float $x;
-    private float $y;
-
     /**
      * Point2D constructor.
      * @param int $srid
      * @param float $x
      * @param float $y
      */
-    public function __construct(int $srid, float $x, float $y)
+    public function __construct(
+        private int   $srid,
+        private float $x,
+        private float $y
+    )
     {
-        $this->srid = $srid;
-        $this->x = $x;
-        $this->y = $y;
     }
 
     /**

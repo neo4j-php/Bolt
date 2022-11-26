@@ -5,6 +5,7 @@ namespace Bolt\packstream\v1;
 use Bolt\error\UnpackException;
 use Bolt\packstream\Bytes;
 use Bolt\packstream\IUnpacker;
+use Bolt\protocol\IStructure;
 
 /**
  * Class Unpacker of PackStream version 1
@@ -25,7 +26,7 @@ class Unpacker implements IUnpacker
     /**
      * @inheritDoc
      */
-    public function setAvailableStructures(array $structures)
+    public function setAvailableStructures(array $structures): void
     {
         $this->structuresLt = $structures;
     }
@@ -34,7 +35,7 @@ class Unpacker implements IUnpacker
      * @inheritDoc
      * @throws UnpackException
      */
-    public function unpack(string $msg)
+    public function unpack(string $msg): mixed
     {
         if (empty($msg)) {
             return null;
@@ -71,9 +72,12 @@ class Unpacker implements IUnpacker
      * @return mixed
      * @throws UnpackException
      */
-    private function u()
+    private function u(): mixed
     {
         $marker = ord($this->next(1));
+        if (mb_strlen($marker, '8bit') === 0) {
+            return null;
+        }
 
         if ($marker == 0xC3) {
             return true;
@@ -119,10 +123,10 @@ class Unpacker implements IUnpacker
 
     /**
      * @param int $marker
-     * @return array|\Bolt\protocol\IStructure|null
+     * @return array|IStructure|null
      * @throws UnpackException
      */
-    private function unpackStruct(int $marker)
+    private function unpackStruct(int $marker): array|IStructure|null
     {
         if ($marker >> 4 == 0b1011) { //TINY_STRUCT
             $size = 0b10110000 ^ $marker;

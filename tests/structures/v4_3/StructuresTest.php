@@ -23,18 +23,11 @@ use Bolt\tests\structures\v1\{
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- *
- * @covers \Bolt\protocol\v5\structures\DateTime
- * @covers \Bolt\protocol\v5\structures\DateTimeZoneId
- *
- * @covers \Bolt\packstream\v1\Packer
- * @covers \Bolt\packstream\v1\Unpacker
- *
  * @package Bolt\tests\protocol\v4_3
  */
 class StructuresTest extends \Bolt\tests\structures\AStructures
 {
-    public function testInit(): AProtocol
+    public function testInit(): V4_4|V4_3
     {
         $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
         $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
@@ -43,7 +36,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
         $this->assertInstanceOf(Bolt::class, $bolt);
 
         $bolt->setProtocolVersions(4.4, 4.3);
-        /** @var AProtocol|V4_4|V4_3 $protocol */
+        /** @var V4_4|V4_3 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 

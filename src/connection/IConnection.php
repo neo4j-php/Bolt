@@ -20,11 +20,11 @@ interface IConnection
 
     public function connect(): bool;
 
-    public function write(string $buffer);
+    public function write(string $buffer): void;
 
     public function read(int $length = 2048): string;
 
-    public function disconnect();
+    public function disconnect(): void;
 
     public function getIp(): string;
 
@@ -32,5 +32,5 @@ interface IConnection
 
     public function getTimeout(): float;
 
-    public function setTimeout(float $timeout);
+    public function setTimeout(float $timeout): void;
 }

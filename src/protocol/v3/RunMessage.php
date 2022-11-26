@@ -2,7 +2,7 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\protocol\{AProtocol, ServerState, Response};
+use Bolt\protocol\{ServerState, Response, V3, V4, V4_1, V4_2, V4_3, V4_4, V5};
 use Exception;
 
 trait RunMessage
@@ -15,10 +15,10 @@ trait RunMessage
      * @param string $query
      * @param array $parameters
      * @param array $extra
-     * @return AProtocol|\Bolt\protocol\V3|\Bolt\protocol\V4|\Bolt\protocol\V4_1|\Bolt\protocol\V4_2|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4
+     * @return V3|V4|V4_1|V4_2|V4_3|V4_4|V5
      * @throws Exception
      */
-    public function run(string $query, array $parameters = [], array $extra = []): AProtocol
+    public function run(string $query, array $parameters = [], array $extra = []): V3|V4|V4_1|V4_2|V4_3|V4_4|V5
     {
         $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
 
@@ -30,7 +30,7 @@ trait RunMessage
         ));
 
         $this->pipelinedMessages[] = __FUNCTION__;
-        $this->serverState->set(substr($this->serverState->get(), 0, 3) == 'TX_' ? ServerState::TX_STREAMING : ServerState::STREAMING);
+        $this->serverState->set(str_starts_with($this->serverState->get(), 'TX_') ? ServerState::TX_STREAMING : ServerState::STREAMING);
         return $this;
     }
 
@@ -40,12 +40,12 @@ trait RunMessage
      */
     protected function _run(): iterable
     {
-        $message = $this->read($signature);
+        $content = $this->read($signature);
 
         if ($signature == Response::SIGNATURE_SUCCESS) {
-            $this->serverState->set(substr($this->serverState->get(), 0, 3) == 'TX_' ? ServerState::TX_STREAMING : ServerState::STREAMING);
+            $this->serverState->set(str_starts_with($this->serverState->get(), 'TX_') ? ServerState::TX_STREAMING : ServerState::STREAMING);
         }
 
-        yield new Response(Response::MESSAGE_RUN, $signature, $message);
+        yield new Response(Response::MESSAGE_RUN, $signature, $content);
     }
 }

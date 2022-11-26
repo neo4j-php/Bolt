@@ -20,18 +20,16 @@ use Bolt\protocol\IStructure;
  */
 class Time implements IStructure
 {
-    private int $nanoseconds;
-    private int $tz_offset_seconds;
-
     /**
      * Time constructor.
      * @param int $nanoseconds
      * @param int $tz_offset_seconds
      */
-    public function __construct(int $nanoseconds, int $tz_offset_seconds)
+    public function __construct(
+        private int $nanoseconds,
+        private int $tz_offset_seconds
+    )
     {
-        $this->nanoseconds = $nanoseconds;
-        $this->tz_offset_seconds = $tz_offset_seconds;
     }
 
     /**

@@ -12,14 +12,14 @@ namespace Bolt\packstream;
 interface IPacker
 {
     /**
-     * @param $signature
+     * @param int $signature
      * @param mixed ...$params
      * @return iterable
      */
-    public function pack($signature, ...$params): iterable;
+    public function pack(int $signature, mixed ...$params): iterable;
 
     /**
      * @param array $structures [signature => classFQN]
      */
-    public function setAvailableStructures(array $structures);
+    public function setAvailableStructures(array $structures): void;
 }

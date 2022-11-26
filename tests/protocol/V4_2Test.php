@@ -10,10 +10,6 @@ use Bolt\packstream\v1\{Packer, Unpacker};
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- *
- * @covers \Bolt\protocol\AProtocol
- * @covers \Bolt\protocol\V4_2
- *
  * @package Bolt\tests\protocol
  */
 class V4_2Test extends ATest
