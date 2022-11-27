@@ -15,22 +15,16 @@ use Bolt\protocol\v1\structures\Node as v1_Node;
  */
 class Node extends v1_Node
 {
-    /**
-     * @inheritDoc
-     * @param string $element_id
-     */
     public function __construct(
-        protected int   $id,
-        protected array $labels,
-        protected array $properties,
+        int   $id,
+        array $labels,
+        array $properties,
         private string  $element_id
     )
     {
+        parent::__construct($id, $labels, $properties);
     }
 
-    /**
-     * @return string
-     */
     public function element_id(): string
     {
         return $this->element_id;

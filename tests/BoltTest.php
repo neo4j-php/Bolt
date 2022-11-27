@@ -69,9 +69,6 @@ class BoltTest extends TestCase
         $protocol->goodbye();
     }
 
-    /**
-     * @return AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5
-     */
     public function testHello(): AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5
     {
         $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);

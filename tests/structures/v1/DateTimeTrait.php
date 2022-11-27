@@ -2,7 +2,12 @@
 
 namespace Bolt\tests\structures\v1;
 
-use Bolt\protocol\AProtocol;
+use Bolt\protocol\{
+    AProtocol,
+    V1,
+    V4_3,
+    V5
+};
 
 trait DateTimeTrait
 {
@@ -10,7 +15,7 @@ trait DateTimeTrait
      * @depends testInit
      * @dataProvider providerTimestampTimezone
      */
-    public function testDateTime(int $timestamp, string $timezone, AProtocol $protocol): void
+    public function testDateTime(int $timestamp, string $timezone, AProtocol|V1|V4_3|V5 $protocol): void
     {
         $timestamp .= '.' . rand(0, 9e5);
         $datetime = \DateTime::createFromFormat('U.u', $timestamp, new \DateTimeZone($timezone))

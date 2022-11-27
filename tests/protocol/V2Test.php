@@ -14,12 +14,9 @@ use Bolt\packstream\v1\{Packer, Unpacker};
  */
 class V2Test extends ATest
 {
-    /**
-     * @return V2
-     */
     public function test__construct(): V2
     {
-        $cls = new V2(new Packer, new Unpacker, $this->mockConnection(), new \Bolt\protocol\ServerState());
+        $cls = new V2(1, $this->mockConnection(), new \Bolt\protocol\ServerState());
         $this->assertInstanceOf(V2::class, $cls);
         $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
             $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');

@@ -2,7 +2,12 @@
 
 namespace Bolt\protocol\v1;
 
-use Bolt\protocol\{ServerState, Response, V1, V2};
+use Bolt\protocol\{
+    ServerState,
+    Response,
+    V1,
+    V2
+};
 use Exception;
 
 trait RunMessage
@@ -12,9 +17,6 @@ trait RunMessage
      * A RUN message submits a new query for execution, the result of which will be consumed by a subsequent message, such as PULL_ALL.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-run
-     * @param string $query
-     * @param array $parameters
-     * @return V1|V2
      * @throws Exception
      */
     public function run(string $query, array $parameters = []): V1|V2

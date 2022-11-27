@@ -2,7 +2,12 @@
 
 namespace Bolt\protocol\v4_4;
 
-use Bolt\protocol\{ServerState, Response, V4_4, V5};
+use Bolt\protocol\{
+    ServerState,
+    Response,
+    V4_4,
+    V5
+};
 use Exception;
 
 trait RouteMessage
@@ -12,10 +17,7 @@ trait RouteMessage
      * The ROUTE instructs the server to return the current routing table. In previous versions there was no explicit message for this and a procedure had to be invoked using Cypher through the RUN and PULL messages.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-route
-     * @param array $routing
-     * @param array $bookmarks
      * @param array $extra [db::String, imp_user::String]
-     * @return V4_4|V5
      * @throws Exception
      */
     public function route(array $routing, array $bookmarks = [], array $extra = []): V4_4|V5

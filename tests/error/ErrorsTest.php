@@ -27,7 +27,7 @@ class ErrorsTest extends TestCase
         $this->assertInstanceOf(\Bolt\packstream\v1\Packer::class, $packer);
         $this->expectException(\Bolt\error\PackException::class);
         foreach ($packer->pack(0x00, fopen('php://input', 'r')) as $chunk) {
-            //expecting exception
+            $this->markTestIncomplete();
         }
     }
 
@@ -41,5 +41,6 @@ class ErrorsTest extends TestCase
 
         $this->expectException(\Bolt\error\PackException::class);
         $bolt->setPackStreamVersion(2);
+        $bolt->build();
     }
 }

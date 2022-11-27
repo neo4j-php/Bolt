@@ -23,8 +23,6 @@ class Socket extends AConnection
     private const POSSIBLE_TIMEOUTS_CODES = [11, 10060];
 
     /**
-     * Create socket connection
-     * @return bool
      * @throws ConnectException
      */
     public function connect(): bool
@@ -56,8 +54,6 @@ class Socket extends AConnection
     }
 
     /**
-     * Write buffer to socket
-     * @param string $buffer
      * @throws ConnectException
      */
     public function write(string $buffer): void
@@ -80,9 +76,6 @@ class Socket extends AConnection
     }
 
     /**
-     * Read buffer from socket
-     * @param int $length
-     * @return string
      * @throws ConnectException
      */
     public function read(int $length = 2048): string
@@ -92,7 +85,7 @@ class Socket extends AConnection
 
         $output = '';
         do {
-            $readed = @socket_read($this->socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
+            $readed = @socket_read($this->socket, $length - mb_strlen($output, '8bit'));
             if ($readed === false)
                 $this->throwConnectException();
             $output .= $readed;
@@ -104,9 +97,6 @@ class Socket extends AConnection
         return $output;
     }
 
-    /**
-     * Close socket connection
-     */
     public function disconnect(): void
     {
         if ($this->socket !== false) {

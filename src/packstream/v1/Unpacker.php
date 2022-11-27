@@ -21,14 +21,12 @@ class Unpacker implements IUnpacker
     private bool $littleEndian;
     private int $signature;
 
-    private array $structuresLt = [];
-
     /**
      * @inheritDoc
      */
-    public function setAvailableStructures(array $structures): void
+    public function __construct(private array $structuresLt = [])
     {
-        $this->structuresLt = $structures;
+        $this->littleEndian = unpack('S', "\x01\x00")[1] === 1;
     }
 
     /**
@@ -41,7 +39,6 @@ class Unpacker implements IUnpacker
             return null;
         }
 
-        $this->littleEndian = unpack('S', "\x01\x00")[1] === 1;
         $this->offset = 0;
         $this->message = $msg;
 
@@ -58,8 +55,6 @@ class Unpacker implements IUnpacker
 
     /**
      * Get next bytes from message
-     * @param int $length
-     * @return string
      */
     private function next(int $length): string
     {
@@ -69,7 +64,6 @@ class Unpacker implements IUnpacker
     }
 
     /**
-     * @return mixed
      * @throws UnpackException
      */
     private function u(): mixed

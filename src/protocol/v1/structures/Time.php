@@ -20,11 +20,6 @@ use Bolt\protocol\IStructure;
  */
 class Time implements IStructure
 {
-    /**
-     * Time constructor.
-     * @param int $nanoseconds
-     * @param int $tz_offset_seconds
-     */
     public function __construct(
         private int $nanoseconds,
         private int $tz_offset_seconds
@@ -34,7 +29,6 @@ class Time implements IStructure
 
     /**
      * nanoseconds since midnight. This time is not UTC
-     * @return int
      */
     public function nanoseconds(): int
     {
@@ -43,7 +37,6 @@ class Time implements IStructure
 
     /**
      * offset in seconds from UTC
-     * @return int
      */
     public function tz_offset_seconds(): int
     {

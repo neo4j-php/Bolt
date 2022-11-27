@@ -27,8 +27,6 @@ abstract class AConnection implements IConnection
 
     /**
      * Print buffer as HEX
-     * @param string $str
-     * @param string $prefix
      */
     protected function printHex(string $str, string $prefix = 'C: '): void
     {

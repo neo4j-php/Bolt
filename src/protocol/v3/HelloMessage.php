@@ -13,7 +13,6 @@ trait HelloMessage
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-hello
      * @param array $extra Use \Bolt\helpers\Auth to generate appropriate array
-     * @return Response
      * @throws Exception
      */
     public function hello(array $extra): Response

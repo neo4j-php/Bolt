@@ -2,6 +2,8 @@
 
 namespace Bolt\protocol;
 
+use Bolt\error\PackException;
+use Bolt\error\UnpackException;
 use Bolt\packstream\{IPacker, IUnpacker};
 use Bolt\connection\IConnection;
 use Exception;
@@ -18,16 +20,30 @@ abstract class AProtocol
     /** @var string[] */
     protected array $pipelinedMessages = [];
 
+    protected IPacker $packer;
+    protected IUnpacker $unpacker;
+
+    /**
+     * @throws UnpackException
+     * @throws PackException
+     */
     public function __construct(
-        protected IPacker     $packer,
-        protected IUnpacker   $unpacker,
+        int                   $packStreamVersion,
         protected IConnection $connection,
         public ServerState    $serverState
     )
     {
-        if (method_exists($this, 'setAvailableStructures')) {
-            $this->setAvailableStructures();
+        $packerClass = "\\Bolt\\packstream\\v" . $packStreamVersion . "\\Packer";
+        if (!class_exists($packerClass)) {
+            throw new PackException('Requested PackStream version (' . $packStreamVersion . ') not yet implemented');
         }
+        $this->packer = new $packerClass($this->packStructuresLt ?? []);
+
+        $unpackerClass = "\\Bolt\\packstream\\v" . $packStreamVersion . "\\Unpacker";
+        if (!class_exists($unpackerClass)) {
+            throw new UnpackException('Requested PackStream version (' . $packStreamVersion . ') not yet implemented');
+        }
+        $this->unpacker = new $unpackerClass($this->unpackStructuresLt ?? []);
     }
 
     /**
@@ -65,6 +81,7 @@ abstract class AProtocol
                 $this->serverState->set(ServerState::FAILED);
             } elseif ($signature == Response::SIGNATURE_IGNORED) {
                 $this->serverState->set(ServerState::INTERRUPTED);
+                // Ignored doesn't have any response content
                 $output = [];
             }
         }

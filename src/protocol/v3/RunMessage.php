@@ -2,7 +2,17 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\protocol\{ServerState, Response, V3, V4, V4_1, V4_2, V4_3, V4_4, V5};
+use Bolt\protocol\{
+    ServerState,
+    Response,
+    V3,
+    V4,
+    V4_1,
+    V4_2,
+    V4_3,
+    V4_4,
+    V5
+};
 use Exception;
 
 trait RunMessage
@@ -12,10 +22,6 @@ trait RunMessage
      * The RUN message requests that a Cypher query is executed with a set of parameters and additional extra data.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-run
-     * @param string $query
-     * @param array $parameters
-     * @param array $extra
-     * @return V3|V4|V4_1|V4_2|V4_3|V4_4|V5
      * @throws Exception
      */
     public function run(string $query, array $parameters = [], array $extra = []): V3|V4|V4_1|V4_2|V4_3|V4_4|V5

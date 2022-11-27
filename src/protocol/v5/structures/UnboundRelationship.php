@@ -15,22 +15,16 @@ use Bolt\protocol\v1\structures\UnboundRelationship as v1_UnboundRelationship;
  */
 class UnboundRelationship extends v1_UnboundRelationship
 {
-    /**
-     * @inheritDoc
-     * @param string $element_id
-     */
     public function __construct(
-        protected int    $id,
-        protected string $type,
-        protected array  $properties,
-        private string   $element_id
+        int            $id,
+        string         $type,
+        array          $properties,
+        private string $element_id
     )
     {
+        parent::__construct($id, $type, $properties);
     }
 
-    /**
-     * @return string
-     */
     public function element_id(): string
     {
         return $this->element_id;

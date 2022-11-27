@@ -11,11 +11,6 @@ namespace Bolt\connection;
  */
 interface IConnection
 {
-    /**
-     * @param string $ip
-     * @param int $port
-     * @param float $timeout
-     */
     public function __construct(string $ip = '127.0.0.1', int $port = 7687, float $timeout = 15);
 
     public function connect(): bool;

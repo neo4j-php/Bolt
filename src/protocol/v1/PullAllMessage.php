@@ -2,7 +2,13 @@
 
 namespace Bolt\protocol\v1;
 
-use Bolt\protocol\{ServerState, Response, V1, V2, V3};
+use Bolt\protocol\{
+    ServerState,
+    Response,
+    V1,
+    V2,
+    V3
+};
 use Exception;
 
 trait PullAllMessage
@@ -12,7 +18,6 @@ trait PullAllMessage
      * The PULL_ALL message issues a request to stream the outstanding result back to the client, before returning to a READY state.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#message-pull
-     * @return V1|V2|V3
      * @throws Exception
      */
     public function pullAll(): V1|V2|V3

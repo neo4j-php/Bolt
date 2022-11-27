@@ -17,13 +17,6 @@ use Bolt\protocol\IStructure;
  */
 class Point3D implements IStructure
 {
-    /**
-     * Point3D constructor.
-     * @param int $srid
-     * @param float $x
-     * @param float $y
-     * @param float $z
-     */
     public function __construct(
         private int   $srid,
         private float $x,
@@ -35,32 +28,22 @@ class Point3D implements IStructure
 
     /**
      * Spatial Reference System Identifier
-     * @return int
      */
     public function srid(): int
     {
         return $this->srid;
     }
 
-    /**
-     * @return float
-     */
     public function x(): float
     {
         return $this->x;
     }
 
-    /**
-     * @return float
-     */
     public function y(): float
     {
         return $this->y;
     }
 
-    /**
-     * @return float
-     */
     public function z(): float
     {
         return $this->z;

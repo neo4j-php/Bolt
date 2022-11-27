@@ -2,7 +2,13 @@
 
 namespace Bolt\protocol\v1;
 
-use Bolt\protocol\{ServerState, Response, V1, V2, V3};
+use Bolt\protocol\{
+    ServerState,
+    Response,
+    V1,
+    V2,
+    V3
+};
 use Exception;
 
 trait DiscardAllMessage
@@ -12,7 +18,6 @@ trait DiscardAllMessage
      * The DISCARD_ALL message issues a request to discard the outstanding result and return to a READY state.
      *
      * https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-discard
-     * @return V1|V2|V3
      * @throws Exception
      */
     public function discardAll(): V1|V2|V3

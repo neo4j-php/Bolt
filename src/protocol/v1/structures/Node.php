@@ -15,39 +15,24 @@ use Bolt\protocol\IStructure;
  */
 class Node implements IStructure
 {
-    /**
-     * Node constructor.
-     * @param int $id
-     * @param array $labels
-     * @param array $properties
-     */
     public function __construct(
-        protected int   $id,
-        protected array $labels,
-        protected array $properties
+        private int   $id,
+        private array $labels,
+        private array $properties
     )
     {
     }
 
-    /**
-     * @return int
-     */
     public function id(): int
     {
         return $this->id;
     }
 
-    /**
-     * @return array
-     */
     public function labels(): array
     {
         return $this->labels;
     }
 
-    /**
-     * @return array
-     */
     public function properties(): array
     {
         return $this->properties;

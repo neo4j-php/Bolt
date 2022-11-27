@@ -2,7 +2,16 @@
 
 namespace Bolt\protocol\v4;
 
-use Bolt\protocol\{ServerState, Response, V4, V4_1, V4_2, V4_3, V4_4, V5};
+use Bolt\protocol\{
+    ServerState,
+    Response,
+    V4,
+    V4_1,
+    V4_2,
+    V4_3,
+    V4_4,
+    V5
+};
 use Exception;
 
 trait DiscardMessage
@@ -13,7 +22,6 @@ trait DiscardMessage
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-discard
      * @param array $extra [n::Integer, qid::Integer]
-     * @return V4|V4_1|V4_2|V4_3|V4_4|V5
      * @throws Exception
      */
     public function discard(array $extra = []): V4|V4_1|V4_2|V4_3|V4_4|V5

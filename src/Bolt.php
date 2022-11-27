@@ -2,9 +2,8 @@
 
 namespace Bolt;
 
-use Bolt\error\{ConnectException, PackException, UnpackException};
+use Bolt\error\ConnectException;
 use Exception;
-use Bolt\packstream\{IPacker, IUnpacker};
 use Bolt\protocol\{AProtocol, ServerState};
 use Bolt\connection\IConnection;
 
@@ -19,16 +18,15 @@ use Bolt\connection\IConnection;
  */
 final class Bolt
 {
-    private IPacker $packer;
-    private IUnpacker $unpacker;
-    private array $versions = [];
+    private array $protocolVersions = [];
+    private int $packStreamVersion = 1;
+
     public static bool $debug = false;
     public ServerState $serverState;
 
     public function __construct(private IConnection $connection)
     {
         $this->setProtocolVersions(5, 4.4, 4.3);
-        $this->setPackStreamVersion();
     }
 
     /**
@@ -57,31 +55,26 @@ final class Bolt
         }
 
         $this->serverState->set(ServerState::CONNECTED);
-        return new $protocolClass($this->packer, $this->unpacker, $this->connection, $this->serverState);
+        return new $protocolClass($this->packStreamVersion, $this->connection, $this->serverState);
     }
 
     public function setProtocolVersions(int|float|string ...$v): Bolt
     {
-        $this->versions = array_slice($v, 0, 4);
-        while (count($this->versions) < 4)
-            $this->versions[] = 0;
+        $this->protocolVersions = array_slice($v, 0, 4);
+        while (count($this->protocolVersions) < 4)
+            $this->protocolVersions[] = 0;
         return $this;
     }
 
     public function setPackStreamVersion(int $version = 1): Bolt
     {
-        $packerClass = "\\Bolt\\packstream\\v" . $version . "\\Packer";
-        if (!class_exists($packerClass)) {
-            throw new PackException('Requested PackStream version (' . $version . ') not yet implemented');
-        }
-        $this->packer = new $packerClass();
+        $this->packStreamVersion = $version;
+        return $this;
+    }
 
-        $unpackerClass = "\\Bolt\\packstream\\v" . $version . "\\Unpacker";
-        if (!class_exists($unpackerClass)) {
-            throw new UnpackException('Requested PackStream version (' . $version . ') not yet implemented');
-        }
-        $this->unpacker = new $unpackerClass();
-
+    public function setConnection(IConnection $connection): Bolt
+    {
+        $this->connection = $connection;
         return $this;
     }
 
@@ -122,7 +115,7 @@ final class Bolt
         }
 
         $version = implode('.', array_reverse($result));
-        return in_array($version, $this->versions) ? $version : null;
+        return in_array($version, $this->protocolVersions) ? $version : null;
     }
 
     /**
@@ -132,7 +125,7 @@ final class Bolt
     {
         $versions = [];
 
-        foreach ($this->versions as $v) {
+        foreach ($this->protocolVersions as $v) {
             if (is_int($v))
                 $versions[] = pack('N', $v);
             else {

@@ -16,7 +16,6 @@ use Bolt\protocol\IStructure;
 class Path implements IStructure
 {
     /**
-     * Path constructor.
      * @param Node[] $nodes
      * @param UnboundRelationship[] $rels
      * @param int[] $ids

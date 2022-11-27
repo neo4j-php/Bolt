@@ -21,25 +21,21 @@ class Packer implements IPacker
     private const HUGE = 4294967295;
 
     private bool $littleEndian;
-    private array $structuresLt = [];
 
     /**
      * @inheritDoc
      */
-    public function setAvailableStructures(array $structures): void
+    public function __construct(private array $structuresLt = [])
     {
-        $this->structuresLt = $structures;
+        $this->littleEndian = unpack('S', "\x01\x00")[1] === 1;
     }
 
     /**
      * Pack message with parameters
-     * @inheritDoc
      * @throws PackException
      */
     public function pack(int $signature, mixed ...$params): iterable
     {
-        $this->littleEndian = unpack('S', "\x01\x00")[1] === 1;
-
         //structure
         $length = count($params);
         if ($length < self::SMALL) { //TINY_STRUCT

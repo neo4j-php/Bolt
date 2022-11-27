@@ -5,7 +5,18 @@ namespace Bolt\tests;
 use Bolt\Bolt;
 use Bolt\connection\StreamSocket;
 use Bolt\helpers\Auth;
-use Bolt\protocol\{AProtocol, V1, V2, V3, V4, V4_1, V4_2, V4_3, V4_4, V5};
+use Bolt\protocol\{
+    AProtocol,
+    V1,
+    V2,
+    V3,
+    V4,
+    V4_1,
+    V4_2,
+    V4_3,
+    V4_4,
+    V5
+};
 use Bolt\tests\packstream\v1\generators\RandomDataGenerator;
 use PHPUnit\Framework\TestCase;
 

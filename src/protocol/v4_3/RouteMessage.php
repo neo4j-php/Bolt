@@ -12,10 +12,6 @@ trait RouteMessage
      * The ROUTE instructs the server to return the current routing table. In previous versions there was no explicit message for this and a procedure had to be invoked using Cypher through the RUN and PULL messages.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-route
-     * @param array $routing
-     * @param array $bookmarks
-     * @param string|null $db
-     * @return V4_3
      * @throws Exception
      */
     public function route(array $routing, array $bookmarks = [], ?string $db = null): V4_3

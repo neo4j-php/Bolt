@@ -12,9 +12,6 @@ trait InitMessage
      * The INIT message is a request for the connection to be authorized for use with the remote database.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-init
-     * @param string $userAgent
-     * @param array $authToken
-     * @return Response
      * @throws Exception
      */
     public function init(string $userAgent, array $authToken): Response

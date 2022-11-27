@@ -2,7 +2,12 @@
 
 namespace Bolt\protocol\v1;
 
-use Bolt\protocol\{ServerState, Response, V1, V2};
+use Bolt\protocol\{
+    ServerState,
+    Response,
+    V1,
+    V2
+};
 use Exception;
 
 trait AckFailureMessage
@@ -13,7 +18,6 @@ trait AckFailureMessage
      * Until the server receives the ACK_FAILURE message, it will send an IGNORED message in response to any other message from the client.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-ack-failure
-     * @return V1|V2
      * @throws Exception
      */
     public function ackFailure(): V1|V2

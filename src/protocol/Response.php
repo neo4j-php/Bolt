@@ -39,7 +39,6 @@ class Response
 
     /**
      * Get requested bolt message name
-     * @return string
      */
     public function getMessage(): string
     {
@@ -48,7 +47,6 @@ class Response
 
     /**
      * Signature tells you result of your request
-     * @return int
      */
     public function getSignature(): int
     {
@@ -56,8 +54,7 @@ class Response
     }
 
     /**
-     * Get response body
-     * @return array
+     * Get response content
      */
     public function getContent(): array
     {

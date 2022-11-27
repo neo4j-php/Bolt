@@ -2,7 +2,17 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\protocol\{ServerState, Response, V3, V4, V4_1, V4_2, V4_3, V4_4, V5};
+use Bolt\protocol\{
+    ServerState,
+    Response,
+    V3,
+    V4,
+    V4_1,
+    V4_2,
+    V4_3,
+    V4_4,
+    V5
+};
 use Exception;
 
 trait RollbackMessage
@@ -12,7 +22,6 @@ trait RollbackMessage
      * The ROLLBACK message requests that the Explicit Transaction rolls back.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-rollback
-     * @return V3|V4|V4_1|V4_2|V4_3|V4_4|V5
      * @throws Exception
      */
     public function rollback(): V3|V4|V4_1|V4_2|V4_3|V4_4|V5

@@ -66,7 +66,6 @@ class ServerState
 
     /**
      * Internal pointer for current server state
-     * @var string
      */
     private string $current = self::DISCONNECTED;
 
@@ -93,7 +92,6 @@ class ServerState
 
     /**
      * Get current server state
-     * @return string
      */
     public function get(): string
     {
@@ -102,7 +100,6 @@ class ServerState
 
     /**
      * Set current server state
-     * @param string $state
      */
     public function set(string $state): void
     {
@@ -112,8 +109,6 @@ class ServerState
 
     /**
      * Check if current server state equals one of requested
-     * @param string ...$states
-     * @return bool
      */
     public function is(string ...$states): bool
     {

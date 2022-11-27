@@ -2,7 +2,17 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\protocol\{ServerState, Response, V3, V4, V4_1, V4_2, V4_3, V4_4, V5};
+use Bolt\protocol\{
+    ServerState,
+    Response,
+    V3,
+    V4,
+    V4_1,
+    V4_2,
+    V4_3,
+    V4_4,
+    V5
+};
 use Exception;
 
 trait CommitMessage
@@ -12,7 +22,6 @@ trait CommitMessage
      * The COMMIT message request that the Explicit Transaction is done.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-commit
-     * @return V3|V4|V4_1|V4_2|V4_3|V4_4|V5
      * @throws Exception
      */
     public function commit(): V3|V4|V4_1|V4_2|V4_3|V4_4|V5
