@@ -3,9 +3,7 @@
 # Bolt
 PHP library for communication with graph database over TCP socket with Bolt protocol specification. Bolt protocol was created by [Neo4j](https://neo4j.com/) and documentation is available at [https://www.neo4j.com/](https://www.neo4j.com/docs/bolt/current/). This library is aimed to be low level, support all available versions and keep up with protocol messages architecture and specifications.
 
-![DB Tests PHP7](https://github.com/neo4j-php/Bolt/actions/workflows/db-test-php-7.yml/badge.svg?branch=master)
 ![DB Tests PHP8](https://github.com/neo4j-php/Bolt/actions/workflows/db-test-php-8.yml/badge.svg?branch=master)
-![No DB Tests PHP7](https://github.com/neo4j-php/Bolt/actions/workflows/no-db-test-php-7.yml/badge.svg?branch=master)
 ![No DB Tests PHP8](https://github.com/neo4j-php/Bolt/actions/workflows/no-db-test-php-8.yml/badge.svg?branch=master)
 
 [![](https://img.shields.io/github/stars/stefanak-michal/Bolt)](https://github.com/neo4j-php/Bolt/stargazers)
@@ -17,15 +15,15 @@ PHP library for communication with graph database over TCP socket with Bolt prot
 
 ## Version support
 
-We are trying to keep up and this library supports **Neo4j <= 5.2** with **Bolt <= 5.2**.
+We are trying to keep up and this library supports **Neo4j <= 5.2** with **Bolt <= 5.0**.
 
 https://www.neo4j.com/docs/bolt/current/bolt-compatibility/
 
 ## Requirements
 
-Keep up with [PHP supported versions](https://www.php.net/supported-versions.php) means we are at **PHP >= 7.4**.
+Keep up with [PHP supported versions](https://www.php.net/supported-versions.php) means we are at **PHP >= 8.0**.
 
-_If you need support for PHP < 7.4 you can use latest v3.x release. Not all new features are implement backwards and this readme is updated to latest released version._
+_If you need support for PHP < 7.4 you can use latest v3.x release and if you need PHP < 8.0 you can use v5.x. Not all new features are implement backwards and this readme is updated to latest released version._
 
 ### Extensions
 
