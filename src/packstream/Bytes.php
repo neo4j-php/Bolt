@@ -31,7 +31,7 @@ class Bytes implements ArrayAccess, Countable
         return $this->bytes[$offset] ?? null;
     }
 
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         if ($offset === null)
             $this->bytes[] = $value;
@@ -39,7 +39,7 @@ class Bytes implements ArrayAccess, Countable
             $this->bytes[$offset] = $value;
     }
 
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->bytes[$offset]);
     }
