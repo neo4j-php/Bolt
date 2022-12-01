@@ -29,10 +29,6 @@ class Unpacker implements IUnpacker
         $this->littleEndian = unpack('S', "\x01\x00")[1] === 1;
     }
 
-    /**
-     * @inheritDoc
-     * @throws UnpackException
-     */
     public function unpack(string $msg): mixed
     {
         if (empty($msg)) {

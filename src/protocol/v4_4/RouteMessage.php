@@ -8,7 +8,7 @@ use Bolt\protocol\{
     V4_4,
     V5
 };
-use Exception;
+use Bolt\error\BoltException;
 
 trait RouteMessage
 {
@@ -18,7 +18,7 @@ trait RouteMessage
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-route
      * @param array $extra [db::String, imp_user::String]
-     * @throws Exception
+     * @throws BoltException
      */
     public function route(array $routing, array $bookmarks = [], array $extra = []): V4_4|V5
     {
@@ -30,7 +30,7 @@ trait RouteMessage
 
     /**
      * Read ROUTE response
-     * @throws Exception
+     * @throws BoltException
      */
     protected function _route(): iterable
     {

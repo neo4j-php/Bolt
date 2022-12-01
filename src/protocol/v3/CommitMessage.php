@@ -13,7 +13,7 @@ use Bolt\protocol\{
     V4_4,
     V5
 };
-use Exception;
+use Bolt\error\BoltException;
 
 trait CommitMessage
 {
@@ -22,7 +22,7 @@ trait CommitMessage
      * The COMMIT message request that the Explicit Transaction is done.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-commit
-     * @throws Exception
+     * @throws BoltException
      */
     public function commit(): V3|V4|V4_1|V4_2|V4_3|V4_4|V5
     {
@@ -36,7 +36,7 @@ trait CommitMessage
 
     /**
      * Read COMMIT response
-     * @throws Exception
+     * @throws BoltException
      */
     protected function _commit(): iterable
     {

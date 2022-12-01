@@ -9,7 +9,7 @@ use Bolt\protocol\{
     V2,
     V3
 };
-use Exception;
+use Bolt\error\BoltException;
 
 trait PullAllMessage
 {
@@ -18,7 +18,7 @@ trait PullAllMessage
      * The PULL_ALL message issues a request to stream the outstanding result back to the client, before returning to a READY state.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#message-pull
-     * @throws Exception
+     * @throws BoltException
      */
     public function pullAll(): V1|V2|V3
     {
@@ -31,7 +31,7 @@ trait PullAllMessage
 
     /**
      * Read PULL_ALL response
-     * @throws Exception
+     * @throws BoltException
      */
     protected function _pullAll(): iterable
     {

@@ -9,7 +9,7 @@ use Bolt\protocol\{
     V2,
     V3
 };
-use Exception;
+use Bolt\error\BoltException;
 
 trait DiscardAllMessage
 {
@@ -18,7 +18,7 @@ trait DiscardAllMessage
      * The DISCARD_ALL message issues a request to discard the outstanding result and return to a READY state.
      *
      * https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-discard
-     * @throws Exception
+     * @throws BoltException
      */
     public function discardAll(): V1|V2|V3
     {
@@ -31,7 +31,7 @@ trait DiscardAllMessage
 
     /**
      * Read DISCARD_ALL response
-     * @throws Exception
+     * @throws BoltException
      */
     protected function _discardAll(): iterable
     {

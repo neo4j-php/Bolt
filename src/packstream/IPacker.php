@@ -2,6 +2,8 @@
 
 namespace Bolt\packstream;
 
+use Bolt\error\PackException;
+
 /**
  * Interface IPacker
  *
@@ -18,6 +20,7 @@ interface IPacker
 
     /**
      * Pack message
+     * @throws PackException
      */
     public function pack(int $signature, mixed ...$params): iterable;
 }

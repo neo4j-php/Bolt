@@ -13,7 +13,7 @@ use Bolt\protocol\{
     V4_4,
     V5
 };
-use Exception;
+use Bolt\error\BoltException;
 
 trait BeginMessage
 {
@@ -22,7 +22,7 @@ trait BeginMessage
      * The BEGIN message request the creation of a new Explicit Transaction.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-begin
-     * @throws Exception
+     * @throws BoltException
      */
     public function begin(array $extra = []): V3|V4|V4_1|V4_2|V4_3|V4_4|V5
     {
@@ -35,7 +35,7 @@ trait BeginMessage
 
     /**
      * Read BEGIN response
-     * @throws Exception
+     * @throws BoltException
      */
     protected function _begin(): iterable
     {

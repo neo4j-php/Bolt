@@ -13,7 +13,7 @@ use Bolt\protocol\{
     V4_4,
     V5
 };
-use Exception;
+use Bolt\error\BoltException;
 
 trait RollbackMessage
 {
@@ -22,7 +22,7 @@ trait RollbackMessage
      * The ROLLBACK message requests that the Explicit Transaction rolls back.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-rollback
-     * @throws Exception
+     * @throws BoltException
      */
     public function rollback(): V3|V4|V4_1|V4_2|V4_3|V4_4|V5
     {
@@ -35,7 +35,7 @@ trait RollbackMessage
 
     /**
      * Read ROLLBACK response
-     * @throws Exception
+     * @throws BoltException
      */
     protected function _rollback(): iterable
     {

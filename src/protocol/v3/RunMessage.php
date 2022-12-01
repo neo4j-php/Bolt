@@ -13,7 +13,7 @@ use Bolt\protocol\{
     V4_4,
     V5
 };
-use Exception;
+use Bolt\error\BoltException;
 
 trait RunMessage
 {
@@ -22,7 +22,7 @@ trait RunMessage
      * The RUN message requests that a Cypher query is executed with a set of parameters and additional extra data.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-run
-     * @throws Exception
+     * @throws BoltException
      */
     public function run(string $query, array $parameters = [], array $extra = []): V3|V4|V4_1|V4_2|V4_3|V4_4|V5
     {
@@ -42,7 +42,7 @@ trait RunMessage
 
     /**
      * Read RUN response
-     * @throws Exception
+     * @throws BoltException
      */
     protected function _run(): iterable
     {

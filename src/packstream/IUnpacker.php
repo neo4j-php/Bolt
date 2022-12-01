@@ -2,6 +2,8 @@
 
 namespace Bolt\packstream;
 
+use Bolt\error\UnpackException;
+
 /**
  * Interface IUnpacker
  *
@@ -18,6 +20,7 @@ interface IUnpacker
 
     /**
      * Unpack message
+     * @throws UnpackException
      */
     public function unpack(string $msg): mixed;
 

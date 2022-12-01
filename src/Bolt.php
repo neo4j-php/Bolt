@@ -3,7 +3,7 @@
 namespace Bolt;
 
 use Bolt\error\ConnectException;
-use Exception;
+use Bolt\error\BoltException;
 use Bolt\protocol\{AProtocol, ServerState};
 use Bolt\connection\IConnection;
 
@@ -31,7 +31,7 @@ final class Bolt
 
     /**
      * Connect via Connection, execute handshake on it, create and return protocol version class
-     * @throws Exception
+     * @throws BoltException
      */
     public function build(): AProtocol
     {
@@ -80,7 +80,7 @@ final class Bolt
 
     /**
      * @link https://www.neo4j.com/docs/bolt/current/bolt/handshake/
-     * @throws Exception
+     * @throws BoltException
      */
     private function handshake(): string
     {

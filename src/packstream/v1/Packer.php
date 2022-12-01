@@ -30,10 +30,6 @@ class Packer implements IPacker
         $this->littleEndian = unpack('S', "\x01\x00")[1] === 1;
     }
 
-    /**
-     * Pack message with parameters
-     * @throws PackException
-     */
     public function pack(int $signature, mixed ...$params): iterable
     {
         //structure

@@ -32,9 +32,6 @@ class StreamSocket extends AConnection
         $this->sslContextOptions = $options;
     }
 
-    /**
-     * @throws ConnectException
-     */
     public function connect(): bool
     {
         $context = stream_context_create([
@@ -65,9 +62,6 @@ class StreamSocket extends AConnection
         return true;
     }
 
-    /**
-     * @throws ConnectException
-     */
     public function write(string $buffer): void
     {
         if (Bolt::$debug)
@@ -91,9 +85,6 @@ class StreamSocket extends AConnection
         }
     }
 
-    /**
-     * @throws ConnectException
-     */
     public function read(int $length = 2048): string
     {
         $output = '';

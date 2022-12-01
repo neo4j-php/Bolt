@@ -2,8 +2,6 @@
 
 namespace Bolt\error;
 
-use Exception;
-
 /**
  * Class ConnectException
  *
@@ -11,7 +9,7 @@ use Exception;
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\error
  */
-class ConnectException extends Exception
+class ConnectException extends BoltException
 {
 
 }

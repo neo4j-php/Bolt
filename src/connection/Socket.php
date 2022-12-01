@@ -22,9 +22,6 @@ class Socket extends AConnection
 
     private const POSSIBLE_TIMEOUTS_CODES = [11, 10060];
 
-    /**
-     * @throws ConnectException
-     */
     public function connect(): bool
     {
         if (!extension_loaded('sockets')) {
@@ -53,9 +50,6 @@ class Socket extends AConnection
         return true;
     }
 
-    /**
-     * @throws ConnectException
-     */
     public function write(string $buffer): void
     {
         if ($this->socket === false) {
@@ -75,9 +69,6 @@ class Socket extends AConnection
         }
     }
 
-    /**
-     * @throws ConnectException
-     */
     public function read(int $length = 2048): string
     {
         if ($this->socket === false)

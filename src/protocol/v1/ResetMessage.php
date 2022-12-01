@@ -15,7 +15,7 @@ use Bolt\protocol\{
     V4_4,
     V5
 };
-use Exception;
+use Bolt\error\BoltException;
 
 trait ResetMessage
 {
@@ -24,7 +24,7 @@ trait ResetMessage
      * The RESET message requests that the connection should be set back to its initial READY state, as if an INIT had just successfully completed.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-reset
-     * @throws Exception
+     * @throws BoltException
      */
     public function reset(): V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5
     {
@@ -36,7 +36,7 @@ trait ResetMessage
 
     /**
      * Read RESET response
-     * @throws Exception
+     * @throws BoltException
      */
     protected function _reset(): iterable
     {

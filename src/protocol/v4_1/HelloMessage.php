@@ -3,7 +3,7 @@
 namespace Bolt\protocol\v4_1;
 
 use Bolt\protocol\Response;
-use Exception;
+use Bolt\error\BoltException;
 
 trait HelloMessage
 {
@@ -17,7 +17,7 @@ trait HelloMessage
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-hello
      * @param array $extra Use \Bolt\helpers\Auth to generate appropiate array
-     * @throws Exception
+     * @throws BoltException
      */
     public function hello(array $extra): Response
     {

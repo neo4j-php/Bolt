@@ -8,7 +8,7 @@ use Bolt\protocol\{
     V1,
     V2
 };
-use Exception;
+use Bolt\error\BoltException;
 
 trait RunMessage
 {
@@ -17,7 +17,7 @@ trait RunMessage
      * A RUN message submits a new query for execution, the result of which will be consumed by a subsequent message, such as PULL_ALL.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-run
-     * @throws Exception
+     * @throws BoltException
      */
     public function run(string $query, array $parameters = []): V1|V2
     {
@@ -30,7 +30,7 @@ trait RunMessage
 
     /**
      * Read RUN response
-     * @throws Exception
+     * @throws BoltException
      */
     protected function _run(): iterable
     {

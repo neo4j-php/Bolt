@@ -8,7 +8,7 @@ use Bolt\protocol\{
     V1,
     V2
 };
-use Exception;
+use Bolt\error\BoltException;
 
 trait AckFailureMessage
 {
@@ -18,7 +18,7 @@ trait AckFailureMessage
      * Until the server receives the ACK_FAILURE message, it will send an IGNORED message in response to any other message from the client.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-ack-failure
-     * @throws Exception
+     * @throws BoltException
      */
     public function ackFailure(): V1|V2
     {
@@ -31,7 +31,7 @@ trait AckFailureMessage
 
     /**
      * Read ACK_FAILURE response
-     * @throws Exception
+     * @throws BoltException
      */
     protected function _ackFailure(): iterable
     {

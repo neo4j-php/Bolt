@@ -6,7 +6,7 @@ use Bolt\error\PackException;
 use Bolt\error\UnpackException;
 use Bolt\packstream\{IPacker, IUnpacker};
 use Bolt\connection\IConnection;
-use Exception;
+use Bolt\error\ConnectException;
 
 /**
  * Abstract class AProtocol
@@ -48,7 +48,7 @@ abstract class AProtocol
 
     /**
      * Write to connection
-     * @throws Exception
+     * @throws ConnectException
      */
     protected function write(iterable $generator): void
     {
@@ -58,7 +58,7 @@ abstract class AProtocol
 
     /**
      * Read from connection
-     * @throws Exception
+     * @throws ConnectException
      */
     protected function read(?int &$signature): array
     {

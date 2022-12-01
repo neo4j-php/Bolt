@@ -12,7 +12,7 @@ use Bolt\protocol\{
     V4_4,
     V5
 };
-use Exception;
+use Bolt\error\BoltException;
 
 trait PullMessage
 {
@@ -22,7 +22,7 @@ trait PullMessage
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#message-pull
      * @param array $extra [n::Integer, qid::Integer]
-     * @throws Exception
+     * @throws BoltException
      */
     public function pull(array $extra = []): V4|V4_1|V4_2|V4_3|V4_4|V5
     {
@@ -42,7 +42,7 @@ trait PullMessage
     /**
      * Read PULL response
      * @return array
-     * @throws Exception
+     * @throws BoltException
      */
     protected function _pull(): iterable
     {
