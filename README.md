@@ -23,7 +23,7 @@ https://www.neo4j.com/docs/bolt/current/bolt-compatibility/
 
 Keep up with [PHP supported versions](https://www.php.net/supported-versions.php) means we are at **PHP >= 8.0**.
 
-_If you need support for PHP < 7.4 you can use latest v3.x release and if you need PHP < 8.0 you can use v5.x. Not all new features are implement backwards and this readme is updated to latest released version._
+_If you need support for PHP < 7.4 you can use latest v3.x release and if you need support for PHP 7.4 you can use v5.x. Not all new features are implement backwards and this readme is updated to latest released version._
 
 ### Extensions
 
