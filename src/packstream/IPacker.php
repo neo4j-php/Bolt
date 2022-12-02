@@ -2,6 +2,8 @@
 
 namespace Bolt\packstream;
 
+use Bolt\error\PackException;
+
 /**
  * Interface IPacker
  *
@@ -12,14 +14,13 @@ namespace Bolt\packstream;
 interface IPacker
 {
     /**
-     * @param $signature
-     * @param mixed ...$params
-     * @return iterable
+     * @param array $structuresLt [signature => classFQN]
      */
-    public function pack($signature, ...$params): iterable;
+    public function __construct(array $structuresLt = []);
 
     /**
-     * @param array $structures [signature => classFQN]
+     * Pack message
+     * @throws PackException
      */
-    public function setAvailableStructures(array $structures);
+    public function pack(int $signature, mixed ...$params): iterable;
 }

@@ -16,17 +16,12 @@ use Bolt\error\ConnectionTimeoutException;
 class Socket extends AConnection
 {
     /**
-     * @var resource|object|bool
+     * @var resource|\Socket|bool
      */
     private $socket = false;
 
     private const POSSIBLE_TIMEOUTS_CODES = [11, 10060];
 
-    /**
-     * Create socket connection
-     * @return bool
-     * @throws ConnectException
-     */
     public function connect(): bool
     {
         if (!extension_loaded('sockets')) {
@@ -55,12 +50,7 @@ class Socket extends AConnection
         return true;
     }
 
-    /**
-     * Write buffer to socket
-     * @param string $buffer
-     * @throws ConnectException
-     */
-    public function write(string $buffer)
+    public function write(string $buffer): void
     {
         if ($this->socket === false) {
             throw new ConnectException('Not initialized socket');
@@ -79,12 +69,6 @@ class Socket extends AConnection
         }
     }
 
-    /**
-     * Read buffer from socket
-     * @param int $length
-     * @return string
-     * @throws ConnectException
-     */
     public function read(int $length = 2048): string
     {
         if ($this->socket === false)
@@ -92,7 +76,7 @@ class Socket extends AConnection
 
         $output = '';
         do {
-            $readed = @socket_read($this->socket, $length - mb_strlen($output, '8bit'), PHP_BINARY_READ);
+            $readed = @socket_read($this->socket, $length - mb_strlen($output, '8bit'));
             if ($readed === false)
                 $this->throwConnectException();
             $output .= $readed;
@@ -104,10 +88,7 @@ class Socket extends AConnection
         return $output;
     }
 
-    /**
-     * Close socket connection
-     */
-    public function disconnect()
+    public function disconnect(): void
     {
         if ($this->socket !== false) {
             @socket_shutdown($this->socket);
@@ -115,13 +96,13 @@ class Socket extends AConnection
         }
     }
 
-    public function setTimeout(float $timeout)
+    public function setTimeout(float $timeout): void
     {
         parent::setTimeout($timeout);
         $this->configureTimeout();
     }
 
-    private function configureTimeout()
+    private function configureTimeout(): void
     {
         if ($this->socket === false)
             return;

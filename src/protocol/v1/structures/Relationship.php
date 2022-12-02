@@ -15,64 +15,36 @@ use Bolt\protocol\IStructure;
  */
 class Relationship implements IStructure
 {
-    private int $id;
-    private int $startNodeId;
-    private int $endNodeId;
-    private string $type;
-    private array $properties;
-
-    /**
-     * Relationship constructor.
-     * @param int $id
-     * @param int $startNodeId
-     * @param int $endNodeId
-     * @param string $type
-     * @param array $properties
-     */
-    public function __construct(int $id, int $startNodeId, int $endNodeId, string $type, array $properties)
+    public function __construct(
+        private int    $id,
+        private int    $startNodeId,
+        private int    $endNodeId,
+        private string $type,
+        private array  $properties
+    )
     {
-        $this->id = $id;
-        $this->startNodeId = $startNodeId;
-        $this->endNodeId = $endNodeId;
-        $this->type = $type;
-        $this->properties = $properties;
     }
 
-    /**
-     * @return int
-     */
     public function id(): int
     {
         return $this->id;
     }
 
-    /**
-     * @return int
-     */
     public function startNodeId(): int
     {
         return $this->startNodeId;
     }
 
-    /**
-     * @return int
-     */
     public function endNodeId(): int
     {
         return $this->endNodeId;
     }
 
-    /**
-     * @return string
-     */
     public function type(): string
     {
         return $this->type;
     }
 
-    /**
-     * @return array
-     */
     public function properties(): array
     {
         return $this->properties;

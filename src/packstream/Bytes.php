@@ -14,11 +14,8 @@ use ArrayAccess, Countable;
  */
 class Bytes implements ArrayAccess, Countable
 {
-    private array $bytes = [];
-
-    public function __construct(array $bytes = [])
+    public function __construct(private array $bytes = [])
     {
-        $this->bytes = $bytes;
     }
 
     public function offsetExists($offset): bool

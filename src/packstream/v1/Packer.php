@@ -21,27 +21,17 @@ class Packer implements IPacker
     private const HUGE = 4294967295;
 
     private bool $littleEndian;
-    private array $structuresLt = [];
 
     /**
      * @inheritDoc
      */
-    public function setAvailableStructures(array $structures)
-    {
-        $this->structuresLt = $structures;
-    }
-
-    /**
-     * Pack message with parameters
-     * @param $signature
-     * @param mixed ...$params
-     * @return iterable
-     * @throws PackException
-     */
-    public function pack($signature, ...$params): iterable
+    public function __construct(private array $structuresLt = [])
     {
         $this->littleEndian = unpack('S', "\x01\x00")[1] === 1;
+    }
 
+    public function pack(int $signature, mixed ...$params): iterable
+    {
         //structure
         $length = count($params);
         if ($length < self::SMALL) { //TINY_STRUCT
@@ -73,11 +63,9 @@ class Packer implements IPacker
     }
 
     /**
-     * @param mixed $param
-     * @return iterable
      * @throws PackException
      */
-    private function p($param): iterable
+    private function p(mixed $param): iterable
     {
         switch (gettype($param)) {
             case 'integer':
@@ -122,8 +110,6 @@ class Packer implements IPacker
     }
 
     /**
-     * @param string $str
-     * @return iterable
      * @throws PackException
      */
     private function packString(string $str): iterable
@@ -143,10 +129,6 @@ class Packer implements IPacker
         }
     }
 
-    /**
-     * @param float $value
-     * @return iterable
-     */
     private function packFloat(float $value): iterable
     {
         $packed = pack('d', $value);
@@ -154,8 +136,6 @@ class Packer implements IPacker
     }
 
     /**
-     * @param int $value
-     * @return iterable
      * @throws PackException
      */
     private function packInteger(int $value): iterable
@@ -179,11 +159,9 @@ class Packer implements IPacker
     }
 
     /**
-     * @param array|IPackDictionaryGenerator $param
-     * @return iterable
      * @throws PackException
      */
-    private function packDictionary($param): iterable
+    private function packDictionary(array|IPackDictionaryGenerator $param): iterable
     {
         $size = is_array($param) ? count($param) : $param->count();
 
@@ -206,11 +184,9 @@ class Packer implements IPacker
     }
 
     /**
-     * @param array|IPackListGenerator $param
-     * @return iterable
      * @throws PackException
      */
-    private function packList($param): iterable
+    private function packList(array|IPackListGenerator $param): iterable
     {
         $size = is_array($param) ? count($param) : $param->count();
 
@@ -232,8 +208,6 @@ class Packer implements IPacker
     }
 
     /**
-     * @param IStructure $structure
-     * @return iterable
      * @throws PackException
      */
     private function packStructure(IStructure $structure): iterable
@@ -265,8 +239,6 @@ class Packer implements IPacker
     }
 
     /**
-     * @param Bytes $bytes
-     * @return iterable
      * @throws PackException
      */
     private function packByteArray(Bytes $bytes): iterable

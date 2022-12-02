@@ -12,20 +12,13 @@ use Bolt\packstream\v1\{Packer, Unpacker};
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- *
- * @covers \Bolt\protocol\AProtocol
- * @covers \Bolt\protocol\V3
- *
  * @package Bolt\tests\protocol
  */
 class V3Test extends ATest
 {
-    /**
-     * @return V3
-     */
     public function test__construct(): V3
     {
-        $cls = new V3(new Packer, new Unpacker, $this->mockConnection(), new ServerState());
+        $cls = new V3(1, $this->mockConnection(), new ServerState());
         $this->assertInstanceOf(V3::class, $cls);
         $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
             $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
@@ -35,9 +28,8 @@ class V3Test extends ATest
 
     /**
      * @depends test__construct
-     * @param V3 $cls
      */
-    public function testHello(V3 $cls)
+    public function testHello(V3 $cls): void
     {
         self::$readArray = [
             [0x70, (object)[]],
@@ -69,9 +61,8 @@ class V3Test extends ATest
 
     /**
      * @depends test__construct
-     * @param V3 $cls
      */
-    public function testRun(V3 $cls)
+    public function testRun(V3 $cls): void
     {
         self::$readArray = [
             [0x70, (object)[]],
@@ -115,9 +106,8 @@ class V3Test extends ATest
 
     /**
      * @depends test__construct
-     * @param V3 $cls
      */
-    public function testBegin(V3 $cls)
+    public function testBegin(V3 $cls): void
     {
         self::$readArray = [
             [0x70, (object)[]],
@@ -147,9 +137,8 @@ class V3Test extends ATest
 
     /**
      * @depends test__construct
-     * @param V3 $cls
      */
-    public function testCommit(V3 $cls)
+    public function testCommit(V3 $cls): void
     {
         self::$readArray = [
             [0x70, (object)[]],
@@ -178,9 +167,8 @@ class V3Test extends ATest
 
     /**
      * @depends test__construct
-     * @param V3 $cls
      */
-    public function testRollback(V3 $cls)
+    public function testRollback(V3 $cls): void
     {
         self::$readArray = [
             [0x70, (object)[]],
@@ -209,9 +197,8 @@ class V3Test extends ATest
 
     /**
      * @depends test__construct
-     * @param V3 $cls
      */
-    public function testGoodbye(V3 $cls)
+    public function testGoodbye(V3 $cls): void
     {
         self::$readArray = [1, 2, 0];
         self::$writeBuffer = [

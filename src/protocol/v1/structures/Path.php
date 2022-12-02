@@ -16,29 +16,16 @@ use Bolt\protocol\IStructure;
 class Path implements IStructure
 {
     /**
-     * @var Node[]
-     */
-    private array $nodes;
-    /**
-     * @var UnboundRelationship[]
-     */
-    private array $rels;
-    /**
-     * @var int[]
-     */
-    private array $ids;
-
-    /**
-     * Path constructor.
      * @param Node[] $nodes
      * @param UnboundRelationship[] $rels
      * @param int[] $ids
      */
-    public function __construct(array $nodes, array $rels, array $ids)
+    public function __construct(
+        private array $nodes,
+        private array $rels,
+        private array $ids
+    )
     {
-        $this->nodes = $nodes;
-        $this->rels = $rels;
-        $this->ids = $ids;
     }
 
     /**

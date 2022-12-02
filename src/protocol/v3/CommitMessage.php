@@ -2,8 +2,18 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\protocol\{AProtocol, ServerState, Response};
-use Exception;
+use Bolt\protocol\{
+    ServerState,
+    Response,
+    V3,
+    V4,
+    V4_1,
+    V4_2,
+    V4_3,
+    V4_4,
+    V5
+};
+use Bolt\error\BoltException;
 
 trait CommitMessage
 {
@@ -12,10 +22,9 @@ trait CommitMessage
      * The COMMIT message request that the Explicit Transaction is done.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-commit
-     * @return AProtocol|\Bolt\protocol\V3|\Bolt\protocol\V4|\Bolt\protocol\V4_1|\Bolt\protocol\V4_2|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4
-     * @throws Exception
+     * @throws BoltException
      */
-    public function commit(): AProtocol
+    public function commit(): V3|V4|V4_1|V4_2|V4_3|V4_4|V5
     {
         $this->serverState->is(ServerState::TX_READY, ServerState::TX_STREAMING);
         $this->write($this->packer->pack(0x12));
@@ -27,16 +36,16 @@ trait CommitMessage
 
     /**
      * Read COMMIT response
-     * @throws Exception
+     * @throws BoltException
      */
     protected function _commit(): iterable
     {
-        $message = $this->read($signature);
+        $content = $this->read($signature);
 
         if ($signature == Response::SIGNATURE_SUCCESS) {
             $this->serverState->set(ServerState::READY);
         }
 
-        yield new Response(Response::MESSAGE_COMMIT, $signature, $message);
+        yield new Response(Response::MESSAGE_COMMIT, $signature, $content);
     }
 }

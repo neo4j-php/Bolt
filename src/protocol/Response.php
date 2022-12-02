@@ -10,10 +10,6 @@ namespace Bolt\protocol;
  */
 class Response
 {
-    private string $message;
-    private int $signature;
-    private array $content = [];
-
     public const MESSAGE_INIT = 'INIT';
     public const MESSAGE_HELLO = 'HELLO';
     public const MESSAGE_RESET = 'RESET';
@@ -33,18 +29,16 @@ class Response
     public const SIGNATURE_IGNORED = 0x7E; //126
     public const SIGNATURE_RECORD = 0x71; //113
 
-    public function __construct(string $message, int $signature, $content)
+    public function __construct(
+        private string $message,
+        private int    $signature,
+        private array  $content = []
+    )
     {
-        $this->message = $message;
-        $this->signature = $signature;
-        if (is_array($content)) {
-            $this->content = $content;
-        }
     }
 
     /**
      * Get requested bolt message name
-     * @return string
      */
     public function getMessage(): string
     {
@@ -53,7 +47,6 @@ class Response
 
     /**
      * Signature tells you result of your request
-     * @return int
      */
     public function getSignature(): int
     {
@@ -61,8 +54,7 @@ class Response
     }
 
     /**
-     * Get response body
-     * @return array
+     * Get response content
      */
     public function getContent(): array
     {

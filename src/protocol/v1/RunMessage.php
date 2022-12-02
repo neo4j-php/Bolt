@@ -2,8 +2,13 @@
 
 namespace Bolt\protocol\v1;
 
-use Bolt\protocol\{AProtocol, ServerState, Response};
-use Exception;
+use Bolt\protocol\{
+    ServerState,
+    Response,
+    V1,
+    V2
+};
+use Bolt\error\BoltException;
 
 trait RunMessage
 {
@@ -12,12 +17,9 @@ trait RunMessage
      * A RUN message submits a new query for execution, the result of which will be consumed by a subsequent message, such as PULL_ALL.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-run
-     * @param string $query
-     * @param array $parameters
-     * @return AProtocol|\Bolt\protocol\V1|\Bolt\protocol\V2
-     * @throws Exception
+     * @throws BoltException
      */
-    public function run(string $query, array $parameters = []): AProtocol
+    public function run(string $query, array $parameters = []): V1|V2
     {
         $this->serverState->is(ServerState::READY);
         $this->write($this->packer->pack(0x10, $query, (object)$parameters));
@@ -28,16 +30,16 @@ trait RunMessage
 
     /**
      * Read RUN response
-     * @throws Exception
+     * @throws BoltException
      */
     protected function _run(): iterable
     {
-        $message = $this->read($signature);
+        $content = $this->read($signature);
 
         if ($signature == Response::SIGNATURE_SUCCESS) {
             $this->serverState->set(ServerState::STREAMING);
         }
 
-        yield new Response(Response::MESSAGE_RUN, $signature, $message);
+        yield new Response(Response::MESSAGE_RUN, $signature, $content);
     }
 }

@@ -2,8 +2,8 @@
 
 namespace Bolt\protocol\v4_3;
 
-use Bolt\protocol\{AProtocol, ServerState, Response};
-use Exception;
+use Bolt\protocol\{ServerState, Response, V4_3};
+use Bolt\error\BoltException;
 
 trait RouteMessage
 {
@@ -12,13 +12,9 @@ trait RouteMessage
      * The ROUTE instructs the server to return the current routing table. In previous versions there was no explicit message for this and a procedure had to be invoked using Cypher through the RUN and PULL messages.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-route
-     * @param array $routing
-     * @param array $bookmarks
-     * @param string|null $db
-     * @return AProtocol|\Bolt\protocol\V4_3
-     * @throws Exception
+     * @throws BoltException
      */
-    public function route(array $routing, array $bookmarks = [], ?string $db = null): AProtocol
+    public function route(array $routing, array $bookmarks = [], ?string $db = null): V4_3
     {
         $this->serverState->is(ServerState::READY);
         $this->write($this->packer->pack(0x66, (object)$routing, $bookmarks, $db));
@@ -28,11 +24,11 @@ trait RouteMessage
 
     /**
      * Read ROUTE response
-     * @throws Exception
+     * @throws BoltException
      */
     protected function _route(): iterable
     {
-        $message = $this->read($signature);
-        yield new Response(Response::MESSAGE_ROUTE, $signature, $message);
+        $content = $this->read($signature);
+        yield new Response(Response::MESSAGE_ROUTE, $signature, $content);
     }
 }

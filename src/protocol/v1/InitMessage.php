@@ -3,7 +3,7 @@
 namespace Bolt\protocol\v1;
 
 use Bolt\protocol\{ServerState, Response};
-use Exception;
+use Bolt\error\BoltException;
 
 trait InitMessage
 {
@@ -12,17 +12,14 @@ trait InitMessage
      * The INIT message is a request for the connection to be authorized for use with the remote database.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-init
-     * @param string $userAgent
-     * @param array $authToken
-     * @return Response
-     * @throws Exception
+     * @throws BoltException
      */
     public function init(string $userAgent, array $authToken): Response
     {
         $this->serverState->is(ServerState::CONNECTED);
 
         $this->write($this->packer->pack(0x01, $userAgent, $authToken));
-        $message = $this->read($signature);
+        $content = $this->read($signature);
 
         if ($signature == Response::SIGNATURE_SUCCESS) {
             $this->serverState->set(ServerState::READY);
@@ -32,6 +29,6 @@ trait InitMessage
             $this->serverState->set(ServerState::DEFUNCT);
         }
 
-        return new Response(Response::MESSAGE_INIT, $signature, $message);
+        return new Response(Response::MESSAGE_INIT, $signature, $content);
     }
 }

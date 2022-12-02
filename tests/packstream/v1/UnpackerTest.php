@@ -3,13 +3,7 @@
 namespace Bolt\tests\packstream\v1;
 
 use Bolt\Bolt;
-use Bolt\protocol\{
-    AProtocol,
-    Response,
-    V4_3,
-    V4_4,
-    V5
-};
+use Bolt\protocol\{AProtocol, Response, V1, V2, V3, V4, V4_1, V4_2, V4_3, V4_4, V5};
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -17,14 +11,11 @@ use PHPUnit\Framework\TestCase;
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- *
- * @covers \Bolt\packstream\v1\Unpacker
- *
  * @package Bolt\tests\packstream\v1
  */
 class UnpackerTest extends TestCase
 {
-    public function testInit(): AProtocol
+    public function testInit(): AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5
     {
         $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
         $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
@@ -32,7 +23,7 @@ class UnpackerTest extends TestCase
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var AProtocol|V4_3|V4_4|V5 $protocol */
+        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
@@ -44,9 +35,8 @@ class UnpackerTest extends TestCase
 
     /**
      * @depends testInit
-     * @param AProtocol $protocol
      */
-    public function testNull(AProtocol $protocol)
+    public function testNull(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
     {
         $gen = $protocol
             ->run('RETURN null', [], ['mode' => 'r'])
@@ -62,9 +52,8 @@ class UnpackerTest extends TestCase
 
     /**
      * @depends testInit
-     * @param AProtocol $protocol
      */
-    public function testBoolean(AProtocol $protocol)
+    public function testBoolean(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
     {
         $gen = $protocol
             ->run('RETURN true, false', [], ['mode' => 'r'])
@@ -82,9 +71,8 @@ class UnpackerTest extends TestCase
 
     /**
      * @depends testInit
-     * @param AProtocol $protocol
      */
-    public function testInteger(AProtocol $protocol)
+    public function testInteger(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
     {
         $gen = $protocol
             ->run('RETURN -16, 0, 127, -17, -128, 128, 32767, 32768, 2147483647, 2147483648, 9223372036854775807, -129, -32768, -32769, -2147483648, -2147483649, -9223372036854775808', [], ['mode' => 'r'])
@@ -103,9 +91,8 @@ class UnpackerTest extends TestCase
 
     /**
      * @depends testInit
-     * @param AProtocol $protocol
      */
-    public function testFloat(AProtocol $protocol)
+    public function testFloat(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
     {
         for ($i = 0; $i < 10; $i++) {
             $num = mt_rand(-mt_getrandmax(), mt_getrandmax()) / mt_getrandmax();
@@ -127,10 +114,8 @@ class UnpackerTest extends TestCase
     /**
      * @depends      testInit
      * @dataProvider stringProvider
-     * @param string $str
-     * @param AProtocol $protocol
      */
-    public function testString(string $str, AProtocol $protocol)
+    public function testString(string $str, AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
     {
         $gen = $protocol
             ->run('RETURN "' . str_replace(['\\', '"'], ['\\\\', '\\"'], $str) . '" AS a', [], ['mode' => 'r'])
@@ -162,10 +147,8 @@ class UnpackerTest extends TestCase
     /**
      * @depends      testInit
      * @dataProvider listProvider
-     * @param int $size
-     * @param AProtocol $protocol
      */
-    public function testList(int $size, AProtocol $protocol)
+    public function testList(int $size, AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
     {
         $gen = $protocol
             ->run('RETURN range(0, ' . $size . ') AS a', [], ['mode' => 'r'])
@@ -189,11 +172,8 @@ class UnpackerTest extends TestCase
     /**
      * @depends      testInit
      * @dataProvider dictionaryProvider
-     * @param string $query
-     * @param int $size
-     * @param AProtocol $protocol
      */
-    public function testDictionary(string $query, int $size, AProtocol $protocol)
+    public function testDictionary(string $query, int $size, AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
     {
         $gen = $protocol
             ->run($query, [], ['mode' => 'r'])

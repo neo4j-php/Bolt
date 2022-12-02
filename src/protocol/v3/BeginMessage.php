@@ -2,8 +2,18 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\protocol\{AProtocol, ServerState, Response};
-use Exception;
+use Bolt\protocol\{
+    ServerState,
+    Response,
+    V3,
+    V4,
+    V4_1,
+    V4_2,
+    V4_3,
+    V4_4,
+    V5
+};
+use Bolt\error\BoltException;
 
 trait BeginMessage
 {
@@ -12,11 +22,9 @@ trait BeginMessage
      * The BEGIN message request the creation of a new Explicit Transaction.
      *
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-begin
-     * @param array $extra
-     * @return AProtocol|\Bolt\protocol\V3|\Bolt\protocol\V4|\Bolt\protocol\V4_1|\Bolt\protocol\V4_2|\Bolt\protocol\V4_3|\Bolt\protocol\V4_4
-     * @throws Exception
+     * @throws BoltException
      */
-    public function begin(array $extra = []): AProtocol
+    public function begin(array $extra = []): V3|V4|V4_1|V4_2|V4_3|V4_4|V5
     {
         $this->serverState->is(ServerState::READY);
         $this->write($this->packer->pack(0x11, (object)$extra));
@@ -27,16 +35,16 @@ trait BeginMessage
 
     /**
      * Read BEGIN response
-     * @throws Exception
+     * @throws BoltException
      */
     protected function _begin(): iterable
     {
-        $message = $this->read($signature);
+        $content = $this->read($signature);
 
         if ($signature == Response::SIGNATURE_SUCCESS) {
             $this->serverState->set(ServerState::TX_READY);
         }
 
-        yield new Response(Response::MESSAGE_BEGIN, $signature, $message);
+        yield new Response(Response::MESSAGE_BEGIN, $signature, $content);
     }
 }

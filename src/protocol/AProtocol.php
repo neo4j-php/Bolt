@@ -2,9 +2,11 @@
 
 namespace Bolt\protocol;
 
+use Bolt\error\PackException;
+use Bolt\error\UnpackException;
 use Bolt\packstream\{IPacker, IUnpacker};
 use Bolt\connection\IConnection;
-use Exception;
+use Bolt\error\ConnectException;
 
 /**
  * Abstract class AProtocol
@@ -15,40 +17,40 @@ use Exception;
  */
 abstract class AProtocol
 {
-    protected IPacker $packer;
-    protected IUnpacker $unpacker;
-    protected IConnection $connection;
-
-    public ServerState $serverState;
-
     /** @var string[] */
     protected array $pipelinedMessages = [];
 
-    /**
-     * AProtocol constructor.
-     * @param IPacker $packer
-     * @param IUnpacker $unpacker
-     * @param IConnection $connection
-     * @param ServerState $serverState
-     */
-    public function __construct(IPacker $packer, IUnpacker $unpacker, IConnection $connection, ServerState $serverState)
-    {
-        $this->packer = $packer;
-        $this->unpacker = $unpacker;
-        $this->connection = $connection;
-        $this->serverState = $serverState;
+    protected IPacker $packer;
+    protected IUnpacker $unpacker;
 
-        if (method_exists($this, 'setAvailableStructures')) {
-            $this->setAvailableStructures();
+    /**
+     * @throws UnpackException
+     * @throws PackException
+     */
+    public function __construct(
+        int                   $packStreamVersion,
+        protected IConnection $connection,
+        public ServerState    $serverState
+    )
+    {
+        $packerClass = "\\Bolt\\packstream\\v" . $packStreamVersion . "\\Packer";
+        if (!class_exists($packerClass)) {
+            throw new PackException('Requested PackStream version (' . $packStreamVersion . ') not yet implemented');
         }
+        $this->packer = new $packerClass($this->packStructuresLt ?? []);
+
+        $unpackerClass = "\\Bolt\\packstream\\v" . $packStreamVersion . "\\Unpacker";
+        if (!class_exists($unpackerClass)) {
+            throw new UnpackException('Requested PackStream version (' . $packStreamVersion . ') not yet implemented');
+        }
+        $this->unpacker = new $unpackerClass($this->unpackStructuresLt ?? []);
     }
 
     /**
      * Write to connection
-     * @param iterable $generator
-     * @throws Exception
+     * @throws ConnectException
      */
-    protected function write(iterable $generator)
+    protected function write(iterable $generator): void
     {
         foreach ($generator as $buffer)
             $this->connection->write($buffer);
@@ -56,11 +58,9 @@ abstract class AProtocol
 
     /**
      * Read from connection
-     * @param int|null $signature
-     * @return mixed|null
-     * @throws Exception
+     * @throws ConnectException
      */
-    protected function read(?int &$signature)
+    protected function read(?int &$signature): array
     {
         $msg = '';
         while (true) {
@@ -71,16 +71,19 @@ abstract class AProtocol
             $msg .= $this->connection->read($length);
         }
 
-        $output = null;
+        $output = [];
         $signature = 0;
         if (!empty($msg)) {
             $output = $this->unpacker->unpack($msg);
             $signature = $this->unpacker->getSignature();
 
-            if ($signature == Response::SIGNATURE_FAILURE)
+            if ($signature == Response::SIGNATURE_FAILURE) {
                 $this->serverState->set(ServerState::FAILED);
-            elseif ($signature == Response::SIGNATURE_IGNORED)
+            } elseif ($signature == Response::SIGNATURE_IGNORED) {
                 $this->serverState->set(ServerState::INTERRUPTED);
+                // Ignored doesn't have any response content
+                $output = [];
+            }
         }
 
         return $output;
@@ -88,7 +91,6 @@ abstract class AProtocol
 
     /**
      * Returns the bolt protocol version as a string.
-     * @return string
      */
     public function getVersion(): string
     {
@@ -101,7 +103,6 @@ abstract class AProtocol
 
     /**
      * Read responses from host output buffer.
-     * @return \Iterator|Response[]
      */
     public function getResponses(): \Iterator
     {
@@ -115,7 +116,6 @@ abstract class AProtocol
 
     /**
      * Read one response from host output buffer
-     * @return Response
      */
     public function getResponse(): Response
     {

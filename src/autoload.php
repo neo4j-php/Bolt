@@ -1,6 +1,6 @@
 <?php
 
-define('DS', DIRECTORY_SEPARATOR);
+const DS = DIRECTORY_SEPARATOR;
 
 spl_autoload_register(function ($name) {
     $parts = explode("\\", $name);

@@ -11,13 +11,11 @@ namespace Bolt\tests\packstream\v1\generators;
  */
 class ListGenerator implements \Bolt\packstream\IPackListGenerator
 {
-    private int $position;
-    public array $array;
-
-    public function __construct(array $data)
+    public function __construct(
+        public array $array,
+        private int  $position = 0
+    )
     {
-        $this->array = $data;
-        $this->position = 0;
     }
 
     public function rewind(): void
@@ -25,12 +23,12 @@ class ListGenerator implements \Bolt\packstream\IPackListGenerator
         $this->position = 0;
     }
 
-    public function current()
+    public function current(): mixed
     {
         return $this->array[$this->position];
     }
 
-    public function key()
+    public function key(): int
     {
         return $this->position;
     }

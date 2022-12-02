@@ -2,6 +2,8 @@
 
 namespace Bolt\packstream;
 
+use Bolt\error\UnpackException;
+
 /**
  * Interface IUnpacker
  *
@@ -12,20 +14,18 @@ namespace Bolt\packstream;
 interface IUnpacker
 {
     /**
-     * Unpack message
-     * @param string $msg
-     * @return mixed
+     * @param array $structuresLt [signature => classFQN]
      */
-    public function unpack(string $msg);
+    public function __construct(array $structuresLt = []);
+
+    /**
+     * Unpack message
+     * @throws UnpackException
+     */
+    public function unpack(string $msg): mixed;
 
     /**
      * Get unpacked message status signature
-     * @return int
      */
     public function getSignature(): int;
-
-    /**
-     * @param array $structures [signature => classFQN]
-     */
-    public function setAvailableStructures(array $structures);
 }

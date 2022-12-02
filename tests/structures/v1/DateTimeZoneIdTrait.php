@@ -2,20 +2,22 @@
 
 namespace Bolt\tests\structures\v1;
 
-use Bolt\protocol\AProtocol;
-use Bolt\protocol\Response;
+use Bolt\protocol\{
+    AProtocol,
+    Response,
+    V1,
+    V4_3,
+    V5
+};
 use Exception;
 
 trait DateTimeZoneIdTrait
 {
     /**
-     * @depends testInit
+     * @depends      testInit
      * @dataProvider providerTimestampTimezone
-     * @param int $timestamp
-     * @param string $timezone
-     * @param AProtocol $protocol
      */
-    public function testDateTimeZoneId(int $timestamp, string $timezone, AProtocol $protocol)
+    public function testDateTimeZoneId(int $timestamp, string $timezone, AProtocol|V1|V4_3|V5 $protocol): void
     {
         try {
             $timestamp .= '.' . rand(0, 9e5);
@@ -61,7 +63,7 @@ trait DateTimeZoneIdTrait
             $dateTimeZoneIdStructure = preg_replace("/([+\-]\d{2}:\d{2}|Z)\[/", '[', $res[1]->getContent()[0]);
             $this->assertEquals($datetime, $dateTimeZoneIdStructure, 'pack ' . $datetime . ' != ' . $dateTimeZoneIdStructure);
         } catch (Exception $e) {
-            if (strpos($e->getMessage(), 'Invalid value for TimeZone: Text \'' . $timezone . '\'') === 0) {
+            if (str_starts_with($e->getMessage(), 'Invalid value for TimeZone: Text \'' . $timezone . '\'')) {
                 $protocol->reset()->getResponse();
                 $this->markTestSkipped('Test skipped because database is missing timezone ID ' . $timezone);
             } else {

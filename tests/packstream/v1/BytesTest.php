@@ -7,6 +7,12 @@ use Bolt\packstream\Bytes;
 use Bolt\protocol\{
     AProtocol,
     Response,
+    V1,
+    V2,
+    V3,
+    V4,
+    V4_1,
+    V4_2,
     V4_3,
     V4_4,
     V5
@@ -19,7 +25,7 @@ use PHPUnit\Framework\TestCase;
  */
 class BytesTest extends TestCase
 {
-    public function testInit(): AProtocol
+    public function testInit(): AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5
     {
         $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
         $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
@@ -27,7 +33,7 @@ class BytesTest extends TestCase
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var AProtocol|V4_3|V4_4|V5 $protocol */
+        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
@@ -39,10 +45,8 @@ class BytesTest extends TestCase
     /**
      * @depends      testInit
      * @dataProvider providerBytes
-     * @param Bytes $arr
-     * @param AProtocol $protocol
      */
-    public function testBytes(Bytes $arr, AProtocol $protocol)
+    public function testBytes(Bytes $arr, AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol)
     {
         $res = iterator_to_array(
             $protocol

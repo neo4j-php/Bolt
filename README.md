@@ -15,15 +15,15 @@ PHP library for communication with graph database over TCP socket with Bolt prot
 
 ## Version support
 
-We are trying to keep up and this library supports **Neo4j <= 5.2** with **Bolt <= 5.2**.
+We are trying to keep up and this library supports **Neo4j <= 5.2** with **Bolt <= 5.0**.
 
 https://www.neo4j.com/docs/bolt/current/bolt-compatibility/
 
 ## Requirements
 
-Keep up with [PHP supported versions](https://www.php.net/supported-versions.php) means we are at **PHP >= 7.4**.
+Keep up with [PHP supported versions](https://www.php.net/supported-versions.php) means we are at **PHP >= 8.0**.
 
-_If you need support for PHP < 7.4 you can use latest v3.x release. Not all new features are implement backwards and this readme is updated to latest released version._
+_If you need support for PHP < 7.4 you can use latest v3.x release and if you need support for PHP 7.4 you can use v5.x. Not all new features are implement backwards and this readme is updated to latest released version._
 
 ### Extensions
 

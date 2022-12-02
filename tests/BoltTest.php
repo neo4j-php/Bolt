@@ -8,6 +8,12 @@ use PHPUnit\Framework\TestCase;
 use Bolt\protocol\{
     AProtocol,
     Response,
+    V1,
+    V2,
+    V3,
+    V4,
+    V4_1,
+    V4_2,
     V4_3,
     V4_4,
     V5
@@ -18,27 +24,12 @@ use Bolt\protocol\{
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- *
- * @covers \Bolt\Bolt
- * @covers \Bolt\connection\AConnection
- * @covers \Bolt\connection\Socket
- * @covers \Bolt\connection\StreamSocket
- * @covers \Bolt\helpers\Auth
- * @covers \Bolt\packstream\v1\Packer
- * @covers \Bolt\packstream\v1\Unpacker
- * @covers \Bolt\protocol\AProtocol
- * @covers \Bolt\protocol\V4_3
- * @covers \Bolt\protocol\V4_4
- * @covers \Bolt\protocol\V5
- * @covers \Bolt\protocol\Response
- * @covers \Bolt\protocol\ServerState
- *
  * @package Bolt\tests
  */
 class BoltTest extends TestCase
 {
 
-    public function testSockets()
+    public function testSockets(): void
     {
         if (!extension_loaded('sockets'))
             $this->markTestSkipped('Sockets extension not available');
@@ -49,7 +40,7 @@ class BoltTest extends TestCase
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var AProtocol|V4_3|V4_4|V5 $protocol */
+        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
@@ -58,7 +49,7 @@ class BoltTest extends TestCase
         $protocol->goodbye();
     }
 
-    public function testAura()
+    public function testAura(): void
     {
         $conn = new \Bolt\connection\StreamSocket('neo4j+s://demo.neo4jlabs.com');
         $conn->setSslContextOptions([
@@ -69,7 +60,7 @@ class BoltTest extends TestCase
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var AProtocol|V4_3|V4_4|V5 $protocol */
+        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
@@ -78,10 +69,7 @@ class BoltTest extends TestCase
         $protocol->goodbye();
     }
 
-    /**
-     * @return AProtocol
-     */
-    public function testHello(): AProtocol
+    public function testHello(): AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5
     {
         $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
         $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
@@ -89,7 +77,7 @@ class BoltTest extends TestCase
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var AProtocol|V4_3|V4_4|V5 $protocol */
+        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
@@ -100,9 +88,8 @@ class BoltTest extends TestCase
 
     /**
      * @depends testHello
-     * @param AProtocol|V4_3|V4_4 $protocol
      */
-    public function testPull(AProtocol $protocol)
+    public function testPull(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
     {
         $protocol
             ->run('RETURN 1 AS num, 2 AS cnt', [], ['mode' => 'r'])
@@ -117,9 +104,8 @@ class BoltTest extends TestCase
 
     /**
      * @depends testHello
-     * @param AProtocol|V4_3|V4_4 $protocol
      */
-    public function testDiscard(AProtocol $protocol)
+    public function testDiscard(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
     {
         $gen = $protocol
             ->run('MATCH (a:Test) RETURN *', [], ['mode' => 'r'])
@@ -133,10 +119,9 @@ class BoltTest extends TestCase
 
     /**
      * @depends testHello
-     * @param AProtocol|V4_3|V4_4 $protocol
      * @throws Exception
      */
-    public function testTransaction(AProtocol $protocol)
+    public function testTransaction(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
     {
         if (version_compare($protocol->getVersion(), 3, '<')) {
             $this->markTestSkipped('Old Neo4j version does not support transactions');
@@ -172,9 +157,8 @@ class BoltTest extends TestCase
 
     /**
      * @depends testHello
-     * @param AProtocol|V4_3|V4_4 $protocol
      */
-    public function testRoute(AProtocol $protocol): void
+    public function testRoute(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
     {
         if (version_compare($protocol->getVersion(), 4.3, '>=')) {
             $response = $protocol
@@ -190,9 +174,8 @@ class BoltTest extends TestCase
 
     /**
      * @depends testHello
-     * @param AProtocol|V4_3|V4_4 $protocol
      */
-    public function testReset(AProtocol $protocol): void
+    public function testReset(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
     {
         $response = $protocol
             ->reset()
@@ -203,10 +186,9 @@ class BoltTest extends TestCase
     /**
      * @large
      * @depends testHello
-     * @param AProtocol|V4_3|V4_4 $protocol
      * @throws Exception
      */
-    public function testChunking(AProtocol $protocol)
+    public function testChunking(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
     {
         $gen = $protocol
             ->begin()
@@ -235,9 +217,8 @@ class BoltTest extends TestCase
 
     /**
      * @depends testHello
-     * @param AProtocol|V4_3|V4_4 $protocol
      */
-    public function testServerStateMismatchCallback(AProtocol $protocol)
+    public function testServerStateMismatchCallback(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
     {
         $protocol->serverState->set(\Bolt\protocol\ServerState::FAILED);
         $protocol->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
@@ -245,7 +226,6 @@ class BoltTest extends TestCase
         };
 
         $this->expectException(Exception::class);
-        $gen = $protocol->run('RETURN 1 as num')->getResponses();
-        iterator_to_array($gen, false);
+        iterator_to_array($protocol->run('RETURN 1 as num')->getResponses(), false);
     }
 }

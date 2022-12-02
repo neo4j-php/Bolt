@@ -2,8 +2,6 @@
 
 namespace Bolt\error;
 
-use Exception;
-
 /**
  * Class PackException
  *
@@ -11,7 +9,7 @@ use Exception;
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\error
  */
-class PackException extends Exception
+class PackException extends BoltException
 {
 
 }

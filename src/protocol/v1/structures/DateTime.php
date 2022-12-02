@@ -21,35 +21,22 @@ use Bolt\protocol\IStructure;
  */
 class DateTime implements IStructure
 {
-    private int $seconds;
-    private int $nanoseconds;
-    private int $tz_offset_seconds;
-
-    /**
-     * DateTime constructor.
-     * @param int $seconds
-     * @param int $nanoseconds
-     * @param int $tz_offset_seconds
-     */
-    public function __construct(int $seconds, int $nanoseconds, int $tz_offset_seconds)
+    public function __construct(
+        private int $seconds,
+        private int $nanoseconds,
+        private int $tz_offset_seconds
+    )
     {
-        $this->seconds = $seconds;
-        $this->nanoseconds = $nanoseconds;
-        $this->tz_offset_seconds = $tz_offset_seconds;
     }
 
     /**
      * seconds since the adjusted Unix epoch. This is not UTC
-     * @return int
      */
     public function seconds(): int
     {
         return $this->seconds;
     }
 
-    /**
-     * @return int
-     */
     public function nanoseconds(): int
     {
         return $this->nanoseconds;
@@ -57,7 +44,6 @@ class DateTime implements IStructure
 
     /**
      * specifies the offset in seconds from UTC
-     * @return int
      */
     public function tz_offset_seconds(): int
     {
