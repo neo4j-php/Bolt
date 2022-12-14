@@ -2,7 +2,7 @@
 
 namespace Bolt\packstream;
 
-use ArrayAccess, Countable;
+use ArrayAccess, Countable, Stringable;
 
 /**
  * Class Bytes
@@ -12,7 +12,7 @@ use ArrayAccess, Countable;
  * @link https://www.neo4j.com/docs/bolt/current/packstream/#data-type-bytes
  * @package Bolt\packstream
  */
-class Bytes implements ArrayAccess, Countable
+class Bytes implements ArrayAccess, Countable, Stringable
 {
     public function __construct(private array $bytes = [])
     {
