@@ -54,8 +54,11 @@ class Unpacker implements IUnpacker
      */
     private function next(int $length): string
     {
-        $str = mb_strcut($this->message, $this->offset, $length, '8bit');
-        $this->offset += mb_strlen($str, '8bit');
+        $str = '';
+        if (mb_strlen($this->message, '8bit') > $this->offset) {
+            $str = mb_strcut($this->message, $this->offset, $length, '8bit');
+            $this->offset += mb_strlen($str, '8bit');
+        }
         return $str;
     }
 
@@ -64,10 +67,11 @@ class Unpacker implements IUnpacker
      */
     private function u(): mixed
     {
-        $marker = ord($this->next(1));
-        if (mb_strlen($marker, '8bit') === 0) {
+        $str = $this->next(1);
+        if (mb_strlen($str, '8bit') !== 1) {
             return null;
         }
+        $marker = ord($str);
 
         if ($marker == 0xC3) {
             return true;
@@ -137,13 +141,17 @@ class Unpacker implements IUnpacker
             }
 
             $class = $this->structuresLt[$signature];
-            $reflection = new \ReflectionClass($class);
-            if ($reflection->getConstructor()->getNumberOfParameters() != count($values))
-                throw new UnpackException('Incorrect amount of structure fields for ' . $class);
+            try {
+                $reflection = new \ReflectionClass($class);
+                if ($reflection->getConstructor()->getNumberOfParameters() != count($values))
+                    throw new UnpackException('Incorrect amount of structure fields for ' . $class);
+            } catch (\ReflectionException $e) {
+                throw new UnpackException($e->getMessage());
+            }
             return new $class(...$values);
         } else {
             $this->signature = $signature;
-            return mb_strlen($this->message, '8bit') > $this->offset ? $this->u() : [];
+            return $this->u() ?? [];
         }
     }
 
