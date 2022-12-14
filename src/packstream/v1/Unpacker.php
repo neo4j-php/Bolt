@@ -143,7 +143,7 @@ class Unpacker implements IUnpacker
             return new $class(...$values);
         } else {
             $this->signature = $signature;
-            return $this->u();
+            return mb_strlen($this->message, '8bit') > $this->offset ? $this->u() : [];
         }
     }
 
