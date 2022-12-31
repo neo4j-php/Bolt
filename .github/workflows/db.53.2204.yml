@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  db-tests-2204:
+  db-tests-53-2204:
     runs-on: ubuntu-22.04
     name: "Running Integration tests for PHP ${{ matrix.php-version }} on Neo4j ${{ matrix.neo4j-version }}"
     strategy:

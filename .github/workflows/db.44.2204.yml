@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  db-tests-2204:
+  db-tests-44-2204:
     runs-on: ubuntu-22.04
     name: "Running Integration tests for PHP ${{ matrix.php-version }} on Neo4j ${{ matrix.neo4j-version }}"
     strategy:
@@ -21,7 +21,7 @@ jobs:
         image: neo4j:${{ matrix.neo4j-version }}
         env:
           NEO4J_AUTH: neo4j/nothing
-          NEO4J_PLUGINS: '["apoc"]'
+          NEO4JLABS_PLUGINS: '["apoc"]'
         ports:
           - 7687:7687
           - 7474:7474
