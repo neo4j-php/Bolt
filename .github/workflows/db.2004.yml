@@ -18,10 +18,10 @@ jobs:
 
     services:
       neo4j:
-        key: neo4j-${{ matrix.neo4j-version }}
         image: neo4j:${{ matrix.neo4j-version }}
         env:
-          NEO4J_AUTH: neo4j/nothing123
+          NEO4J_dbms_security_auth__minimum__password__length: 6
+          NEO4J_AUTH: neo4j/nothing
           NEO4JLABS_PLUGINS: '["apoc"]'
         ports:
           - 7687:7687
@@ -47,5 +47,5 @@ jobs:
       - name: Test with phpunit
         env:
           GDB_USERNAME: neo4j
-          GDB_PASSWORD: nothing123
+          GDB_PASSWORD: nothing
         run: vendor/bin/phpunit --configuration phpunit.xml --testsuite "Database"
