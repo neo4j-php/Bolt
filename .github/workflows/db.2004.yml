@@ -17,7 +17,7 @@ jobs:
         php-version: ['8.0', '8.1']
 
     services:
-      neo4j:
+      neo4j-${{ matrix.neo4j-version }}:
         image: neo4j:${{ matrix.neo4j-version }}
         env:
           NEO4J_AUTH: neo4j/nothing123
