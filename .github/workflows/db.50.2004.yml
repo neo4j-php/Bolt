@@ -1,4 +1,4 @@
-name: Tests with a database on PHP^8.2
+name: Tests with Neo4j (5.1, 5.2) on PHP (8.0, 8.1)
 
 on:
   push:
@@ -7,22 +7,21 @@ on:
     branches: [ master ]
 
 jobs:
-  db-tests-2204:
-    runs-on: ubuntu-22.04
+  db-tests-50-2004:
+    runs-on: ubuntu-20.04
     name: "Running Integration tests for PHP ${{ matrix.php-version }} on Neo4j ${{ matrix.neo4j-version }}"
     strategy:
       fail-fast: false
       matrix:
-        neo4j-version: ["4.4", "5.1", "5.2", "5.3"]
-        php-version: ['8.2']
+        neo4j-version: ['5.1', '5.2']
+        php-version: ['8.0', '8.1']
 
     services:
       neo4j:
         image: neo4j:${{ matrix.neo4j-version }}
         env:
-          NEO4J_dbms_security_auth__minimum__password__length: 6
           NEO4J_AUTH: neo4j/nothing
-          NEO4JLABS_PLUGINS: '["apoc"]'
+          NEO4J_PLUGINS: '["apoc"]'
         ports:
           - 7687:7687
           - 7474:7474
