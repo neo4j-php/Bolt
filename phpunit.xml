@@ -2,8 +2,9 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" colors="true" xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd" bootstrap="src/autoload.php">
     <testsuites>
         <testsuite name="Database">
-            <directory>./tests/connection</directory>
             <file>./tests/BoltTest.php</file>
+            <file>./tests/PerformanceTest.php</file>
+            <directory>./tests/connection</directory>
             <directory>./tests/error</directory>
             <directory>./tests/packstream</directory>
             <directory>./tests/structures</directory>
@@ -12,8 +13,4 @@
             <directory>./tests/protocol</directory>
         </testsuite>
     </testsuites>
-    <php>
-        <var name="NEO_USER" value="neo4j"/>
-        <var name="NEO_PASS" value="nothing"/>
-    </php>
 </phpunit>

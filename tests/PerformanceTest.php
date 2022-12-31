@@ -28,6 +28,19 @@ use PHPUnit\Framework\TestCase;
  */
 class PerformanceTest extends TestCase
 {
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+        $GLOBALS['NEO_USER'] = getenv('GDB_USERNAME');
+        $GLOBALS['NEO_PASS'] = getenv('GDB_PASSWORD');
+        $host = getenv('GDB_HOST');
+        if (!empty($host))
+            $GLOBALS['NEO_HOST'] = $host;
+        $port = getenv('GDB_PORT');
+        if (!empty($port))
+            $GLOBALS['NEO_PORT'] = $port;
+    }
+
     public function test50KRecords(): void
     {
         $amount = 50000;
