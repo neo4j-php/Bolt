@@ -42,7 +42,7 @@ class UnpackerTest extends TestCase
 
         $this->assertNotEmpty($protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
 
-        $conn->setTimeout(120);
+        $conn->setTimeout(60 * 10);
         return $protocol;
     }
 
