@@ -1,4 +1,4 @@
-name: Tests without a database PHP^8.2
+name: Tests without a database PHP^8
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['8.2']
+        php-version: ['8.0', '8.1', '8.2']
 
     steps:
       - name: Checkout

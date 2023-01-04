@@ -1,4 +1,4 @@
-name: Tests with Neo4j 4.4 on PHP^8.2
+name: Tests with Neo4j 4.4 on PHP^8
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         neo4j-version: ['4.4']
-        php-version: ['8.2']
+        php-version: ['8.0', '8.1', '8.2']
 
     services:
       neo4j:
