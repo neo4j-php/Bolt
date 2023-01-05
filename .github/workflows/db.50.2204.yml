@@ -1,4 +1,4 @@
-name: Tests with a database PHP8
+name: Tests with Neo4j^5 on PHP^8
 
 on:
   push:
@@ -7,21 +7,21 @@ on:
     branches: [ master ]
 
 jobs:
-  tests:
-    runs-on: ubuntu-20.04
+  db-tests-50-2204:
+    runs-on: ubuntu-22.04
     name: "Running Integration tests for PHP ${{ matrix.php-version }} on Neo4j ${{ matrix.neo4j-version }}"
     strategy:
       fail-fast: false
       matrix:
-        neo4j-version: ["4.4", "5.1", "5.2"]
-        php-version: ['8.0', '8.1']
+        neo4j-version: ['5.1', '5.2', '5.3']
+        php-version: ['8.0', '8.1', '8.2']
 
     services:
       neo4j:
         image: neo4j:${{ matrix.neo4j-version }}
         env:
-          NEO4J_AUTH: neo4j/nothing
-          NEO4JLABS_PLUGINS: '["apoc"]'
+          NEO4J_AUTH: neo4j/nothing123
+          NEO4J_PLUGINS: '["apoc"]'
         ports:
           - 7687:7687
           - 7474:7474
@@ -44,4 +44,7 @@ jobs:
         run: composer install --no-progress
 
       - name: Test with phpunit
+        env:
+          GDB_USERNAME: neo4j
+          GDB_PASSWORD: nothing123
         run: vendor/bin/phpunit --configuration phpunit.xml --testsuite "Database"

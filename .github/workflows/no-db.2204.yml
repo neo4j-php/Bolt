@@ -1,4 +1,4 @@
-name: Tests without a database PHP8
+name: Tests without a database PHP^8
 
 on:
   push:
@@ -7,13 +7,13 @@ on:
     branches: [ master ]
 
 jobs:
-  tests:
-    runs-on: ubuntu-20.04
+  no-db-tests-2204:
+    runs-on: ubuntu-22.04
     name: "Running Tests for PHP ${{ matrix.php-version }}"
     strategy:
       fail-fast: false
       matrix:
-        php-version: ['8.0', '8.1']
+        php-version: ['8.0', '8.1', '8.2']
 
     steps:
       - name: Checkout
