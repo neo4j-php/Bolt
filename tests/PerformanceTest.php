@@ -3,7 +3,7 @@
 namespace Bolt\tests;
 
 use Bolt\Bolt;
-use Bolt\connection\StreamSocket;
+use Bolt\connection\Socket;
 use Bolt\helpers\Auth;
 use Bolt\protocol\{
     AProtocol,
@@ -45,7 +45,7 @@ class PerformanceTest extends TestCase
     {
         $amount = 50000;
 
-        $conn = new StreamSocket($GLOBALS['NEO_HOST'] ?? 'localhost', $GLOBALS['NEO_PORT'] ?? 7687, 60);
+        $conn = new Socket($GLOBALS['NEO_HOST'] ?? 'localhost', $GLOBALS['NEO_PORT'] ?? 7687, 60);
         /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol */
         $protocol = (new Bolt($conn))->build();
         $this->assertEquals(\Bolt\protocol\Response::SIGNATURE_SUCCESS, $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
