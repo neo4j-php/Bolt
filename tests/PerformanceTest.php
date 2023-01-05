@@ -7,6 +7,7 @@ use Bolt\connection\Socket;
 use Bolt\helpers\Auth;
 use Bolt\protocol\{
     AProtocol,
+    Response,
     V1,
     V2,
     V3,
@@ -55,26 +56,13 @@ class PerformanceTest extends TestCase
             ->run('UNWIND $x as x RETURN x', ['x' => $generator])
             ->getResponse();
 
+
+        $iterator = $protocol->pull()->getResponses();
         $count = 0;
-        while (true) {
-            $gen = $protocol
-                ->pull(['n' => 1])
-                ->getResponses();
-
-            if ($gen->current()->getSignature() != \Bolt\protocol\Response::SIGNATURE_RECORD)
-                $this->markTestIncomplete('Response does not contains record message');
-
-            $gen->next();
-
-            if ($gen->current()->getSignature() != \Bolt\protocol\Response::SIGNATURE_SUCCESS)
-                $this->markTestIncomplete('Response does not contains success message');
-
-            $count++;
-
-            if ($gen->current()->getContent()['has_more'] ?? false)
-                continue;
-            else
-                break;
+        /** @var Response $response */
+        foreach ($iterator as $response) {
+            if ($response->getSignature() === Response::SIGNATURE_RECORD)
+                $count++;
         }
 
         $this->assertEquals($amount, $count);
