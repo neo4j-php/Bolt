@@ -16,7 +16,7 @@ use Bolt\protocol\{
     V4_4,
     V5
 };
-use PHPUnit\Framework\TestCase;
+use Bolt\tests\ATest;
 
 /**
  * Class PackerTest
@@ -25,21 +25,8 @@ use PHPUnit\Framework\TestCase;
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests\packstream\v1
  */
-class PackerTest extends TestCase
+class PackerTest extends ATest
 {
-    public static function setUpBeforeClass(): void
-    {
-        parent::setUpBeforeClass();
-        $GLOBALS['NEO_USER'] = getenv('GDB_USERNAME');
-        $GLOBALS['NEO_PASS'] = getenv('GDB_PASSWORD');
-        $host = getenv('GDB_HOST');
-        if (!empty($host))
-            $GLOBALS['NEO_HOST'] = $host;
-        $port = getenv('GDB_PORT');
-        if (!empty($port))
-            $GLOBALS['NEO_PORT'] = $port;
-    }
-
     public function testInit(): AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5
     {
         $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);

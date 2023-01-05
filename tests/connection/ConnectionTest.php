@@ -16,6 +16,7 @@ use Bolt\protocol\{
     V4_4,
     V5
 };
+use Bolt\tests\ATest;
 use Bolt\connection\{
     IConnection,
     Socket,
@@ -23,7 +24,6 @@ use Bolt\connection\{
 };
 use Bolt\error\ConnectionTimeoutException;
 use Bolt\helpers\Auth;
-use PHPUnit\Framework\TestCase;
 
 /**
  * Class ConnectionTest
@@ -31,21 +31,8 @@ use PHPUnit\Framework\TestCase;
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests\connection
  */
-final class ConnectionTest extends TestCase
+final class ConnectionTest extends ATest
 {
-    public static function setUpBeforeClass(): void
-    {
-        parent::setUpBeforeClass();
-        $GLOBALS['NEO_USER'] = getenv('GDB_USERNAME');
-        $GLOBALS['NEO_PASS'] = getenv('GDB_PASSWORD');
-        $host = getenv('GDB_HOST');
-        if (!empty($host))
-            $GLOBALS['NEO_HOST'] = $host;
-        $port = getenv('GDB_PORT');
-        if (!empty($port))
-            $GLOBALS['NEO_PORT'] = $port;
-    }
-
     public function provideConnections(): array
     {
         return [

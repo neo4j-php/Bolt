@@ -2,7 +2,7 @@
 
 namespace Bolt\tests\structures;
 
-use PHPUnit\Framework\TestCase;
+use Bolt\tests\ATest;
 use Exception;
 
 /**
@@ -11,7 +11,7 @@ use Exception;
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests\protocol
  */
-class AStructures extends TestCase
+class AStructures extends ATest
 {
     /**
      * How many iterations do for each date/time test

@@ -4,7 +4,6 @@ namespace Bolt\tests;
 
 use Bolt\Bolt;
 use Exception;
-use PHPUnit\Framework\TestCase;
 use Bolt\protocol\{
     AProtocol,
     Response,
@@ -26,21 +25,8 @@ use Bolt\protocol\{
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests
  */
-class BoltTest extends TestCase
+class BoltTest extends ATest
 {
-    public static function setUpBeforeClass(): void
-    {
-        parent::setUpBeforeClass();
-        $GLOBALS['NEO_USER'] = getenv('GDB_USERNAME');
-        $GLOBALS['NEO_PASS'] = getenv('GDB_PASSWORD');
-        $host = getenv('GDB_HOST');
-        if (!empty($host))
-            $GLOBALS['NEO_HOST'] = $host;
-        $port = getenv('GDB_PORT');
-        if (!empty($port))
-            $GLOBALS['NEO_PORT'] = $port;
-    }
-
     public function testSockets(): void
     {
         if (!extension_loaded('sockets'))
@@ -112,6 +98,7 @@ class BoltTest extends TestCase
         $res = $protocol->getResponse()->getContent();
         $this->assertEquals(1, $res[0] ?? 0);
         $this->assertEquals(2, $res[1] ?? 0);
+        $protocol->getResponse(); // last success message
     }
 
     /**

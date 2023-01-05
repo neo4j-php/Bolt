@@ -3,14 +3,18 @@
     <testsuites>
         <testsuite name="Database">
             <file>./tests/BoltTest.php</file>
-            <file>./tests/PerformanceTest.php</file>
             <directory>./tests/connection</directory>
             <directory>./tests/error</directory>
             <directory>./tests/packstream</directory>
             <directory>./tests/structures</directory>
+            <file>./tests/PerformanceTest.php</file>
         </testsuite>
         <testsuite name="NoDatabase">
             <directory>./tests/protocol</directory>
         </testsuite>
     </testsuites>
+    <php>
+        <var name="NEO_USER" value="neo4j"/>
+        <var name="NEO_PASS" value="nothing"/>
+    </php>
 </phpunit>
