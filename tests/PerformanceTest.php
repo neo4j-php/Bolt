@@ -4,19 +4,7 @@ namespace Bolt\tests;
 
 use Bolt\Bolt;
 use Bolt\connection\Socket;
-use Bolt\protocol\{
-    AProtocol,
-    Response,
-    V1,
-    V2,
-    V3,
-    V4,
-    V4_1,
-    V4_2,
-    V4_3,
-    V4_4,
-    V5
-};
+use Bolt\protocol\{AProtocol, Response, V1, V2, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1};
 use Bolt\tests\packstream\v1\generators\RandomDataGenerator;
 
 /**
@@ -32,7 +20,7 @@ class PerformanceTest extends ATest
         $amount = 50000;
 
         $conn = new Socket($GLOBALS['NEO_HOST'] ?? 'localhost', $GLOBALS['NEO_PORT'] ?? 7687, 60);
-        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol */
+        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol */
         $protocol = (new Bolt($conn))->build();
 
         $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
