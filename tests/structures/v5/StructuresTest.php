@@ -3,13 +3,7 @@
 namespace Bolt\tests\structures\v5;
 
 use Bolt\Bolt;
-use Bolt\protocol\{
-    AProtocol,
-    Response,
-    V4_3,
-    V4_4,
-    V5
-};
+use Bolt\protocol\{AProtocol, V4_3, V4_4, V5, V5_1};
 use Bolt\tests\structures\v1\DateTimeTrait;
 use Bolt\tests\structures\v1\DateTimeZoneIdTrait;
 use Bolt\protocol\v5\structures\{
@@ -30,7 +24,7 @@ use Bolt\protocol\v1\structures\Path;
  */
 class StructuresTest extends \Bolt\tests\structures\AStructures
 {
-    public function testInit(): V4_3|V4_4|V5
+    public function testInit(): V4_3|V4_4|V5|V5_1
     {
         $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
         $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
@@ -38,7 +32,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var V4_3|V4_4|V5 $protocol */
+        /** @var V4_3|V4_4|V5|V5_1 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
@@ -46,7 +40,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
             $this->markTestSkipped('Tests available only for version 5 and higher.');
         }
 
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
+        $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
 
         return $protocol;
     }
@@ -60,7 +54,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
     /**
      * @depends testInit
      */
-    public function testNode(V4_3|V4_4|V5 $protocol)
+    public function testNode(V4_3|V4_4|V5|V5_1 $protocol)
     {
         $protocol->begin()->getResponse();
 
@@ -87,7 +81,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
     /**
      * @depends testInit
      */
-    public function testPath(V4_3|V4_4|V5 $protocol)
+    public function testPath(V4_3|V4_4|V5|V5_1 $protocol)
     {
         $protocol->begin()->getResponse();
 
@@ -118,7 +112,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
     /**
      * @depends testInit
      */
-    public function testRelationship(V4_3|V4_4|V5 $protocol)
+    public function testRelationship(V4_3|V4_4|V5|V5_1 $protocol)
     {
         $protocol->begin()->getResponse();
 
