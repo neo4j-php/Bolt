@@ -3,19 +3,7 @@
 namespace Bolt\tests\packstream\v1;
 
 use Bolt\Bolt;
-use Bolt\protocol\{
-    AProtocol,
-    Response,
-    V1,
-    V2,
-    V3,
-    V4,
-    V4_1,
-    V4_2,
-    V4_3,
-    V4_4,
-    V5
-};
+use Bolt\protocol\{AProtocol, V1, V2, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1};
 use Bolt\tests\ATest;
 
 /**
@@ -27,7 +15,7 @@ use Bolt\tests\ATest;
  */
 class PackerTest extends ATest
 {
-    public function testInit(): AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5
+    public function testInit(): AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1
     {
         $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
         $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
@@ -35,11 +23,11 @@ class PackerTest extends ATest
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol */
+        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
+        $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
 
         return $protocol;
     }
@@ -47,7 +35,7 @@ class PackerTest extends ATest
     /**
      * @depends testInit
      */
-    public function testNull(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
+    public function testNull(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol): void
     {
         $res = iterator_to_array(
             $protocol
@@ -62,7 +50,7 @@ class PackerTest extends ATest
     /**
      * @depends testInit
      */
-    public function testBoolean(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
+    public function testBoolean(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol): void
     {
         $res = iterator_to_array(
             $protocol
@@ -87,7 +75,7 @@ class PackerTest extends ATest
      * @depends      testInit
      * @dataProvider providerInteger
      */
-    public function testInteger(int $i, AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
+    public function testInteger(int $i, AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol): void
     {
         $res = iterator_to_array(
             $protocol
@@ -110,7 +98,7 @@ class PackerTest extends ATest
     /**
      * @depends testInit
      */
-    public function testFloat(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
+    public function testFloat(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol): void
     {
         for ($i = 0; $i < 10; $i++) {
             $num = mt_rand(-mt_getrandmax(), mt_getrandmax()) / mt_getrandmax();
@@ -128,7 +116,7 @@ class PackerTest extends ATest
     /**
      * @depends testInit
      */
-    public function testString(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
+    public function testString(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol): void
     {
         $randomString = function (int $length) {
             $str = '';
@@ -153,7 +141,7 @@ class PackerTest extends ATest
     /**
      * @depends testInit
      */
-    public function testList(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
+    public function testList(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol): void
     {
         foreach ([0, 10, 200, 60000, 200000] as $size) {
             $arr = $this->randomArray($size);
@@ -180,7 +168,7 @@ class PackerTest extends ATest
     /**
      * @depends testInit
      */
-    public function testDictionary(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
+    public function testDictionary(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol): void
     {
         foreach ([0, 10, 200, 60000, 200000] as $size) {
             $arr = $this->randomArray($size);
@@ -198,7 +186,7 @@ class PackerTest extends ATest
     /**
      * @depends testInit
      */
-    public function testListGenerator(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
+    public function testListGenerator(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol): void
     {
         $data = [
             'first',
@@ -220,7 +208,7 @@ class PackerTest extends ATest
     /**
      * @depends testInit
      */
-    public function testDictionaryGenerator(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol): void
+    public function testDictionaryGenerator(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol): void
     {
         $data = [
             'a' => 'first',

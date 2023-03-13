@@ -23,6 +23,8 @@ class Response
     public const MESSAGE_ROLLBACK = 'ROLLBACK';
     public const MESSAGE_ROUTE = 'ROUTE';
     public const MESSAGE_ACK_FAILURE = 'ACK_FAILURE';
+    public const MESSAGE_LOGON = 'LOGON';
+    public const MESSAGE_LOGOFF = 'LOGOFF';
 
     public const SIGNATURE_SUCCESS = 0x70; //112
     public const SIGNATURE_FAILURE = 0x7F; //127

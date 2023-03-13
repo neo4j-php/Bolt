@@ -3,19 +3,7 @@
 namespace Bolt\tests\connection;
 
 use Bolt\Bolt;
-use Bolt\protocol\{
-    AProtocol,
-    Response,
-    V1,
-    V2,
-    V3,
-    V4,
-    V4_1,
-    V4_2,
-    V4_3,
-    V4_4,
-    V5
-};
+use Bolt\protocol\{AProtocol, Response, V1, V2, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1};
 use Bolt\tests\ATest;
 use Bolt\connection\{
     IConnection,
@@ -23,7 +11,6 @@ use Bolt\connection\{
     StreamSocket
 };
 use Bolt\error\ConnectionTimeoutException;
-use Bolt\helpers\Auth;
 
 /**
  * Class ConnectionTest
@@ -48,9 +35,9 @@ final class ConnectionTest extends ATest
     {
         $conn = $this->getConnection($alias);
         $conn->setTimeout(1.5);
-        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol */
+        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol */
         $protocol = (new Bolt($conn))->build();
-        $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
         $this->expectException(ConnectionTimeoutException::class);
         $protocol
             ->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )')
@@ -59,14 +46,13 @@ final class ConnectionTest extends ATest
 
     /**
      * @dataProvider provideConnections
-     * @doesNotPerformAssertions
      */
     public function testLongNoTimeout(string $alias): void
     {
         $conn = $this->getConnection($alias);
-        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol */
+        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol */
         $protocol = (new Bolt($conn))->build();
-        $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
         $conn->setTimeout(200);
         $protocol
             ->run('CALL apoc.util.sleep(150000)', [], ['mode' => 'r', 'tx_timeout' => 120000])
@@ -80,9 +66,9 @@ final class ConnectionTest extends ATest
     {
         $conn = $this->getConnection($alias);
         $conn->setTimeout(1);
-        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol */
+        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol */
         $protocol = (new Bolt($conn))->build();
-        $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
         $this->expectException(ConnectionTimeoutException::class);
         $protocol
             ->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )')
@@ -95,9 +81,9 @@ final class ConnectionTest extends ATest
     public function testTimeoutRecoverAndReset(string $alias): void
     {
         $conn = $this->getConnection($alias);
-        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol */
+        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol */
         $protocol = (new Bolt($conn))->build();
-        $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
 
         $conn->setTimeout(1.5);
         $time = microtime(true);
@@ -120,9 +106,9 @@ final class ConnectionTest extends ATest
             ->getResponse();
 
         $this->assertEquals(Response::SIGNATURE_FAILURE, $response->getSignature());
-        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5 $protocol */
+        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol */
         $protocol = (new Bolt($conn))->build();
-        $protocol->hello(Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']));
+        $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
 
         $conn->setTimeout(1.5);
         $time = microtime(true);
