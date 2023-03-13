@@ -27,7 +27,7 @@ class UnpackerTest extends ATest
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
-        $this->assertNotEmpty($protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS'])));
+        $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
 
         $conn->setTimeout(60 * 10);
         return $protocol;

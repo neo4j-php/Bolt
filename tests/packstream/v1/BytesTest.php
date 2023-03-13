@@ -6,7 +6,6 @@ use Bolt\Bolt;
 use Bolt\packstream\Bytes;
 use Bolt\protocol\{
     AProtocol,
-    Response,
     V1,
     V2,
     V3,
@@ -37,7 +36,7 @@ class BytesTest extends ATest
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
+        $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
 
         return $protocol;
     }

@@ -2,17 +2,7 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\protocol\{
-    ServerState,
-    Response,
-    V3,
-    V4,
-    V4_1,
-    V4_2,
-    V4_3,
-    V4_4,
-    V5
-};
+use Bolt\protocol\{ServerState, Response, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1};
 use Bolt\error\BoltException;
 
 trait CommitMessage
@@ -24,7 +14,7 @@ trait CommitMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-commit
      * @throws BoltException
      */
-    public function commit(): V3|V4|V4_1|V4_2|V4_3|V4_4|V5
+    public function commit(): V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1
     {
         $this->serverState->is(ServerState::TX_READY, ServerState::TX_STREAMING);
         $this->write($this->packer->pack(0x12));

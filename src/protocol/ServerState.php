@@ -65,6 +65,11 @@ class ServerState
     public const INTERRUPTED = 'INTERRUPTED';
 
     /**
+     * Connection has been established and metadata has been sent back from the HELLO message or a LOGOFF message was received whilst in ready state. Ready to accept a LOGON message with authentication information.
+     */
+    public const UNAUTHENTICATED = 'UNAUTHENTICATED';
+
+    /**
      * Internal pointer for current server state
      */
     private string $current = self::DISCONNECTED;
@@ -87,7 +92,8 @@ class ServerState
         self::TX_READY,
         self::TX_STREAMING,
         self::FAILED,
-        self::INTERRUPTED
+        self::INTERRUPTED,
+        self::UNAUTHENTICATED
     ];
 
     /**

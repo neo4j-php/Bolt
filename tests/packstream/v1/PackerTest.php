@@ -5,7 +5,6 @@ namespace Bolt\tests\packstream\v1;
 use Bolt\Bolt;
 use Bolt\protocol\{
     AProtocol,
-    Response,
     V1,
     V2,
     V3,
@@ -39,7 +38,7 @@ class PackerTest extends ATest
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
+        $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
 
         return $protocol;
     }
