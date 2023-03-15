@@ -4,7 +4,7 @@ namespace Bolt\tests\packstream\v1;
 
 use Bolt\Bolt;
 use Bolt\packstream\Bytes;
-use Bolt\protocol\{AProtocol, V1, V2, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1};
+use Bolt\protocol\{AProtocol, V4_4, V5, V5_1};
 use Bolt\tests\ATest;
 
 /**
@@ -13,7 +13,7 @@ use Bolt\tests\ATest;
  */
 class BytesTest extends ATest
 {
-    public function testInit(): AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1
+    public function testInit(): AProtocol|V4_4|V5|v5_1
     {
         $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
         $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
@@ -21,8 +21,8 @@ class BytesTest extends ATest
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol */
-        $protocol = $bolt->build();
+        /** @var AProtocol|V4_4|V5|v5_1 $protocol */
+        $protocol = $bolt->setProtocolVersions(5.1, 5, 4.4)->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
         $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
@@ -34,7 +34,7 @@ class BytesTest extends ATest
      * @depends      testInit
      * @dataProvider providerBytes
      */
-    public function testBytes(Bytes $arr, AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol)
+    public function testBytes(Bytes $arr, AProtocol|V4_4|V5|v5_1 $protocol)
     {
         $res = iterator_to_array(
             $protocol
