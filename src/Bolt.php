@@ -26,7 +26,7 @@ final class Bolt
 
     public function __construct(private IConnection $connection)
     {
-        $this->setProtocolVersions(5.1, 5, 4.4);
+        $this->setProtocolVersions(5, 4.4);
     }
 
     /**

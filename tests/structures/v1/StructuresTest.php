@@ -36,7 +36,7 @@ use Bolt\protocol\v1\structures\{
  */
 class StructuresTest extends \Bolt\tests\structures\AStructures
 {
-    public function testInit(): V4_4|V4_3|V4_2|V3
+    public function testInit(): AProtocol|V4_4|V4_3|V4_2|V3
     {
         $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
         $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
@@ -45,7 +45,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
         $this->assertInstanceOf(Bolt::class, $bolt);
 
         $bolt->setProtocolVersions(4.4, 4.3, 4.2, 3);
-        /** @var V4_4|V4_3|V4_2|V3 $protocol */
+        /** @var AProtocol|V4_4|V4_3|V4_2|V3 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
@@ -58,7 +58,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
      * @depends      testInit
      * @dataProvider providerTimestamp
      */
-    public function testDate(int $timestamp, V4_4|V4_3|V4_2|V3 $protocol): void
+    public function testDate(int $timestamp, AProtocol|V4_4|V4_3|V4_2|V3 $protocol): void
     {
         $date = gmdate('Y-m-d', $timestamp);
 
@@ -100,7 +100,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
      * @depends      testInit
      * @dataProvider durationProvider
      */
-    public function testDuration(string $duration, V4_4|V4_3|V4_2|V3 $protocol): void
+    public function testDuration(string $duration, AProtocol|V4_4|V4_3|V4_2|V3 $protocol): void
     {
         //unpack
         $res = iterator_to_array(
@@ -147,7 +147,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
      * @depends      testInit
      * @dataProvider providerTimestamp
      */
-    public function testLocalDateTime(int $timestamp, V4_4|V4_3|V4_2|V3 $protocol): void
+    public function testLocalDateTime(int $timestamp, AProtocol|V4_4|V4_3|V4_2|V3 $protocol): void
     {
         $timestamp .= '.' . rand(0, 9e5);
         $datetime = \DateTime::createFromFormat('U.u', $timestamp)
@@ -186,7 +186,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
      * @depends      testInit
      * @dataProvider providerTimestamp
      */
-    public function testLocalTime(int $timestamp, V4_4|V4_3|V4_2|V3 $protocol): void
+    public function testLocalTime(int $timestamp, AProtocol|V4_4|V4_3|V4_2|V3 $protocol): void
     {
         $timestamp .= '.' . rand(0, 9e5);
         $time = \DateTime::createFromFormat('U.u', $timestamp)
@@ -224,7 +224,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
     /**
      * @depends testInit
      */
-    public function testNode(V4_4|V4_3|V4_2|V3 $protocol): void
+    public function testNode(AProtocol|V4_4|V4_3|V4_2|V3 $protocol): void
     {
         $protocol->begin()->getResponse();
 
@@ -250,7 +250,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
     /**
      * @depends testInit
      */
-    public function testPath(V4_4|V4_3|V4_2|V3 $protocol): void
+    public function testPath(AProtocol|V4_4|V4_3|V4_2|V3 $protocol): void
     {
         $protocol->begin()->getResponse();
 
@@ -280,7 +280,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
     /**
      * @depends testInit
      */
-    public function testPoint2D(V4_4|V4_3|V4_2|V3 $protocol): void
+    public function testPoint2D(AProtocol|V4_4|V4_3|V4_2|V3 $protocol): void
     {
         //unpack
         $res = iterator_to_array(
@@ -308,7 +308,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
     /**
      * @depends testInit
      */
-    public function testPoint3D(V4_4|V4_3|V4_2|V3 $protocol): void
+    public function testPoint3D(AProtocol|V4_4|V4_3|V4_2|V3 $protocol): void
     {
         //unpack
         $res = iterator_to_array(
@@ -336,7 +336,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
     /**
      * @depends testInit
      */
-    public function testRelationship(V4_4|V4_3|V4_2|V3 $protocol): void
+    public function testRelationship(AProtocol|V4_4|V4_3|V4_2|V3 $protocol): void
     {
         $protocol->begin()->getResponse();
 
@@ -365,7 +365,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
      * @depends      testInit
      * @dataProvider providerTimestampTimezone
      */
-    public function testTime(int $timestamp, string $timezone, V4_4|V4_3|V4_2|V3 $protocol): void
+    public function testTime(int $timestamp, string $timezone, AProtocol|V4_4|V4_3|V4_2|V3 $protocol): void
     {
         $timestamp .= '.' . rand(0, 9e5);
         $time = \DateTime::createFromFormat('U.u', $timestamp, new \DateTimeZone($timezone))
