@@ -15,11 +15,14 @@ use Bolt\tests\packstream\v1\generators\RandomDataGenerator;
  */
 class PerformanceTest extends ATest
 {
+    use CreatesSockets;
+
     public function test50KRecords(): void
     {
         $amount = 50000;
 
-        $conn = new Socket($GLOBALS['NEO_HOST'] ?? 'localhost', $GLOBALS['NEO_PORT'] ?? 7687, 60);
+        $conn = $this->createStreamSocket();
+
         /** @var AProtocol|V4_4|V5|V5_1 $protocol */
         $protocol = (new Bolt($conn))->setProtocolVersions(5.1, 5, 4.4)->build();
 
@@ -29,7 +32,7 @@ class PerformanceTest extends ATest
         while (true) {
             $protocol->run('MATCH (n:Test50k) RETURN count(n)')->getResponse();
             $response = $protocol->pull()->getResponse();
-            if ($response !== Response::SIGNATURE_RECORD)
+            if ($response->getSignature() !== Response::SIGNATURE_RECORD)
                 $this->markTestSkipped();
             $runs = $response->getContent()[0];
             $protocol->getResponse();
