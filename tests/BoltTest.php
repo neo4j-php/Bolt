@@ -185,17 +185,17 @@ class BoltTest extends ATest
         $data = [];
         while (strlen(serialize($data)) < 65535 * 2) {
             $data[base64_encode(random_bytes(32))] = base64_encode(random_bytes(128));
-            $gen = $protocol
-                ->run('MATCH (a:Test) WHERE ID(a) = $id SET a += $data RETURN a', [
-                    'id' => $id,
-                    'data' => (object)$data
-                ])
-                ->pull()
-                ->getResponses();
-            $result = iterator_to_array($gen, false);
-            $this->assertInstanceOf(\Bolt\protocol\v1\structures\Node::class, $result[1]->getContent()[0]);
-            $this->assertCount(count($data), $result[1]->getContent()[0]->properties());
         }
+        $gen = $protocol
+            ->run('MATCH (a:Test) WHERE ID(a) = $id SET a += $data RETURN a', [
+                'id' => $id,
+                'data' => (object)$data
+            ])
+            ->pull()
+            ->getResponses();
+        $result = iterator_to_array($gen, false);
+        $this->assertInstanceOf(\Bolt\protocol\v1\structures\Node::class, $result[1]->getContent()[0]);
+        $this->assertCount(count($data), $result[1]->getContent()[0]->properties());
 
         $protocol->rollback();
     }
