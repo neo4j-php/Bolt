@@ -9,6 +9,7 @@ use Bolt\protocol\{
     V4_3,
     V4_4
 };
+use Bolt\tests\CreatesSockets;
 use Bolt\protocol\v5\structures\{
     DateTime,
     DateTimeZoneId
@@ -27,10 +28,11 @@ use Bolt\tests\structures\v1\{
  */
 class StructuresTest extends \Bolt\tests\structures\AStructures
 {
+    use CreatesSockets;
+
     public function testInit(): AProtocol|V4_4|V4_3
     {
-        $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
-        $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
+        $conn = $this->createStreamSocket();
 
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);

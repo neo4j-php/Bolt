@@ -4,6 +4,7 @@ namespace Bolt\tests\structures\v5;
 
 use Bolt\Bolt;
 use Bolt\protocol\{AProtocol, V4_3, V4_4, V5, V5_1};
+use Bolt\tests\CreatesSockets;
 use Bolt\tests\structures\v1\DateTimeTrait;
 use Bolt\tests\structures\v1\DateTimeZoneIdTrait;
 use Bolt\protocol\v5\structures\{
@@ -24,10 +25,11 @@ use Bolt\protocol\v1\structures\Path;
  */
 class StructuresTest extends \Bolt\tests\structures\AStructures
 {
+    use CreatesSockets;
+
     public function testInit(): AProtocol|V4_3|V4_4|V5|V5_1
     {
-        $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
-        $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
+        $conn = $this->createStreamSocket();
 
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);

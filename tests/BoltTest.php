@@ -15,13 +15,11 @@ use Bolt\protocol\{AProtocol, Response, V4_4, V5, V5_1};
  */
 class BoltTest extends ATest
 {
+    use CreatesSockets;
+
     public function testSockets(): void
     {
-        if (!extension_loaded('sockets'))
-            $this->markTestSkipped('Sockets extension not available');
-
-        $conn = new \Bolt\connection\Socket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687, 3);
-        $this->assertInstanceOf(\Bolt\connection\Socket::class, $conn);
+        $conn = $this->createSocket();
 
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
@@ -57,8 +55,7 @@ class BoltTest extends ATest
 
     public function testHello(): AProtocol|V4_4|V5|V5_1
     {
-        $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
-        $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
+        $conn = $this->createStreamSocket();
 
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
@@ -123,6 +120,7 @@ class BoltTest extends ATest
                 ->getResponses(),
             false
         );
+
 
         $id = $res[2]->getContent()[1];
         $this->assertIsInt($id);

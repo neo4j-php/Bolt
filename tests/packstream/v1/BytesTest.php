@@ -6,6 +6,7 @@ use Bolt\Bolt;
 use Bolt\packstream\Bytes;
 use Bolt\protocol\{AProtocol, V4_4, V5, V5_1};
 use Bolt\tests\ATest;
+use Bolt\tests\CreatesSockets;
 
 /**
  * Class BytesTest
@@ -13,10 +14,11 @@ use Bolt\tests\ATest;
  */
 class BytesTest extends ATest
 {
+    use CreatesSockets;
+
     public function testInit(): AProtocol|V4_4|V5|v5_1
     {
-        $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
-        $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
+        $conn = $this->createStreamSocket();
 
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);

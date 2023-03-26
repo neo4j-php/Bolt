@@ -5,6 +5,7 @@ namespace Bolt\tests\connection;
 use Bolt\Bolt;
 use Bolt\protocol\{AProtocol, Response, V4_4, V5, V5_1};
 use Bolt\tests\ATest;
+use Bolt\tests\CreatesSockets;
 use Bolt\connection\{
     IConnection,
     Socket,
@@ -20,20 +21,22 @@ use Bolt\error\ConnectionTimeoutException;
  */
 final class ConnectionTest extends ATest
 {
+    use CreatesSockets;
+
     public function provideConnections(): array
     {
         return [
-            StreamSocket::class => [StreamSocket::class],
-            Socket::class => [Socket::class],
+            StreamSocket::class => [[$this, 'createStreamSocket']],
+            Socket::class => [[$this, 'createSocket']],
         ];
     }
 
     /**
      * @dataProvider provideConnections
      */
-    public function testMillisecondTimeout(string $alias): void
+    public function testMillisecondTimeout(array $factory): void
     {
-        $conn = $this->getConnection($alias);
+        $conn = $this->getConnection($factory);
         $conn->setTimeout(1.5);
         /** @var AProtocol|V4_4|V5|V5_1 $protocol */
         $protocol = (new Bolt($conn))->setProtocolVersions(5.1, 5, 4.4)->build();
@@ -47,9 +50,9 @@ final class ConnectionTest extends ATest
     /**
      * @dataProvider provideConnections
      */
-    public function testLongNoTimeout(string $alias): void
+    public function testLongNoTimeout(array $factory): void
     {
-        $conn = $this->getConnection($alias);
+        $conn = $this->getConnection($factory);
         /** @var AProtocol|V4_4|V5|V5_1 $protocol */
         $protocol = (new Bolt($conn))->setProtocolVersions(5.1, 5, 4.4)->build();
         $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
@@ -62,9 +65,9 @@ final class ConnectionTest extends ATest
     /**
      * @dataProvider provideConnections
      */
-    public function testSecondsTimeout(string $alias): void
+    public function testSecondsTimeout(array $factory): void
     {
-        $conn = $this->getConnection($alias);
+        $conn = $this->getConnection($factory);
         $conn->setTimeout(1);
         /** @var AProtocol|V4_4|V5|V5_1 $protocol */
         $protocol = (new Bolt($conn))->setProtocolVersions(5.1, 5, 4.4)->build();
@@ -78,9 +81,9 @@ final class ConnectionTest extends ATest
     /**
      * @dataProvider provideConnections
      */
-    public function testTimeoutRecoverAndReset(string $alias): void
+    public function testTimeoutRecoverAndReset(array $factory): void
     {
-        $conn = $this->getConnection($alias);
+        $conn = $this->getConnection($factory);
         /** @var AProtocol|V4_4|V5|V5_1 $protocol */
         $protocol = (new Bolt($conn))->setProtocolVersions(5.1, 5, 4.4)->build();
         $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
@@ -114,7 +117,7 @@ final class ConnectionTest extends ATest
         $time = microtime(true);
         try {
             $protocol
-                ->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )')
+                ->run('FOREACH ( i IN range(1,10000) fa| MERGE (d:Day {day: i}) )')
                 ->getResponse();
             $this->fail('No timeout error triggered');
         } catch (ConnectionTimeoutException) {
@@ -123,8 +126,8 @@ final class ConnectionTest extends ATest
         }
     }
 
-    private function getConnection(string $class): IConnection
+    private function getConnection(array $factory): IConnection
     {
-        return new $class($GLOBALS['NEO_HOST'] ?? '127.0.0.1', (int)($GLOBALS['NEO_PORT'] ?? 7687), 1);
+        return call_user_func($factory);
     }
 }
