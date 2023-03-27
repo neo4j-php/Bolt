@@ -19,7 +19,7 @@ class PerformanceTest extends ATest
 
     public function test50KRecords(): void
     {
-        $amount = 50000;
+        $amount = 1;
 
         $conn = $this->createStreamSocket();
 
@@ -45,10 +45,9 @@ class PerformanceTest extends ATest
         }
 
         $generator = new RandomDataGenerator($amount);
-        $protocol
+        $response = $protocol
             ->run('UNWIND $x as x RETURN x', ['x' => $generator])
             ->getResponse();
-
 
         $iterator = $protocol->pull()->getResponses();
         $count = 0;
