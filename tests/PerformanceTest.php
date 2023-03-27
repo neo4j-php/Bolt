@@ -17,9 +17,9 @@ class PerformanceTest extends ATest
 {
     use CreatesSockets;
 
-    public function test50KRecords(): void
+    public function test30kRecords(): void
     {
-        $amount = 1;
+        $amount = 30000;
 
         $conn = $this->createStreamSocket();
 
