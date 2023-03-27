@@ -27,30 +27,15 @@ class PerformanceTest extends ATest
         $protocol = (new Bolt($conn))->setProtocolVersions(5.1, 5, 4.4)->build();
 
         $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
-        $response = $protocol->run('MATCH (n) DELETE n')->getResponse();
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $response->getSignature());
-        $response = iterator_to_array($protocol->pull()->getResponses());
 
         //prevent multiple runs at once
         while (true) {
-            $response = $protocol->run('MATCH (n:Test50k) RETURN count(n)')->getResponse();
-            $this->assertEquals(Response::SIGNATURE_SUCCESS, $response->getSignature());
-
-            $protocol->pull();
-            $response = $protocol->getResponse();
-            $this->assertEquals(Response::SIGNATURE_RECORD, $response->getSignature());
-            $runs = $response->getContent()[0];
-
-            $response = $protocol->getResponse();
-            $this->assertEquals(Response::SIGNATURE_SUCCESS, $response->getSignature());
+            $runs = $this->basicRun($protocol, 'MATCH (n:Test50k) RETURN count(n)')[0];
 
             if ($runs > 0) {
                 sleep(60);
             } else {
-                $response = $protocol->run('CREATE (n:Test50k)')->getResponse();
-                $this->assertEquals(Response::SIGNATURE_SUCCESS, $response->getSignature());
-                $response = $protocol->pull()->getResponse();
-                $this->assertEquals(Response::SIGNATURE_SUCCESS, $response->getSignature());
+                $this->basicRun($protocol, 'CREATE (n:Test50k)');
                 break;
             }
         }
@@ -69,8 +54,7 @@ class PerformanceTest extends ATest
                 $count++;
         }
 
-        $protocol->run('MATCH (n:Test50k) DELETE n')->getResponse();
-        $protocol->pull()->getResponse();
+        $this->basicRun($protocol, 'MATCH (n:Test50k) DELETE n');
         $this->assertEquals($amount, $count);
     }
 }

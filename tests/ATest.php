@@ -41,4 +41,24 @@ class ATest extends \PHPUnit\Framework\TestCase
             ])->getSignature());
         }
     }
+
+    protected function basicRun(AProtocol|V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1 $protocol, string $query, array $params = []): array
+    {
+        $response = $protocol->run($query, $params)->getResponse();
+        $this->assertEquals(Response::SIGNATURE_SUCCESS, $response->getSignature());
+
+        if (method_exists($protocol, 'pullAll')) {
+            $protocol->pullAll();
+        } else {
+            $protocol->pull();
+        }
+        $results = [];
+        foreach ($protocol->getResponses() as $response) {
+            $this->assertContains($response->getSignature(), [Response::SIGNATURE_SUCCESS, Response::SIGNATURE_RECORD]);
+            if ($response->getSignature() === Response::SIGNATURE_RECORD) {
+                $results[] = $response->getContent();
+            }
+        }
+        return $results;
+    }
 }
