@@ -3,7 +3,6 @@
 namespace Bolt\tests;
 
 use Bolt\Bolt;
-use Bolt\connection\AConnection;
 use Bolt\connection\Socket;
 use Bolt\connection\StreamSocket;
 use Bolt\helpers\Auth;
@@ -17,6 +16,8 @@ use PHPUnit\Framework\TestCase;
  */
 trait CreatesSockets
 {
+    private static array $table = [];
+
     public function createSocket(): Socket
     {
         if (!extension_loaded('sockets'))
@@ -40,22 +41,26 @@ trait CreatesSockets
     private function routeIfNeeded(Socket|StreamSocket $conn): Socket|StreamSocket
     {
         if (($GLOBALS['NEO_ROUTING_REQUIRED'] ?? '') === true) {
-            /** @var V4_4|V5|V5_1 $protocol */
-            $protocol = (new Bolt($conn))->setProtocolVersions(5.1, 5, 4.4)->build();
-            $protocol->hello(Auth::basic(
-                $GLOBALS['NEO_USER'],
-                $GLOBALS['NEO_PASS']
-            ));
-            $table = $protocol->route([])->getResponse();
+            if (self::$table === [] || self::$table['ttl'] < time()) {
+                /** @var V4_4|V5|V5_1 $protocol */
+                $protocol = (new Bolt($conn))->setProtocolVersions(5.1, 5, 4.4)->build();
+                $protocol->hello(Auth::basic(
+                    $GLOBALS['NEO_USER'],
+                    $GLOBALS['NEO_PASS']
+                ));
+                $table = $protocol->route([])->getResponse();
 
-            $servers = [];
-            foreach ($table->getContent()['rt']['servers'] as $server) {
-                if ($server['role'] === 'WRITE') {
-                    $servers = array_merge($servers, $server['addresses']);
+                $servers = [];
+                foreach ($table->getContent()['rt']['servers'] as $server) {
+                    if ($server['role'] === 'WRITE') {
+                        $servers = array_merge($servers, $server['addresses']);
+                    }
                 }
+                self::$table['servers'] = $servers;
+                self::$table['ttl'] = $table->getContent()['rt']['ttl'] + time();
             }
 
-            $address = $servers[array_rand($servers)];
+            $address = self::$table['servers'][array_rand(self::$table['servers'])];
             [$host, $port] = explode(':', $address);
             if ($conn instanceof Socket) {
                 return $this->simpleCreateSocket($host, $port);
