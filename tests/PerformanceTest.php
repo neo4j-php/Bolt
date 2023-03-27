@@ -28,18 +28,6 @@ class PerformanceTest extends ATest
 
         $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
 
-        //prevent multiple runs at once
-        while (true) {
-            $runs = $this->basicRun($protocol, 'MATCH (n:Test50k) RETURN count(n)')[0];
-
-            if ($runs > 0) {
-                sleep(60);
-            } else {
-                $this->basicRun($protocol, 'CREATE (n:Test50k)');
-                break;
-            }
-        }
-
         $generator = new RandomDataGenerator($amount);
         $response = $protocol
             ->run('UNWIND $x as x RETURN x', ['x' => $generator])
@@ -54,7 +42,6 @@ class PerformanceTest extends ATest
                 $count++;
         }
 
-        $this->basicRun($protocol, 'MATCH (n:Test50k) DELETE n');
         $this->assertEquals($amount, $count);
     }
 }
