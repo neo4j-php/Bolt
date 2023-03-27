@@ -83,7 +83,8 @@ class BoltTest extends ATest
         $res = $protocol->getResponse()->getContent();
         $this->assertEquals(1, $res[0] ?? 0);
         $this->assertEquals(2, $res[1] ?? 0);
-        $protocol->getResponse(); // last success message
+        $response = $protocol->getResponse();
+        $this->assertEquals(Response::SIGNATURE_SUCCESS, $response->getSignature());
     }
 
     /**

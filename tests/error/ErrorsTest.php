@@ -2,6 +2,7 @@
 
 namespace Bolt\tests\error;
 
+use Bolt\tests\CreatesSockets;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -13,6 +14,8 @@ use PHPUnit\Framework\TestCase;
  */
 class ErrorsTest extends TestCase
 {
+    use CreatesSockets;
+
     public function testConnectException(): void
     {
         $conn = new \Bolt\connection\StreamSocket('127.0.0.1', 7800, 1);
@@ -33,8 +36,7 @@ class ErrorsTest extends TestCase
 
     public function testPackException2(): void
     {
-        $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
-        $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
+        $conn = $this->createStreamSocket();
 
         $bolt = new \Bolt\Bolt($conn);
         $this->assertInstanceOf(\Bolt\Bolt::class, $bolt);

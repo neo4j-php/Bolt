@@ -31,11 +31,11 @@ trait CreatesSockets
         return $this->routeIfNeeded($socket);
     }
 
-    public function createStreamSocket(bool $route = true): StreamSocket
+    public function createStreamSocket(): StreamSocket
     {
         $conn = $this->simpleCreateStreamSocket();
 
-        return $route ? $this->routeIfNeeded($conn) : $conn;
+        return $this->routeIfNeeded($conn);
     }
 
     private function routeIfNeeded(Socket|StreamSocket $conn): Socket|StreamSocket

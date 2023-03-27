@@ -117,7 +117,7 @@ final class ConnectionTest extends ATest
         $time = microtime(true);
         try {
             $protocol
-                ->run('FOREACH ( i IN range(1,10000) fa| MERGE (d:Day {day: i}) )')
+                ->run('FOREACH ( i IN range(1,10000) | MERGE (d:Day {day: i}) )')
                 ->getResponse();
             $this->fail('No timeout error triggered');
         } catch (ConnectionTimeoutException) {
