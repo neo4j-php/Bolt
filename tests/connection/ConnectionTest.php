@@ -58,8 +58,6 @@ final class ConnectionTest extends ATest
         self::assertEquals([
             [1]
         ], $response);
-
-        $protocol->goodBye();
     }
 
     /**
