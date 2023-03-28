@@ -61,7 +61,7 @@ class StreamSocket extends AConnection
         $this->configureTimeout();
 
         $meta = stream_get_meta_data($this->stream);
-        if (!empty($this->sslContextOptions) && $meta['stream_type'] !== 'tcp_socket/ssl') {
+        if (!empty($this->sslContextOptions) && !array_key_exists('crypto', $meta)) {
             if (stream_socket_enable_crypto($this->stream, true, STREAM_CRYPTO_METHOD_ANY_CLIENT) !== true) {
                 throw new ConnectException('Enable encryption error');
             }

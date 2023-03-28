@@ -63,6 +63,24 @@ final class ConnectionTest extends ATest
     /**
      * @dataProvider provideConnections
      */
+    public function testPersistence(array $factory): void
+    {
+        $conn = $this->getConnection($factory);
+        $conn->keepAlive();
+
+        $conn->connect();
+
+        $conn2 = $this->getConnection($factory);
+        $conn2->keepAlive();
+
+        $conn2->connect();
+
+        $this->assertEquals($conn->getId(), $conn2->getId());
+    }
+
+    /**
+     * @dataProvider provideConnections
+     */
     public function testMillisecondTimeout(array $factory): void
     {
         $conn = $this->getConnection($factory);
