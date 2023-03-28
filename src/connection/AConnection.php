@@ -11,6 +11,8 @@ namespace Bolt\connection;
  */
 abstract class AConnection implements IConnection
 {
+    protected bool $keepAlive = false;
+
     public function __construct(
         protected string $ip = '127.0.0.1',
         protected int    $port = 7687,
@@ -57,5 +59,10 @@ abstract class AConnection implements IConnection
     public function setTimeout(float $timeout): void
     {
         $this->timeout = $timeout;
+    }
+
+    public function keepAlive(bool $keepAlive = true): void
+    {
+        $this->keepAlive = $keepAlive;
     }
 }

@@ -39,4 +39,21 @@ interface IConnection
     public function getTimeout(): float;
 
     public function setTimeout(float $timeout): void;
+
+    /**
+     * Persists the connection in between PHP sessions.
+     */
+    public function keepAlive(bool $keepAlive = true): void;
+
+    public function isKeptAlive(): bool;
+
+    /**
+     * Tells the amount of bytes written to the socket.
+     *
+     * @return bool|int
+     */
+    public function tell(): bool|int;
+
+
+    public function getId(): string|false;
 }

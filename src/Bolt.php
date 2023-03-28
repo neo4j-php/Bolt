@@ -36,26 +36,37 @@ final class Bolt
     public function build(): AProtocol
     {
         $this->serverState = new ServerState();
-        $this->serverState->is(ServerState::DISCONNECTED, ServerState::DEFUNCT);
 
         try {
             if (!$this->connection->connect()) {
                 throw new ConnectException('Connection failed');
             }
 
-            $version = $this->handshake();
-
-            $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
-            if (!class_exists($protocolClass)) {
-                throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
+            $metaNamespace = sys_get_temp_dir() . '/' . $this->connection->getId();
+            if ($this->protocolCanBeResumed($metaNamespace)) {
+                return $this->resumeProtocol($metaNamespace);
             }
+
+            // If connection was reused but its protocol information is lost we have no choice but to reconnect
+            // on a connection that is not being kept alive.
+            $this->rebootConnectionIfNeeded();
+
+            $version = $this->handshake();
+            $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
+            $protocol = $this->createProtocol($protocolClass);
+
+
+            $this->initialiseConnectedServerstate($metaNamespace);
+            if ($this->connection->isKeptAlive()) {
+                file_put_contents($metaNamespace . '-protocol', $protocolClass);
+            }
+
+            return $protocol;
         } catch (ConnectException $e) {
             $this->serverState->set(ServerState::DEFUNCT);
+
             throw $e;
         }
-
-        $this->serverState->set(ServerState::CONNECTED);
-        return new $protocolClass($this->packStreamVersion, $this->connection, $this->serverState);
     }
 
     public function setProtocolVersions(int|float|string ...$v): Bolt
@@ -139,5 +150,74 @@ final class Bolt
         }
 
         return implode('', $versions);
+    }
+
+    private function resumeProtocol(string $metaNamespace): AProtocol
+    {
+        $this->serverState = new ServerState(fopen($metaNamespace .'-state', 'r+'));
+        $protocolClass = file_get_contents($metaNamespace.'-protocol');
+
+        return $this->createProtocol($protocolClass);
+    }
+
+    /**
+     * @return void
+     * @throws ConnectException
+     */
+    public function rebootConnectionIfNeeded(): void
+    {
+        if ($this->connection->tell() > 0) {
+            $this->connection->disconnect();
+            $this->connection->connect();
+        }
+    }
+
+    /**
+     * @param string $metaNamespace
+     * @return bool
+     */
+    public function protocolCanBeResumed(string $metaNamespace): bool
+    {
+        return ($this->connection->isKeptAlive() &&
+            $this->connection->tell() > 0 &&
+            file_exists($metaNamespace . '-protocol') &&
+            file_exists($metaNamespace . '-state')
+        );
+    }
+
+    /**
+     * @param string $metaNamespace
+     * @return void
+     */
+    public function initialiseServerState(string $metaNamespace): void
+    {
+        if ($this->connection->isKeptAlive()) {
+            $this->serverState = new ServerState(fopen($metaNamespace . '-state', 'r+'));
+        } else {
+            $this->serverState = new ServerState();
+            $this->serverState->set(ServerState::DISCONNECTED);
+        }
+    }
+
+    public function createProtocol(string $protocolClass): AProtocol
+    {
+        if (!class_exists($protocolClass)) {
+            throw new ConnectException(sprintf(
+                'Requested Protocol version (%s) not yet implemented',
+                str_replace("\\Bolt\\protocol\\V", '', str_replace('_', '.', $protocolClass))
+            ));
+        }
+
+        return new $protocolClass($this->packStreamVersion, $this->connection, $this->serverState);
+    }
+
+    private function initialiseConnectedServerstate(string $metaNamespace): void
+    {
+        if ($this->connection->isKeptAlive()) {
+            file_put_contents($metaNamespace . '-state', ServerState::CONNECTED);
+            $this->serverState = new ServerState(fopen($metaNamespace . '-state', 'r+'));
+        } else {
+            $this->serverState->set(ServerState::CONNECTED);
+        }
     }
 }

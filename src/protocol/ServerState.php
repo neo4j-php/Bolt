@@ -2,6 +2,8 @@
 
 namespace Bolt\protocol;
 
+use Bolt\connection\IConnection;
+
 /**
  * Class ServerState ..keep track of assumed server state
  * @author Michal Stefanak
@@ -97,6 +99,17 @@ class ServerState
     ];
 
     /**
+     * @param resource|null $stateStream
+     */
+    public function __construct(private $stateStream = null)
+    {
+        if (is_resource($this->stateStream)) {
+            rewind($this->stateStream);
+            $this->current = fread($this->stateStream, 0xFF);
+        }
+    }
+
+    /**
      * Get current server state
      */
     public function get(): string
@@ -109,8 +122,14 @@ class ServerState
      */
     public function set(string $state): void
     {
-        if (in_array($state, self::$lt))
+        if (in_array($state, self::$lt)) {
             $this->current = $state;
+
+            if (is_resource($this->stateStream)) {
+                ftruncate($this->stateStream, 0);
+                fwrite($this->stateStream, $this->current);
+            }
+        }
     }
 
     /**
@@ -126,5 +145,13 @@ class ServerState
         if (is_callable($this->expectedServerStateMismatchCallback))
             ($this->expectedServerStateMismatchCallback)($this->get(), $states);
         return false;
+    }
+
+    public function __destruct()
+    {
+        if (is_resource($this->stateStream)) {
+            fflush($this->stateStream);
+            fclose($this->stateStream);
+        }
     }
 }

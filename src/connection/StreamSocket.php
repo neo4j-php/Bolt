@@ -41,7 +41,14 @@ class StreamSocket extends AConnection
             'ssl' => $this->sslContextOptions
         ]);
 
-        $this->stream = @stream_socket_client('tcp://' . $this->ip . ':' . $this->port, $errno, $errstr, $this->timeout, STREAM_CLIENT_CONNECT, $context);
+        $this->stream = @stream_socket_client(
+            'tcp://' . $this->ip . ':' . $this->port,
+            $errno,
+            $errstr,
+            $this->timeout,
+            STREAM_CLIENT_CONNECT | ($this->keepAlive ? STREAM_CLIENT_PERSISTENT : 0),
+            $context
+        );
 
         if ($this->stream === false) {
             throw new ConnectException($errstr, $errno);
@@ -51,13 +58,19 @@ class StreamSocket extends AConnection
             throw new ConnectException('Cannot set socket into blocking mode');
         }
 
+        $this->configureTimeout();
+
+        // If the connection is being reused we do not need to re-configure SSL.
+        // Re-configuring it is actually impossible and results in a crash.
+        if ($this->tell() > 0) {
+            return true;
+        }
+
         if (!empty($this->sslContextOptions)) {
             if (stream_socket_enable_crypto($this->stream, true, STREAM_CRYPTO_METHOD_ANY_CLIENT) !== true) {
                 throw new ConnectException('Enable encryption error');
             }
         }
-
-        $this->configureTimeout();
 
         return true;
     }
@@ -131,5 +144,33 @@ class StreamSocket extends AConnection
                 throw new ConnectException('Cannot set timeout on stream');
             }
         }
+    }
+
+    public function tell(): bool|int
+    {
+        if ($this->stream) {
+            return ftell($this->stream);
+        }
+
+        return false;
+    }
+
+    public function getId(): string|false
+    {
+        if ($this->stream) {
+            return md5(json_encode([
+                get_resource_id($this->stream),
+                $this->ip,
+                $this->port,
+                $this->keepAlive
+            ]));
+        }
+
+        return false;
+    }
+
+    public function isKeptAlive(): bool
+    {
+        return $this->keepAlive;
     }
 }

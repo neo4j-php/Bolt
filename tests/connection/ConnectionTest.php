@@ -34,6 +34,39 @@ final class ConnectionTest extends ATest
     /**
      * @dataProvider provideConnections
      */
+    public function testPersistenceAcceptance(array $factory): void
+    {
+        $conn = $this->getConnection($factory);
+        $conn->keepAlive();
+
+        // Force the persistent connection to close
+        $conn->connect();
+        $conn->disconnect();
+
+
+        $protocol = (new Bolt($conn))->setProtocolVersions(5.1, 5, 4.4)->build();
+        $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
+
+        unset ($conn);
+        unset ($protocol);
+
+        $conn = $this->getConnection($factory);
+
+        $conn->keepAlive();
+
+        $protocol = (new Bolt($conn))->setProtocolVersions(5.1, 5, 4.4)->build();
+
+        $response = $this->basicRun($protocol, 'RETURN 1 as one');
+        self::assertEquals([
+            [1]
+        ], $response);
+
+        $protocol->goodBye();
+    }
+
+    /**
+     * @dataProvider provideConnections
+     */
     public function testMillisecondTimeout(array $factory): void
     {
         $conn = $this->getConnection($factory);
