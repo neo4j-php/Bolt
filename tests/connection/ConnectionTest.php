@@ -39,10 +39,9 @@ final class ConnectionTest extends ATest
         $conn = $this->getConnection($factory);
         $conn->keepAlive();
 
-        // Force the persistent connection to close
+        // Force the persistent connection to refresh
         $conn->connect();
         $conn->disconnect();
-
 
         $protocol = (new Bolt($conn))->setProtocolVersions(5.1, 5, 4.4)->build();
         $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
@@ -54,8 +53,7 @@ final class ConnectionTest extends ATest
 
         $conn->keepAlive();
 
-        $protocol = (new Bolt($conn))->setProtocolVersions(5.1, 5, 4.4)->build();
-
+        $protocol = (new Bolt($conn))->build();
         $response = $this->basicRun($protocol, 'RETURN 1 as one');
         self::assertEquals([
             [1]

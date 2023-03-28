@@ -168,9 +168,4 @@ class StreamSocket extends AConnection
 
         return false;
     }
-
-    public function isKeptAlive(): bool
-    {
-        return $this->keepAlive;
-    }
 }

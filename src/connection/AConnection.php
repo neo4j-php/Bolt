@@ -65,4 +65,9 @@ abstract class AConnection implements IConnection
     {
         $this->keepAlive = $keepAlive;
     }
+
+    public function isKeptAlive(): bool
+    {
+        return $this->keepAlive;
+    }
 }

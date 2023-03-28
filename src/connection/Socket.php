@@ -126,4 +126,27 @@ class Socket extends AConnection
             throw new ConnectException(socket_strerror($code), $code);
         }
     }
+
+    public function tell(): bool|int
+    {
+        if ($this->socket) {
+            return ftell($this->socket);
+        }
+
+        return false;
+    }
+
+    public function getId(): string|false
+    {
+        if ($this->socket) {
+            return md5(json_encode([
+                get_resource_id($this->socket),
+                $this->ip,
+                $this->port,
+                $this->keepAlive
+            ]));
+        }
+
+        return false;
+    }
 }
