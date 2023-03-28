@@ -46,7 +46,7 @@ class StreamSocket extends AConnection
             $errno,
             $errstr,
             $this->timeout,
-            STREAM_CLIENT_CONNECT | ($this->keepAlive ? STREAM_CLIENT_PERSISTENT : 0),
+            STREAM_CLIENT_CONNECT | STREAM_CLIENT_ASYNC_CONNECT | ($this->keepAlive ? STREAM_CLIENT_PERSISTENT : 0),
             $context
         );
 
@@ -60,13 +60,8 @@ class StreamSocket extends AConnection
 
         $this->configureTimeout();
 
-        // If the connection is being reused we do not need to re-configure SSL.
-        // Re-configuring it is actually impossible and results in a crash.
-        if ($this->tell() > 0) {
-            return true;
-        }
-
-        if (!empty($this->sslContextOptions)) {
+        $meta = stream_get_meta_data($this->stream);
+        if (!empty($this->sslContextOptions) && $meta['stream_type'] !== 'tcp_socket/ssl') {
             if (stream_socket_enable_crypto($this->stream, true, STREAM_CRYPTO_METHOD_ANY_CLIENT) !== true) {
                 throw new ConnectException('Enable encryption error');
             }
