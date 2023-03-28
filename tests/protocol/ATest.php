@@ -42,7 +42,7 @@ abstract class ATest extends TestCase
         $mockBuilder = $this
             ->getMockBuilder(AConnection::class)
             ->disableOriginalConstructor();
-        call_user_func([$mockBuilder, method_exists($mockBuilder, 'onlyMethods') ? 'onlyMethods' : 'setMethods'], ['__construct', 'write', 'read', 'connect', 'disconnect']);
+        call_user_func([$mockBuilder, method_exists($mockBuilder, 'onlyMethods') ? 'onlyMethods' : 'setMethods'], ['__construct', 'write', 'read', 'connect', 'disconnect', 'getId', 'tell']);
         $connection = $mockBuilder->getMock();
 
         $connection
