@@ -56,4 +56,10 @@ interface IConnection
 
 
     public function getId(): string|false;
+
+    /**
+     * Set SSL Context options
+     * @link https://www.php.net/manual/en/context.ssl.php
+     */
+    public function setSslContextOptions(array $options): void;
 }
