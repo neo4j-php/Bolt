@@ -47,18 +47,6 @@ class Socket extends AConnection
         return true;
     }
 
-//    protected function configureTimeout(): void
-//    {
-//        if ($this->socket === false)
-//            return;
-//
-//        $timeoutSeconds = floor($this->timeout);
-//        $microSeconds = floor(($this->timeout - $timeoutSeconds) * 1000000);
-//        $timeoutOption = ['sec' => $timeoutSeconds, 'usec' => $microSeconds];
-//        socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, $timeoutOption);
-//        socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, $timeoutOption);
-//    }
-
     private function configureSocket(\Socket $socket): void
     {
         if (socket_set_block($socket) === false) {
@@ -67,9 +55,7 @@ class Socket extends AConnection
 
         socket_set_option($socket, SOL_TCP, TCP_NODELAY, 1);
         socket_set_option($socket, SOL_SOCKET, SO_KEEPALIVE, 1);
-//        socket_set_option($socket, SOL_SOCKET, SO_LINGER, 1);
-//        socket_set_option($socket, SOL_SOCKET, SO_BINDTODEVICE, 1);
-//        socket_set_option($socket, SOL_SOCKET, SO_TYPE, 1);
+
         $this->configureTimeout();
     }
 }
