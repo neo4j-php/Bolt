@@ -62,6 +62,49 @@ final class ConnectionTest extends ATest
 
     /**
      * @dataProvider provideConnections
+     *
+     * @runInSeparateProcess
+     */
+    public function testSetupPersistenceInSeparateProcess(array $factory): void
+    {
+
+        $conn = $this->getConnection($factory);
+        $conn->keepAlive();
+
+        // Force the persistent connection to refresh
+        $conn->connect();
+        $conn->disconnect();
+
+        $protocol = (new Bolt($conn))->setProtocolVersions(5.1, 5, 4.4)->build();
+        $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
+    }
+
+    /**
+     * @dataProvider provideConnections
+     *
+     * @depends testSetupPersistenceInSeparateProcess
+     *
+     * @runInSeparateProcess
+     */
+    public function testPersistenceInSeparateProcess(array $factory): void
+    {
+        $conn = $this->getConnection($factory);
+
+        $conn->keepAlive();
+
+        $protocol = (new Bolt($conn))->setProtocolVersions(5.1, 5, 4.4)->build();
+        $this->assertContains($protocol->serverState->get(), ['READY', 'CONNECTED']);
+        if ($protocol->serverState->get() === 'CONNECTED') {
+            $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
+        }
+        $response = $this->basicRun($protocol, 'RETURN 1 as one');
+        self::assertEquals([
+            [1]
+        ], $response);
+    }
+
+    /**
+     * @dataProvider provideConnections
      */
     public function testPersistence(array $factory): void
     {

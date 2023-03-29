@@ -56,7 +56,7 @@ final class Bolt
             $protocol = $this->createProtocol($protocolClass);
 
 
-            $this->initialiseConnectedServerstate($metaNamespace);
+            $this->initialiseConnectedServerstate($protocol, $metaNamespace);
             if ($this->connection->isKeptAlive()) {
                 file_put_contents($metaNamespace . '-protocol', $protocolClass);
             }
@@ -211,13 +211,13 @@ final class Bolt
         return new $protocolClass($this->packStreamVersion, $this->connection, $this->serverState);
     }
 
-    private function initialiseConnectedServerstate(string $metaNamespace): void
+    private function initialiseConnectedServerstate(AProtocol $protocol, string $metaNamespace): void
     {
         if ($this->connection->isKeptAlive()) {
             file_put_contents($metaNamespace . '-state', ServerState::CONNECTED);
-            $this->serverState = new ServerState(fopen($metaNamespace . '-state', 'r+'));
+            $protocol->serverState = new ServerState(fopen($metaNamespace . '-state', 'r+'));
         } else {
-            $this->serverState->set(ServerState::CONNECTED);
+            $protocol->serverState->set(ServerState::CONNECTED);
         }
     }
 }
