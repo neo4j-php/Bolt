@@ -21,30 +21,42 @@ class Socket extends AConnection
             throw new ConnectException('PHP Extension sockets not enabled');
         }
 
-        $socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-        if ($socket === false) {
-            throw new ConnectException('Cannot create socket');
+        if ($this->keepAlive) {
+            $socket = @pfsockopen($this->ip, $this->port, timeout: $this->timeout);
+            if ($socket === false) {
+                throw new ConnectException('Cannot create socket');
+            }
+            $socket = socket_import_stream($socket);
+            $this->configureSocket($socket);
+        } else {
+            $socket = @socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+            $this->configureSocket($socket);
+            $conn = @socket_connect($socket, $this->ip, $this->port);
+            if (!$conn) {
+                $code = socket_last_error($socket);
+                throw new ConnectException(socket_strerror($code), $code);
+            }
         }
 
+        $this->stream = socket_export_stream($socket);
+        stream_context_set_params($this->stream, ['ssl' => $this->sslContextOptions ]);
+
+        $this->configureCrypto();
+
+        return true;
+    }
+
+    private function configureSocket(\Socket $socket): void
+    {
         if (socket_set_block($socket) === false) {
             throw new ConnectException('Cannot set socket into blocking mode');
         }
 
         socket_set_option($socket, SOL_TCP, TCP_NODELAY, 1);
         socket_set_option($socket, SOL_SOCKET, SO_KEEPALIVE, 1);
+//        socket_set_option($socket, SOL_SOCKET, SO_LINGER, 1);
+//        socket_set_option($socket, SOL_SOCKET, SO_BINDTODEVICE, 1);
+//        socket_set_option($socket, SOL_SOCKET, SO_TYPE, 1);
         $this->configureTimeout();
-
-        $conn = @socket_connect($socket, $this->ip, $this->port);
-        if (!$conn) {
-            $code = socket_last_error($socket);
-            throw new ConnectException(socket_strerror($code), $code);
-        }
-
-        $this->stream = socket_export_stream($socket);
-
-        $this->configureTimeout();
-        $this->configureCrypto();
-
-        return true;
     }
 }

@@ -115,16 +115,16 @@ abstract class AConnection implements IConnection
     }
 
     /**
-     * @return resource
+     * @return array
      */
-    protected function createStreamContext()
+    protected function createStreamContext(): array
     {
-        return stream_context_create([
+        return [
             'socket' => [
                 'tcp_nodelay' => true,
             ],
             'ssl' => $this->sslContextOptions
-        ]);
+        ];
     }
 
     /**

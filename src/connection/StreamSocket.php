@@ -24,7 +24,7 @@ class StreamSocket extends AConnection
             $errstr,
             $this->timeout,
             STREAM_CLIENT_CONNECT | STREAM_CLIENT_ASYNC_CONNECT | ($this->keepAlive ? STREAM_CLIENT_PERSISTENT : 0),
-            $this->createStreamContext()
+            stream_context_create($this->createStreamContext())
         );
 
         if ($this->stream === false) {
