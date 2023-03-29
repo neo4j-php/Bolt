@@ -41,10 +41,23 @@ class Socket extends AConnection
         $this->stream = socket_export_stream($socket);
         stream_context_set_params($this->stream, ['ssl' => $this->sslContextOptions ]);
 
+        $this->configureTimeout();
         $this->configureCrypto();
 
         return true;
     }
+
+//    protected function configureTimeout(): void
+//    {
+//        if ($this->socket === false)
+//            return;
+//
+//        $timeoutSeconds = floor($this->timeout);
+//        $microSeconds = floor(($this->timeout - $timeoutSeconds) * 1000000);
+//        $timeoutOption = ['sec' => $timeoutSeconds, 'usec' => $microSeconds];
+//        socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, $timeoutOption);
+//        socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, $timeoutOption);
+//    }
 
     private function configureSocket(\Socket $socket): void
     {
