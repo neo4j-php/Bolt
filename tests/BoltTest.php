@@ -33,6 +33,9 @@ class BoltTest extends ATest
         $protocol->goodbye();
     }
 
+    /**
+     * @group requires-internet-connection
+     */
     public function testAura(): void
     {
         $conn = new \Bolt\connection\StreamSocket('neo4j+s://demo.neo4jlabs.com');
