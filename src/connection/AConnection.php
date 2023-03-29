@@ -115,19 +115,6 @@ abstract class AConnection implements IConnection
     }
 
     /**
-     * @return array
-     */
-    protected function createStreamContext(): array
-    {
-        return [
-            'socket' => [
-                'tcp_nodelay' => true,
-            ],
-            'ssl' => $this->sslContextOptions
-        ];
-    }
-
-    /**
      * @throws ConnectException
      */
     protected function configureTimeout(): void

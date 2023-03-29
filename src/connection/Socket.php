@@ -22,9 +22,9 @@ class Socket extends AConnection
         }
 
         if ($this->keepAlive) {
-            $socket = @pfsockopen($this->ip, $this->port, timeout: $this->timeout);
+            $socket = @pfsockopen($this->ip, $this->port, $errno, $errstr, $this->timeout);
             if ($socket === false) {
-                throw new ConnectException('Cannot create socket');
+                throw new ConnectException($errstr, $errno);
             }
             $socket = socket_import_stream($socket);
             $this->configureSocket($socket);

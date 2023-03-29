@@ -24,7 +24,12 @@ class StreamSocket extends AConnection
             $errstr,
             $this->timeout,
             STREAM_CLIENT_CONNECT | STREAM_CLIENT_ASYNC_CONNECT | ($this->keepAlive ? STREAM_CLIENT_PERSISTENT : 0),
-            stream_context_create($this->createStreamContext())
+            stream_context_create([
+                'socket' => [
+                    'tcp_nodelay' => true,
+                ],
+                'ssl' => $this->sslContextOptions
+            ])
         );
 
         if ($this->stream === false) {
