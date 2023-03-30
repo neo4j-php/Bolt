@@ -40,7 +40,7 @@ trait CreatesSockets
 
     private function routeIfNeeded(Socket|StreamSocket $conn): Socket|StreamSocket
     {
-        if (($GLOBALS['NEO_ROUTING_REQUIRED'] ?? '') === true) {
+        if ($this->coalesceConfig('NEO_ROUTING_REQUIRED', default: false) === true) {
             if (self::$table === [] || self::$table['ttl'] < time()) {
                 /** @var V4_4|V5|V5_1 $protocol */
                 $protocol = (new Bolt($conn))->setProtocolVersions(5.1, 5, 4.4)->build();
@@ -77,23 +77,28 @@ trait CreatesSockets
     private function simpleCreateStreamSocket(?string $host = null, ?int $port = null): StreamSocket
     {
         $conn = new StreamSocket(
-            $host ?? $GLOBALS['NEO_HOST'] ?? '127.0.0.1',
-            $port ?? $GLOBALS['NEO_PORT'] ?? 7687
+            $this->coalesceConfig('NEO_HOST', $host, '127.0.1'),
+            $this->coalesceConfig('NEO_PORT', $port, 7687)
         );
-        if ($GLOBALS['NEO_SSL'] === true) {
+        if ($this->coalesceConfig('NEO_SSL', default: false) === true) {
             $conn->setSslContextOptions([
                 'verify_peer' => true,
-                'allow_self_signed' => $GLOBALS['NEO_SSL_SELF_SIGNED'] === true,
+                'allow_self_signed' => $this->coalesceConfig('NEO_SSL_SELF_SIGNED', default: false) === true,
             ]);
         }
         return $conn;
     }
 
+    private function coalesceConfig(string $key, mixed $provided = null, mixed $default = null): mixed
+    {
+        return $provided ?? $GLOBALS[$key] ?? $_ENV[$key] ?? $default;
+    }
+
     private function simpleCreateSocket(?string $host = null, ?int $port = null): Socket
     {
         return new Socket(
-            $host ?? $GLOBALS['NEO_HOST'] ?? '127.0.0.1',
-            $port ?? $GLOBALS['NEO_PORT'] ?? 7687,
+            $this->coalesceConfig('NEO_HOST', $host, '127.0.0.1'),
+            $this->coalesceConfig('NEO_PORT', $port, 7687),
             3
         );
     }
