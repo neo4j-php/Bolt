@@ -140,10 +140,5 @@ abstract class AbstractSocketBench
     public function configureConnection(): void
     {
         $this->connection = $this->createConnection();
-
-        if ($_ENV['NEO_SSL'] ?? false) {
-            // todo configure ssl
-            $this->connection->configureSsl();
-        }
     }
 }

@@ -2,15 +2,14 @@
 
 namespace Bolt\tests\benchmark\Sockets;
 
-use Bolt\connection\IConnection;
 use Bolt\connection\Socket;
+use Bolt\tests\CreatesSockets;
 
 class SocketBench extends AbstractSocketBench
 {
-    protected function createConnection(): IConnection
+    use CreatesSockets;
+    protected function createConnection(): Socket
     {
-        $ip = gethostbyname($_ENV['NEO_HOST'] ?? 'localhost');
-
-        return new Socket($ip, $_ENV['NEO_PORT'] ?? 7687);
+        return $this->createSocket();
     }
 }
