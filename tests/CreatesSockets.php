@@ -12,7 +12,7 @@ use Bolt\protocol\V5_1;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @mixin TestCase
+ *
  */
 trait CreatesSockets
 {
@@ -20,11 +20,9 @@ trait CreatesSockets
 
     public function createSocket(): Socket
     {
-        if (!extension_loaded('sockets'))
+        if (!extension_loaded('sockets') && method_exists($this, 'markTestSkipped')) {
             $this->markTestSkipped('Sockets extension not available');
-
-        if ($GLOBALS['NEO_SSL'] ?? '' === 'true')
-            $this->markTestSkipped('Sockets extension does not support SSL');
+        }
 
         $socket = $this->simpleCreateSocket();
 
