@@ -3,6 +3,7 @@
 namespace Bolt\tests;
 
 use Bolt\Bolt;
+use Bolt\connection\IConnection;
 use Bolt\connection\Socket;
 use Bolt\connection\StreamSocket;
 use Bolt\helpers\Auth;
@@ -12,7 +13,9 @@ use Bolt\protocol\V5_1;
 use PHPUnit\Framework\TestCase;
 
 /**
+ * This trait creates sockets, and optionally routes them to a writeable server and optionally configures SSL.
  *
+ * This trait assumes a global configuration based on a singular address.
  */
 trait CreatesSockets
 {
@@ -36,7 +39,14 @@ trait CreatesSockets
         return $this->routeIfNeeded($conn);
     }
 
-    private function routeIfNeeded(Socket|StreamSocket $conn): Socket|StreamSocket
+    /**
+     * @template Connection of IConnection
+     *
+     * @param Connection $conn
+     *
+     * @return Connection
+     */
+    private function routeIfNeeded(IConnection $conn): IConnection
     {
         if ($this->coalesceConfig('NEO_ROUTING_REQUIRED', default: false) === true) {
             if (self::$table === [] || self::$table['ttl'] < time()) {
@@ -69,9 +79,6 @@ trait CreatesSockets
         return $conn;
     }
 
-    /**
-     * @return StreamSocket
-     */
     private function simpleCreateStreamSocket(?string $host = null, ?int $port = null): StreamSocket
     {
         $conn = new StreamSocket(
