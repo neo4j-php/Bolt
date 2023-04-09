@@ -21,7 +21,7 @@ trait CreatesSockets
 {
     private static array $table = [];
 
-    public function createSocket(): Socket
+    public function createSocket(): IConnection
     {
         if (!extension_loaded('sockets') && method_exists($this, 'markTestSkipped')) {
             $this->markTestSkipped('Sockets extension not available');
@@ -32,7 +32,7 @@ trait CreatesSockets
         return $this->routeIfNeeded($socket);
     }
 
-    public function createStreamSocket(): StreamSocket
+    public function createStreamSocket(): IConnection
     {
         $conn = $this->simpleCreateStreamSocket();
 
@@ -40,11 +40,9 @@ trait CreatesSockets
     }
 
     /**
-     * @template Connection of IConnection
+     * @param IConnection $conn
      *
-     * @param Connection $conn
-     *
-     * @return Connection
+     * @return IConnection
      */
     private function routeIfNeeded(IConnection $conn): IConnection
     {

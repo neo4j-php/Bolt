@@ -6,9 +6,12 @@ use Bolt\Bolt;
 use Bolt\connection\IConnection;
 use Bolt\helpers\Auth;
 use Bolt\packstream\v1\Packer;
+use Bolt\protocol\Response;
+use Bolt\protocol\ServerState;
 use Bolt\protocol\V4_4;
 use Bolt\protocol\V5;
 use Bolt\protocol\V5_1;
+use PhpBench\Attributes\AfterMethods;
 use PhpBench\Attributes\BeforeMethods;
 use PhpBench\Attributes\Iterations;
 use PhpBench\Attributes\ParamProviders;
@@ -48,39 +51,32 @@ abstract class AbstractSocketBench
     #[Sleep(1)]
     #[BeforeMethods(['readyConnection'])]
     #[ParamProviders(['provideRunStatements'])]
-    public function benchWrite(array $params): void
+    public function benchIO(array $params): void
     {
         $this->connection->write($params['message']);
-    }
+        $msg = '';
+        while (true) {
+            $header = $this->connection->read(2);
+            if ($msg !== '' && ord($header[0]) == 0x00 && ord($header[1]) == 0x00)
+                break;
+            $length = unpack('n', $header)[1] ?? 0;
+            $msg .= $this->connection->read($length);
+        }
 
+        $output = [];
+        $signature = 0;
+        if (!empty($msg)) {
+            $output = $this->unpacker->unpack($msg);
+            $signature = $this->unpacker->getSignature();
 
-    /**
-     * @param array{length: int} $params
-     * @return void
-     */
-    #[Revs(100)]
-    #[Iterations(5)]
-    #[Sleep(1)]
-    #[Warmup(5)]
-    #[BeforeMethods(['fillConnection'])]
-    #[ParamProviders(['provideReadSizes'])]
-    public function benchRead(array $params): void
-    {
-        $this->connection->read($params['length']);
-    }
-
-    public function provideReadSizes(): array
-    {
-        return [
-            '4 bytes' => [ 'length' => 0x4 ],
-            '15 bytes' => [ 'length' => 0xF ],
-            '63 bytes' => [ 'length' => 0x4F ],
-            '255 bytes' => [ 'length' => 0xFF ],
-            '1023 bytes' => [ 'length' => 0x4FF ],
-            '4095 bytes' => [ 'length' => 0xFFF ],
-            '20479 bytes' => [ 'length' => 0x4FFF ],
-            '65535 bytes' => [ 'length' => 0xFFFF ],
-        ];
+            if ($signature == Response::SIGNATURE_FAILURE) {
+                $this->serverState->set(ServerState::FAILED);
+            } elseif ($signature == Response::SIGNATURE_IGNORED) {
+                $this->serverState->set(ServerState::INTERRUPTED);
+                // Ignored doesn't have any response content
+                $output = [];
+            }
+        }
     }
 
     abstract protected function createConnection(): IConnection;
@@ -95,18 +91,6 @@ abstract class AbstractSocketBench
         $protocol = $bolt->build();
 
         $protocol->hello(Auth::basic($_ENV['NEO_USER'] ?? 'neo4j', $_ENV['NEO_PASS'] ?? 'testtest'));
-    }
-
-    public function fillConnection(): void
-    {
-        $this->readyConnection();
-
-        $this->connection->write($this->packer->pack(
-            0x10,
-            'RETURN $x AS x',
-            ['x' => bin2hex(random_bytes(0xF_FFFF))],
-            new stdClass())
-        );
     }
 
     public function provideRunStatements(): array
@@ -125,16 +109,15 @@ abstract class AbstractSocketBench
     /**
      * @param string $parameter
      * @return non-empty-array<string, array{message: string}>
-     * @throws \Bolt\error\PackException
      */
     private function packRun(string $parameter): array
     {
         $message = '';
-        $stringPieces = $this->packer->pack(0x10, 'RETURN $x AS x', (object) ['x' => $parameter], new stdClass());
+        $stringPieces = $this->packer->pack(0x10, 'RETURN $x AS x', (object)['x' => $parameter], new stdClass());
         foreach ($stringPieces as $stringPiece) {
             $message .= $stringPiece;
         }
-        return [ 'Run of size: ' . mb_strlen($message) . ' bytes' => compact('message') ];
+        return ['Run of size: ' . mb_strlen($message) . ' bytes' => compact('message')];
     }
 
     public function configureConnection(): void
