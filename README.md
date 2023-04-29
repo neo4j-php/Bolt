@@ -16,7 +16,7 @@ all available versions and keep up with protocol messages architecture and speci
 
 ## Version support
 
-We are trying to keep up and this library supports **Neo4j <= 5.6** with **Bolt <= 5.1**.
+We are trying to keep up and this library supports **Neo4j <= 5.7** with **Bolt <= 5.2**.
 
 https://www.neo4j.com/docs/bolt/current/bolt-compatibility/
 
@@ -59,8 +59,7 @@ Concept of usage is based on Bolt messages. Available protocol methods depends o
 in [pipeline](https://www.neo4j.com/docs/bolt/current/bolt/message/#pipelining) and you can chain multiple Bolt messages
 before fetching response from the server.
 
-Main `Bolt` class serves as Factory design pattern and it returns instance of protocol class by requested Bolt version (
-default is 4 latest versions). Query execution and fetching response is split in two methods. First message `run` is for
+Main `Bolt` class serves as Factory design pattern and it returns instance of protocol class by requested Bolt version. Query execution and fetching response is split in two methods. First message `run` is for
 sending queries. Second message `pull` is for fetching response from last executed query on database.
 Response from database for Bolt message `pull` always contains n+1 rows because last entry is `success` message with
 meta informations.
