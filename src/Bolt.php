@@ -35,7 +35,7 @@ final class Bolt
      */
     public function build(): AProtocol
     {
-        $this->serverState = new ServerState();
+        $this->serverState = new ServerState($this->connection);
         $this->serverState->is(ServerState::DISCONNECTED, ServerState::DEFUNCT);
 
         try {
@@ -43,7 +43,18 @@ final class Bolt
                 throw new ConnectException('Connection failed');
             }
 
-            $version = $this->handshake();
+            $version = null;
+            $state = ServerState::CONNECTED;
+
+            if ($this->connection instanceof \Bolt\connection\StreamSocket) {
+                $identifier = $this->connection->getIdentifier();
+                if (file_exists($identifier . '.lock')) {
+                    [$version, $state] = explode(' ', file_get_contents($identifier . '.lock'), 2);
+                }
+            }
+
+            if (empty($version))
+                $version = $this->handshake();
 
             $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
             if (!class_exists($protocolClass)) {
@@ -54,7 +65,7 @@ final class Bolt
             throw $e;
         }
 
-        $this->serverState->set(ServerState::CONNECTED);
+        $this->serverState->set($state, $version);
         return new $protocolClass($this->packStreamVersion, $this->connection, $this->serverState);
     }
 

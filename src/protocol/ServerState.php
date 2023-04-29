@@ -2,6 +2,9 @@
 
 namespace Bolt\protocol;
 
+use Bolt\connection\IConnection;
+use Bolt\connection\StreamSocket;
+
 /**
  * Class ServerState ..keep track of assumed server state
  * @author Michal Stefanak
@@ -96,6 +99,12 @@ class ServerState
         self::UNAUTHENTICATED
     ];
 
+    private string $version = '';
+
+    public function __construct(private IConnection $connection)
+    {
+    }
+
     /**
      * Get current server state
      */
@@ -107,10 +116,18 @@ class ServerState
     /**
      * Set current server state
      */
-    public function set(string $state): void
+    public function set(string $state, $version = null): void
     {
-        if (in_array($state, self::$lt))
+        if (in_array($state, self::$lt)) {
             $this->current = $state;
+
+            if ($this->connection instanceof StreamSocket) {
+                if (is_string($version)) {
+                    $this->version = $version;
+                }
+                file_put_contents($this->connection->getIdentifier(). '.lock', $this->version . ' ' . $state);
+            }
+        }
     }
 
     /**

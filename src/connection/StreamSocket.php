@@ -41,11 +41,23 @@ class StreamSocket extends AConnection
             'ssl' => $this->sslContextOptions
         ]);
 
-        $this->stream = @stream_socket_client('tcp://' . $this->ip . ':' . $this->port, $errno, $errstr, $this->timeout, STREAM_CLIENT_CONNECT, $context);
+        $this->stream = @stream_socket_client(
+            'tcp://' . $this->ip . ':' . $this->port,
+            $errno,
+            $errstr,
+            $this->timeout,
+            STREAM_CLIENT_CONNECT | STREAM_CLIENT_PERSISTENT,
+            $context
+        );
 
         if ($this->stream === false) {
             throw new ConnectException($errstr, $errno);
         }
+
+        var_dump(stream_socket_get_name($this->stream, false), get_resource_id($this->stream));
+
+        if (file_exists($this->getIdentifier() . '.lock'))
+            return true;
 
         if (!stream_set_blocking($this->stream, true)) {
             throw new ConnectException('Cannot set socket into blocking mode');
@@ -60,6 +72,11 @@ class StreamSocket extends AConnection
         $this->configureTimeout();
 
         return true;
+    }
+
+    public function getIdentifier(): string|bool
+    {
+        return str_replace(':', '_', stream_socket_get_name($this->stream, false));
     }
 
     public function write(string $buffer): void
@@ -107,8 +124,15 @@ class StreamSocket extends AConnection
 
     public function disconnect(): void
     {
-        if (is_resource($this->stream))
-            stream_socket_shutdown($this->stream, STREAM_SHUT_RDWR);
+        if (is_resource($this->stream)) {
+            fclose($this->stream);
+            if (file_exists($this->getIdentifier() . '.lock')) {
+                unlink($this->getIdentifier() . '.lock');
+            }
+//            stream_socket_enable_crypto($this->stream, false);
+//            stream_socket_shutdown($this->stream, STREAM_SHUT_RDWR);
+//            unset($this->stream);
+        }
     }
 
     /**
