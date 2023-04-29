@@ -3,7 +3,7 @@
 use Bolt\protocol\V5_2;
 
 /**
- * Class V5Test
+ * Class V5_2Test
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt

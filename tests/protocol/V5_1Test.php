@@ -7,7 +7,7 @@ use Bolt\protocol\ServerState;
 use Bolt\protocol\V5_1;
 
 /**
- * Class V5Test
+ * Class V5_1Test
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
