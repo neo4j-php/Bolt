@@ -2,7 +2,7 @@
 
 namespace Bolt\protocol\v4_4;
 
-use Bolt\protocol\{ServerState, Response, V4_4, V5, V5_1};
+use Bolt\protocol\{ServerState, Response, V4_4, V5, V5_1, V5_2, V5_3};
 use Bolt\error\BoltException;
 
 trait RouteMessage
@@ -15,7 +15,7 @@ trait RouteMessage
      * @param array $extra [db::String, imp_user::String]
      * @throws BoltException
      */
-    public function route(array $routing, array $bookmarks = [], array $extra = []): V4_4|V5|V5_1
+    public function route(array $routing, array $bookmarks = [], array $extra = []): V4_4|V5|V5_1|V5_2|V5_3
     {
         $this->serverState->is(ServerState::READY);
         $this->write($this->packer->pack(0x66, (object)$routing, $bookmarks, (object)$extra));
