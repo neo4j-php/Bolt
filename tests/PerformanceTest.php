@@ -4,7 +4,7 @@ namespace Bolt\tests;
 
 use Bolt\Bolt;
 use Bolt\connection\Socket;
-use Bolt\protocol\{AProtocol, Response, V4_4, V5, V5_1};
+use Bolt\protocol\Response;
 use Bolt\tests\packstream\v1\generators\RandomDataGenerator;
 
 /**
@@ -20,42 +20,43 @@ class PerformanceTest extends ATest
         $amount = 50000;
 
         $conn = new Socket($GLOBALS['NEO_HOST'] ?? 'localhost', $GLOBALS['NEO_PORT'] ?? 7687, 60);
-        /** @var AProtocol|V4_4|V5|V5_1 $protocol */
-        $protocol = (new Bolt($conn))->setProtocolVersions(5.1, 5, 4.4)->build();
+        $protocol = (new Bolt($conn))->setProtocolVersions($this->getCompatibleBoltVersion())->build();
 
         $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
 
         //prevent multiple runs at once
         while (true) {
             $protocol->run('MATCH (n:Test50k) RETURN count(n)')->getResponse();
+            /** @var Response $response */
             $response = $protocol->pull()->getResponse();
-            if ($response !== Response::SIGNATURE_RECORD)
+            if ($response->getSignature() !== Response::SIGNATURE_RECORD)
                 $this->markTestSkipped();
-            $runs = $response->getContent()[0];
             $protocol->getResponse();
-            if ($runs > 0) {
+            if ($response->getContent()[0] > 0) {
                 sleep(60);
             } else {
-                $protocol->run('CREATE (n:Test50k)')->getResponse();
+                iterator_to_array($protocol->run('CREATE (n:Test50k)')->pull()->getResponses(), false);
                 break;
             }
         }
 
         $generator = new RandomDataGenerator($amount);
-        $protocol
+        /** @var Response $response */
+        $response = $protocol
             ->run('UNWIND $x as x RETURN x', ['x' => $generator])
             ->getResponse();
 
+        if ($response->getSignature() !== Response::SIGNATURE_SUCCESS)
+            $this->markTestIncomplete('[' . $response->getContent()['code'] . '] ' . $response->getContent()['message']);
 
-        $iterator = $protocol->pull()->getResponses();
         $count = 0;
         /** @var Response $response */
-        foreach ($iterator as $response) {
+        foreach ($protocol->pull()->getResponses() as $response) {
             if ($response->getSignature() === Response::SIGNATURE_RECORD)
                 $count++;
         }
 
-        $protocol->run('MATCH (n:Test50k) DELETE n');
+        $protocol->run('MATCH (n:Test50k) DELETE n')->getResponses();
         $this->assertEquals($amount, $count);
     }
 }

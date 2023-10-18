@@ -4,7 +4,7 @@ namespace Bolt\tests;
 
 use Bolt\Bolt;
 use Exception;
-use Bolt\protocol\{AProtocol, Response, V4_4, V5, V5_1};
+use Bolt\protocol\{AProtocol, Response};
 
 /**
  * Class BoltTest
@@ -26,13 +26,13 @@ class BoltTest extends ATest
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var AProtocol|V4_4|V5|V5_1 $protocol */
-        $protocol = $bolt->setProtocolVersions(5.1, 5, 4.4)->build();
+        $protocol = $bolt->setProtocolVersions($this->getCompatibleBoltVersion())->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
         $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
 
-        $protocol->goodbye();
+        if (method_exists($protocol, 'goodbye'))
+            $protocol->goodbye();
     }
 
     public function testAura(): void
@@ -46,16 +46,16 @@ class BoltTest extends ATest
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var AProtocol|V4_4|V5|v5_1 $protocol */
-        $protocol = $bolt->setProtocolVersions(5.1, 5, 4.4)->build();
+        $protocol = $bolt->setProtocolVersions($this->getCompatibleBoltVersion('https://demo.neo4jlabs.com:7473'))->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
         $this->sayHello($protocol, 'movies', 'movies');
 
-        $protocol->goodbye();
+        if (method_exists($protocol, 'goodbye'))
+            $protocol->goodbye();
     }
 
-    public function testHello(): AProtocol|V4_4|V5|V5_1
+    public function testHello(): AProtocol
     {
         $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
         $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
@@ -63,8 +63,7 @@ class BoltTest extends ATest
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var AProtocol|V4_4|V5|V5_1 $protocol */
-        $protocol = $bolt->setProtocolVersions(5.1, 5, 4.4)->build();
+        $protocol = $bolt->setProtocolVersions($this->getCompatibleBoltVersion())->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
         $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
@@ -75,7 +74,7 @@ class BoltTest extends ATest
     /**
      * @depends testHello
      */
-    public function testPull(AProtocol|V4_4|V5|V5_1 $protocol): void
+    public function testPull(AProtocol $protocol): void
     {
         $protocol
             ->run('RETURN 1 AS num, 2 AS cnt', [], ['mode' => 'r'])
@@ -92,7 +91,7 @@ class BoltTest extends ATest
     /**
      * @depends testHello
      */
-    public function testDiscard(AProtocol|V4_4|V5|V5_1 $protocol): void
+    public function testDiscard(AProtocol $protocol): void
     {
         $gen = $protocol
             ->run('MATCH (a:Test) RETURN *', [], ['mode' => 'r'])
@@ -108,7 +107,7 @@ class BoltTest extends ATest
      * @depends testHello
      * @throws Exception
      */
-    public function testTransaction(AProtocol|V4_4|V5|V5_1 $protocol): void
+    public function testTransaction(AProtocol $protocol): void
     {
         if (version_compare($protocol->getVersion(), 3, '<')) {
             $this->markTestSkipped('Old Neo4j version does not support transactions');
@@ -145,7 +144,7 @@ class BoltTest extends ATest
     /**
      * @depends testHello
      */
-    public function testRoute(AProtocol|V4_4|V5|V5_1 $protocol): void
+    public function testRoute(AProtocol $protocol): void
     {
         if (version_compare($protocol->getVersion(), 4.3, '>=')) {
             $response = $protocol
@@ -162,7 +161,7 @@ class BoltTest extends ATest
     /**
      * @depends testHello
      */
-    public function testReset(AProtocol|V4_4|V5|V5_1 $protocol): void
+    public function testReset(AProtocol $protocol): void
     {
         $response = $protocol
             ->reset()
@@ -175,7 +174,7 @@ class BoltTest extends ATest
      * @depends testHello
      * @throws Exception
      */
-    public function testChunking(AProtocol|V4_4|V5|V5_1 $protocol): void
+    public function testChunking(AProtocol $protocol): void
     {
         $gen = $protocol
             ->begin()
@@ -205,7 +204,7 @@ class BoltTest extends ATest
     /**
      * @depends testHello
      */
-    public function testServerStateMismatchCallback(AProtocol|V4_4|V5|V5_1 $protocol): void
+    public function testServerStateMismatchCallback(AProtocol $protocol): void
     {
         $protocol->serverState->set(\Bolt\protocol\ServerState::FAILED);
         $protocol->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {

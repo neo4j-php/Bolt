@@ -16,7 +16,7 @@ all available versions and keep up with protocol messages architecture and speci
 
 ## Version support
 
-We are trying to keep up and this library supports **Neo4j <= 5.7** with **Bolt <= 5.2**.
+We are trying to keep up and this library supports **Bolt <= 5.3**.
 
 https://www.neo4j.com/docs/bolt/current/bolt-compatibility/
 
@@ -33,7 +33,7 @@ Not all new features are implement backwards and this readme is updated to lates
 - [sockets](https://www.php.net/manual/en/book.sockets.php) (optional) - Required when you use Socket connection class
 - [openssl](https://www.php.net/manual/en/book.openssl.php) (optional) - Required when you use StreamSocket connection
   class with enabled SSL
-- [phpunit](https://phpunit.de/) >= 9 (development)
+- [phpunit](https://phpunit.de/) (development)
 
 ## Installation
 

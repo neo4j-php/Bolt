@@ -1,7 +1,5 @@
 <?php
 
-
-use Bolt\helpers\Auth;
 use Bolt\protocol\Response;
 use Bolt\protocol\ServerState;
 use Bolt\protocol\V5_1;

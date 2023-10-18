@@ -3,7 +3,7 @@
 namespace Bolt\tests\packstream\v1;
 
 use Bolt\Bolt;
-use Bolt\protocol\{AProtocol, Response, V4_4, V5, V5_1};
+use Bolt\protocol\{AProtocol, Response};
 use Bolt\tests\ATest;
 
 /**
@@ -15,7 +15,7 @@ use Bolt\tests\ATest;
  */
 class UnpackerTest extends ATest
 {
-    public function testInit(): AProtocol|V4_4|V5|v5_1
+    public function testInit(): AProtocol
     {
         $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
         $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
@@ -23,8 +23,7 @@ class UnpackerTest extends ATest
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var AProtocol|V4_4|V5|v5_1 $protocol */
-        $protocol = $bolt->setProtocolVersions(5.1, 5, 4.4)->build();
+        $protocol = $bolt->setProtocolVersions($this->getCompatibleBoltVersion())->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
         $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
@@ -36,7 +35,7 @@ class UnpackerTest extends ATest
     /**
      * @depends testInit
      */
-    public function testNull(AProtocol|V4_4|V5|v5_1 $protocol): void
+    public function testNull(AProtocol $protocol): void
     {
         $gen = $protocol
             ->run('RETURN null', [], ['mode' => 'r'])
@@ -53,7 +52,7 @@ class UnpackerTest extends ATest
     /**
      * @depends testInit
      */
-    public function testBoolean(AProtocol|V4_4|V5|v5_1 $protocol): void
+    public function testBoolean(AProtocol $protocol): void
     {
         $gen = $protocol
             ->run('RETURN true, false', [], ['mode' => 'r'])
@@ -72,7 +71,7 @@ class UnpackerTest extends ATest
     /**
      * @depends testInit
      */
-    public function testInteger(AProtocol|V4_4|V5|v5_1 $protocol): void
+    public function testInteger(AProtocol $protocol): void
     {
         $gen = $protocol
             ->run('RETURN -16, 0, 127, -17, -128, 128, 32767, 32768, 2147483647, 2147483648, 9223372036854775807, -129, -32768, -32769, -2147483648, -2147483649, -9223372036854775808', [], ['mode' => 'r'])
@@ -92,7 +91,7 @@ class UnpackerTest extends ATest
     /**
      * @depends testInit
      */
-    public function testFloat(AProtocol|V4_4|V5|v5_1 $protocol): void
+    public function testFloat(AProtocol $protocol): void
     {
         for ($i = 0; $i < 10; $i++) {
             $num = mt_rand(-mt_getrandmax(), mt_getrandmax()) / mt_getrandmax();
@@ -115,7 +114,7 @@ class UnpackerTest extends ATest
      * @depends      testInit
      * @dataProvider stringProvider
      */
-    public function testString(string $str, AProtocol|V4_4|V5|v5_1 $protocol): void
+    public function testString(string $str, AProtocol $protocol): void
     {
         $gen = $protocol
             ->run('RETURN "' . str_replace(['\\', '"'], ['\\\\', '\\"'], $str) . '" AS a', [], ['mode' => 'r'])
@@ -148,7 +147,7 @@ class UnpackerTest extends ATest
      * @depends      testInit
      * @dataProvider listProvider
      */
-    public function testList(int $size, AProtocol|V4_4|V5|v5_1 $protocol): void
+    public function testList(int $size, AProtocol $protocol): void
     {
         $gen = $protocol
             ->run('RETURN range(0, ' . $size . ') AS a', [], ['mode' => 'r'])
@@ -173,7 +172,7 @@ class UnpackerTest extends ATest
      * @depends      testInit
      * @dataProvider dictionaryProvider
      */
-    public function testDictionary(string $query, int $size, AProtocol|V4_4|V5|v5_1 $protocol): void
+    public function testDictionary(string $query, int $size, AProtocol $protocol): void
     {
         $gen = $protocol
             ->run($query, [], ['mode' => 'r'])
