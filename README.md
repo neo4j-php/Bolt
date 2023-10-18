@@ -121,6 +121,7 @@ foreach ($protocol->getResponses() as $response) {
 | commit            | Commit transaction                                           |                                                                    |
 | rollback          | Rollback transaction                                         |                                                                    |
 | reset             | Send message to reset connection                             |                                                                    |
+| telemetry         |                                                              | int $api                                                           |
 | getVersion        | Get used protocol version                                    |                                                                    |
 | getResponse       | Get waiting response from server                             |                                                                    |
 | getResponses      | Get waiting responses from server                            |                                                                    |
