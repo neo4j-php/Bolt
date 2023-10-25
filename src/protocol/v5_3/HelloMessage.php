@@ -21,12 +21,12 @@ trait HelloMessage
      */
     public function hello(array $extra = []): Response
     {
-        $extra['bolt_agent'] = [
+        $extra['bolt_agent'] = array_merge([
             'product' => 'php-bolt/' . \Composer\InstalledVersions::getPrettyVersion('stefanak-michal/bolt'),
             'platform' => php_uname(),
             'language' => 'PHP/' . phpversion(),
             'language_details' => 'null'
-        ];
+        ], $extra['bolt_agent'] ?? []);
 
         return $this->__hello($extra);
     }
