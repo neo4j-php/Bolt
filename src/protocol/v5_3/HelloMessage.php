@@ -25,7 +25,7 @@ trait HelloMessage
             'product' => 'php-bolt/' . \Composer\InstalledVersions::getPrettyVersion('stefanak-michal/bolt'),
             'platform' => php_uname(),
             'language' => 'PHP/' . phpversion(),
-            'language_details' => 'null'
+            'language_details' => sprintf('PHP %s / Zend Engine %s / SAPI %s', phpversion(), zend_version(), php_sapi_name())
         ], $extra['bolt_agent'] ?? []);
 
         return $this->__hello($extra);
