@@ -59,6 +59,7 @@ class ATest extends \PHPUnit\Framework\TestCase
      * Neo4j version is received by HTTP request on browser port
      * @param string|null $url
      * @return float|int
+     * @link https://neo4j.com/docs/http-api/current/endpoints/#discovery-api
      */
     protected function getCompatibleBoltVersion(string $url = null): float|int
     {
@@ -69,8 +70,8 @@ class ATest extends \PHPUnit\Framework\TestCase
 
         $neo4jVersion = $decoded['neo4j_version'];
 
-//        if (version_compare($neo4jVersion, '5.13', '>='))
-//            return 5.4;
+        if (version_compare($neo4jVersion, '5.13', '>='))
+            return 5.4;
         if (version_compare($neo4jVersion, '5.9', '>='))
             return 5.3;
         if (version_compare($neo4jVersion, '5.7', '>='))

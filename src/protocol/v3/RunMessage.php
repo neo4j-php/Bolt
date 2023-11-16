@@ -2,7 +2,7 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\protocol\{ServerState, Response, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3};
+use Bolt\protocol\{ServerState, Response, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
 use Bolt\error\BoltException;
 
 trait RunMessage
@@ -14,7 +14,7 @@ trait RunMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-run
      * @throws BoltException
      */
-    public function run(string $query, array $parameters = [], array $extra = []): V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1|V5_2|V5_3
+    public function run(string $query, array $parameters = [], array $extra = []): V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1|V5_2|V5_3|V5_4
     {
         $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
 

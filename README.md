@@ -16,7 +16,7 @@ all available versions and keep up with protocol messages architecture and speci
 
 ## Version support
 
-We are trying to keep up and this library supports **Bolt <= 5.3**.
+We are trying to keep up and this library supports **Bolt <= 5.4**.
 
 https://www.neo4j.com/docs/bolt/current/bolt-compatibility/
 
@@ -121,6 +121,7 @@ foreach ($protocol->getResponses() as $response) {
 | commit            | Commit transaction                                           |                                                                    |
 | rollback          | Rollback transaction                                         |                                                                    |
 | reset             | Send message to reset connection                             |                                                                    |
+| telemetry         |                                                              | int $api                                                           |
 | getVersion        | Get used protocol version                                    |                                                                    |
 | getResponse       | Get waiting response from server                             |                                                                    |
 | getResponses      | Get waiting responses from server                            |                                                                    |

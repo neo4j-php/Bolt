@@ -25,6 +25,7 @@ class Response
     public const MESSAGE_ACK_FAILURE = 'ACK_FAILURE';
     public const MESSAGE_LOGON = 'LOGON';
     public const MESSAGE_LOGOFF = 'LOGOFF';
+    public const MESSAGE_TELEMETRY = 'TELEMETRY';
 
     public const SIGNATURE_SUCCESS = 0x70; //112
     public const SIGNATURE_FAILURE = 0x7F; //127
