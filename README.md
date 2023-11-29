@@ -14,6 +14,8 @@ all available versions and keep up with protocol messages architecture and speci
 
 <a href='https://ko-fi.com/Z8Z5ABMLW' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
+<a href='https://jb.gg/OpenSourceSupport' target='_blank'><img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo (Main) logo." width="100" /></a>
+
 ## Version support
 
 We are trying to keep up and this library supports **Bolt <= 5.4**.
