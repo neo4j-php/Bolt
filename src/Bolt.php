@@ -6,6 +6,8 @@ use Bolt\error\ConnectException;
 use Bolt\error\BoltException;
 use Bolt\protocol\{AProtocol, ServerState};
 use Bolt\connection\IConnection;
+use Bolt\helpers\FileCache;
+use Psr\SimpleCache\CacheInterface;
 
 /**
  * Main class Bolt
@@ -24,9 +26,13 @@ final class Bolt
     public static bool $debug = false;
     public ServerState $serverState;
 
-    public function __construct(private IConnection $connection)
+    public function __construct(private IConnection $connection, private CacheInterface|null $cache = null)
     {
-        $this->setProtocolVersions(5, 4.4);
+        $this->setProtocolVersions(5.4, 5, 4.4);
+
+        if ($this->cache === null) {
+            $this->cache = new FileCache();
+        }
     }
 
     /**
@@ -35,26 +41,37 @@ final class Bolt
      */
     public function build(): AProtocol
     {
-        $this->serverState = new ServerState($this->connection);
+        $this->serverState = new ServerState();
         $this->serverState->is(ServerState::DISCONNECTED, ServerState::DEFUNCT);
+
+        if ($this->connection instanceof \Bolt\connection\PStreamSocket) {
+            $this->connection->setCache($this->cache);
+        }
 
         try {
             if (!$this->connection->connect()) {
                 throw new ConnectException('Connection failed');
             }
 
-            $version = null;
-            $state = ServerState::CONNECTED;
+            $version = $state = null;
 
-            if ($this->connection instanceof \Bolt\connection\StreamSocket) {
+            if ($this->connection instanceof \Bolt\connection\PStreamSocket) {
                 $identifier = $this->connection->getIdentifier();
-                if (file_exists($identifier . '.lock')) {
-                    [$version, $state] = explode(' ', file_get_contents($identifier . '.lock'), 2);
+                if ($this->cache->has($identifier)) {
+                    [$version, $state] = explode('|', $this->cache->get($identifier), 2);
                 }
             }
 
-            if (empty($version))
+            if (empty($version)) {
                 $version = $this->handshake();
+                $state = ServerState::CONNECTED;
+            }
+
+            if ($this->connection instanceof \Bolt\connection\PStreamSocket) {
+                $this->serverState->stateChangeCallback = function (string $state) use ($version) {
+                    $this->cache->set($this->connection->getIdentifier(), $version . '|' . $state);
+                };
+            }
 
             $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
             if (!class_exists($protocolClass)) {
@@ -65,7 +82,7 @@ final class Bolt
             throw $e;
         }
 
-        $this->serverState->set($state, $version);
+        $this->serverState->set($state);
         return new $protocolClass($this->packStreamVersion, $this->connection, $this->serverState);
     }
 
@@ -80,12 +97,6 @@ final class Bolt
     public function setPackStreamVersion(int $version = 1): Bolt
     {
         $this->packStreamVersion = $version;
-        return $this;
-    }
-
-    public function setConnection(IConnection $connection): Bolt
-    {
-        $this->connection = $connection;
         return $this;
     }
 

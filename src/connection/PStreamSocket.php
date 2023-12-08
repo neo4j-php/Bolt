@@ -6,15 +6,16 @@ namespace Bolt\connection;
 use Bolt\Bolt;
 use Bolt\error\ConnectException;
 use Bolt\error\ConnectionTimeoutException;
+use Psr\SimpleCache\CacheInterface;
 
 /**
- * Stream socket class
+ * Persistent stream socket class
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\connection
  */
-class StreamSocket extends AConnection
+class PStreamSocket extends AConnection
 {
     private array $sslContextOptions = [];
 
@@ -23,6 +24,10 @@ class StreamSocket extends AConnection
      */
     private $stream;
 
+    private string|null $identifier = null;
+
+    private CacheInterface|null $cache = null;
+
     /**
      * Set SSL Context options
      * @link https://www.php.net/manual/en/context.ssl.php
@@ -30,6 +35,11 @@ class StreamSocket extends AConnection
     public function setSslContextOptions(array $options): void
     {
         $this->sslContextOptions = $options;
+    }
+
+    public function setCache(CacheInterface $cache): void
+    {
+        $this->cache = $cache;
     }
 
     public function connect(): bool
@@ -41,14 +51,31 @@ class StreamSocket extends AConnection
             'ssl' => $this->sslContextOptions
         ]);
 
-        $this->stream = @stream_socket_client('tcp://' . $this->ip . ':' . $this->port, $errno, $errstr, $this->timeout, STREAM_CLIENT_CONNECT, $context);
+        $this->stream = @stream_socket_client(
+            'tcp://' . $this->ip . ':' . $this->port,
+            $errno,
+            $errstr,
+            $this->timeout,
+            STREAM_CLIENT_CONNECT | STREAM_CLIENT_PERSISTENT,
+            $context
+        );
 
         if ($this->stream === false) {
             throw new ConnectException($errstr, $errno);
         }
 
-        if (!stream_set_blocking($this->stream, true)) {
-            throw new ConnectException('Cannot set socket into blocking mode');
+        var_dump($this->getIdentifier(), stream_get_meta_data($this->stream));
+
+        $meta = stream_get_meta_data($this->stream);
+        if ($meta['timed_out'] ?? false) {
+            $this->disconnect();
+            throw new ConnectionTimeoutException();
+        }
+
+        if (!($meta['blocked'] ?? false)) {
+            if (!stream_set_blocking($this->stream, true)) {
+                throw new ConnectException('Cannot set socket into blocking mode');
+            }
         }
 
         if (!empty($this->sslContextOptions)) {
@@ -60,6 +87,13 @@ class StreamSocket extends AConnection
         $this->configureTimeout();
 
         return true;
+    }
+
+    public function getIdentifier(): string|bool
+    {
+        if ($this->identifier === null)
+            $this->identifier = str_replace(':', '_', stream_socket_get_name($this->stream, false)) . '_' . str_replace(':', '_', stream_socket_get_name($this->stream, true));
+        return $this->identifier;
     }
 
     public function write(string $buffer): void
@@ -110,6 +144,9 @@ class StreamSocket extends AConnection
         if (is_resource($this->stream)) {
             stream_socket_shutdown($this->stream, STREAM_SHUT_RDWR);
             unset($this->stream);
+            if ($this->cache instanceof CacheInterface) {
+                $this->cache->delete($this->getIdentifier());
+            }
         }
     }
 
