@@ -14,9 +14,11 @@ all available versions and keep up with protocol messages architecture and speci
 
 <a href='https://ko-fi.com/Z8Z5ABMLW' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
+<a href='https://jb.gg/OpenSourceSupport' target='_blank'><img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo (Main) logo." width="100" /></a>
+
 ## Version support
 
-We are trying to keep up and this library supports **Neo4j <= 5.7** with **Bolt <= 5.2**.
+We are trying to keep up and this library supports **Bolt <= 5.4**.
 
 https://www.neo4j.com/docs/bolt/current/bolt-compatibility/
 
@@ -33,7 +35,7 @@ Not all new features are implement backwards and this readme is updated to lates
 - [sockets](https://www.php.net/manual/en/book.sockets.php) (optional) - Required when you use Socket connection class
 - [openssl](https://www.php.net/manual/en/book.openssl.php) (optional) - Required when you use StreamSocket connection
   class with enabled SSL
-- [phpunit](https://phpunit.de/) >= 9 (development)
+- [phpunit](https://phpunit.de/) (development)
 
 ## Installation
 
@@ -121,6 +123,7 @@ foreach ($protocol->getResponses() as $response) {
 | commit            | Commit transaction                                           |                                                                    |
 | rollback          | Rollback transaction                                         |                                                                    |
 | reset             | Send message to reset connection                             |                                                                    |
+| telemetry         |                                                              | int $api                                                           |
 | getVersion        | Get used protocol version                                    |                                                                    |
 | getResponse       | Get waiting response from server                             |                                                                    |
 | getResponses      | Get waiting responses from server                            |                                                                    |

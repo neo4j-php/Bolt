@@ -2,7 +2,7 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\protocol\{ServerState, Response, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1};
+use Bolt\protocol\{ServerState, Response, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
 use Bolt\error\BoltException;
 
 trait BeginMessage
@@ -14,7 +14,7 @@ trait BeginMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-begin
      * @throws BoltException
      */
-    public function begin(array $extra = []): V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1
+    public function begin(array $extra = []): V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1|V5_2|V5_3|V5_4
     {
         $this->serverState->is(ServerState::READY);
         $this->write($this->packer->pack(0x11, (object)$extra));
