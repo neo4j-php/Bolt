@@ -66,11 +66,11 @@ class PStreamSocket extends AConnection
 
         var_dump($this->getIdentifier(), stream_get_meta_data($this->stream));
 
-        $meta = stream_get_meta_data($this->stream);
-        if ($meta['timed_out'] ?? false) {
-            $this->disconnect();
-            throw new ConnectionTimeoutException();
-        }
+//        $meta = stream_get_meta_data($this->stream);
+//        if ($meta['timed_out'] ?? false) {
+//            $this->disconnect();
+//            throw new ConnectionTimeoutException();
+//        }
 
         if (!($meta['blocked'] ?? false)) {
             if (!stream_set_blocking($this->stream, true)) {
@@ -143,6 +143,7 @@ class PStreamSocket extends AConnection
     {
         if (is_resource($this->stream)) {
             stream_socket_shutdown($this->stream, STREAM_SHUT_RDWR);
+            fclose($this->stream);
             unset($this->stream);
             if ($this->cache instanceof CacheInterface) {
                 $this->cache->delete($this->getIdentifier());

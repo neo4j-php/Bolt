@@ -79,6 +79,7 @@ final class Bolt
             }
         } catch (ConnectException $e) {
             $this->serverState->set(ServerState::DEFUNCT);
+            $this->connection->disconnect();
             throw $e;
         }
 
