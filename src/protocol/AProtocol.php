@@ -2,6 +2,7 @@
 
 namespace Bolt\protocol;
 
+use Bolt\error\BoltException;
 use Bolt\error\PackException;
 use Bolt\error\UnpackException;
 use Bolt\packstream\{IPacker, IUnpacker};
@@ -58,15 +59,17 @@ abstract class AProtocol
 
     /**
      * Read from connection
-     * @throws ConnectException
+     * @throws BoltException
      */
     protected function read(?int &$signature): array
     {
         $msg = '';
         while (true) {
             $header = $this->connection->read(2);
-            if ($msg !== '' && ord($header[0]) == 0x00 && ord($header[1]) == 0x00)
+            if (empty($header) || ord($header[0]) == 0x00 && ord($header[1]) == 0x00)
                 break;
+//            if ($msg !== '' && ord($header[0]) == 0x00 && ord($header[1]) == 0x00)
+//                break;
             $length = unpack('n', $header)[1] ?? 0;
             $msg .= $this->connection->read($length);
         }
@@ -107,24 +110,22 @@ abstract class AProtocol
     public function getResponses(): \Iterator
     {
         $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
-        while (count($this->pipelinedMessages) > 0) {
-            $message = reset($this->pipelinedMessages);
-            yield from $this->{'_' . $message}();
-            array_shift($this->pipelinedMessages);
+
+        while (true) {
+            $content = $this->read($signature);
+            if ($signature === 0)
+                return;
+            yield new Response('', $signature, $content);
         }
     }
 
     /**
      * Read one response from host output buffer
      */
-    public function getResponse(): Response
+    public function getResponse(): Response|bool
     {
         $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
-        $message = reset($this->pipelinedMessages);
-        /** @var Response $response */
-        $response = $this->{'_' . $message}()->current();
-        if ($response->getSignature() != Response::SIGNATURE_RECORD)
-            array_shift($this->pipelinedMessages);
-        return $response;
+        $content = $this->read($signature);
+        return $signature !== 0 ? new Response('', $signature, $content) : false;
     }
 }

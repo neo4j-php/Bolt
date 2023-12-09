@@ -62,6 +62,15 @@ final class Bolt
                 }
             }
 
+            /*
+             * todo I was thinking about sending 0x00 0x00 to check if connection is active (reusing persistent connection)
+             * And by that decide if handshake should be called
+             * not yet tested, just idea
+             *
+             * With version 4.1+, the NOOP chunk (empty chunk) is used to send an empty chunk and the purpose is to be able to support a keep alive behaviour on the connection.
+             * https://neo4j.com/docs/bolt/current/bolt/message/
+             */
+
             if (empty($version)) {
                 $version = $this->handshake();
                 $state = ServerState::CONNECTED;

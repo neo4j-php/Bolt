@@ -16,12 +16,12 @@ use Bolt\error\ConnectionTimeoutException;
  */
 class StreamSocket extends AConnection
 {
-    private array $sslContextOptions = [];
+    protected array $sslContextOptions = [];
 
     /**
      * @var resource
      */
-    private $stream;
+    protected $stream;
 
     /**
      * Set SSL Context options
@@ -125,7 +125,7 @@ class StreamSocket extends AConnection
     /**
      * @throws ConnectException
      */
-    private function configureTimeout(): void
+    protected function configureTimeout(): void
     {
         if (is_resource($this->stream)) {
             $timeout = (int)floor($this->timeout);

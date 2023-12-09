@@ -18,7 +18,7 @@ class FileCache implements CacheInterface
     public function get(string $key, mixed $default = null): mixed
     {
         if ($this->has($key))
-            return file_get_contents(getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $key);
+            return file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $key);
         return $default;
     }
 
@@ -27,9 +27,9 @@ class FileCache implements CacheInterface
      */
     public function set(string $key, mixed $value, \DateInterval|int|null $ttl = null): bool
     {
-        if (!file_exists(getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR))
-            mkdir(getcwd() . DIRECTORY_SEPARATOR . 'temp');
-        return (bool)file_put_contents(getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $key, $value);
+        if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR))
+            mkdir(__DIR__ . DIRECTORY_SEPARATOR . 'temp');
+        return (bool)file_put_contents(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $key, $value);
     }
 
     /**
@@ -38,7 +38,7 @@ class FileCache implements CacheInterface
     public function delete(string $key): bool
     {
         if ($this->has($key))
-            return unlink(getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $key);
+            return unlink(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $key);
         return false;
     }
 
@@ -47,10 +47,10 @@ class FileCache implements CacheInterface
      */
     public function clear(): bool
     {
-        foreach (scandir(getcwd() . DIRECTORY_SEPARATOR . 'temp') as $file) {
+        foreach (scandir(__DIR__ . DIRECTORY_SEPARATOR . 'temp') as $file) {
             if ($file == '.' || $file == '..')
                 continue;
-            unlink(getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $file);
+            unlink(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $file);
         }
         return true;
     }
@@ -84,6 +84,6 @@ class FileCache implements CacheInterface
      */
     public function has(string $key): bool
     {
-        return file_exists(getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $key);
+        return file_exists(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $key);
     }
 }
