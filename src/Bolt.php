@@ -26,6 +26,10 @@ final class Bolt
     public static bool $debug = false;
     public ServerState $serverState;
 
+    /**
+     * @param IConnection $connection
+     * @param CacheInterface|null $cache Persistent key value storage
+     */
     public function __construct(private IConnection $connection, private CacheInterface|null $cache = null)
     {
         $this->setProtocolVersions(5.4, 5, 4.4);
@@ -103,6 +107,7 @@ final class Bolt
 
         /** @var Response $response */
         $response = $protocol->reset()->getResponse();
+        //todo reset doesn't clear db output buffer? do I have to consume all ignored messages first?
         if ($response->getSignature() != Response::SIGNATURE_SUCCESS) {
             $this->connection->disconnect();
             $this->connection->connect();
