@@ -45,75 +45,57 @@ final class Bolt
         $this->serverState->is(ServerState::DISCONNECTED, ServerState::DEFUNCT);
 
         $protocol = null;
-        if ($this->connection instanceof \Bolt\connection\PStreamSocket) {
-            $protocol = $this->persistentBuild();
-        }
 
-        if (empty($protocol)) {
-            $protocol = $this->normalBuild();
-        }
+        try {
+            if (!$this->connection->connect()) {
+                throw new ConnectException('Connection failed');
+            }
 
-            /*
-             * todo I was thinking about sending 0x00 0x00 to check if connection is active (reusing persistent connection)
-             * And by that decide if handshake should be called
-             * not yet tested, just idea
-             *
-             * With version 4.1+, the NOOP chunk (empty chunk) is used to send an empty chunk and the purpose is to be able to support a keep alive behaviour on the connection.
-             * https://neo4j.com/docs/bolt/current/bolt/message/
-             */
+            if ($this->connection instanceof \Bolt\connection\PStreamSocket) {
+                $protocol = $this->persistentBuild();
+            }
+
+            if (empty($protocol)) {
+                $protocol = $this->normalBuild();
+                $this->serverState->set(ServerState::CONNECTED);
+            }
+        } catch (BoltException $e) {
+            $this->serverState->set(ServerState::DEFUNCT);
+            $this->connection->disconnect();
+            throw $e;
+        }
 
         if ($this->connection instanceof \Bolt\connection\PStreamSocket) {
             $this->cache->set($this->connection->getIdentifier(), $protocol->getVersion());
         }
 
-        $this->serverState->set(ServerState::CONNECTED);
         return $protocol;
     }
 
-    private function normalBuild()
+    private function normalBuild(): AProtocol
     {
-        try {
-            if (!$this->connection->connect()) {
-                throw new ConnectException('Connection failed');
-            }
+        $version = $this->handshake();
 
-            $version = $this->handshake();
-
-            $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
-            if (!class_exists($protocolClass)) {
-                throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
-            }
-        } catch (BoltException $e) {
-            $this->serverState->set(ServerState::DEFUNCT);
-            $this->connection->disconnect();
-            throw $e;
+        $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
+        if (!class_exists($protocolClass)) {
+            throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
         }
 
         return new $protocolClass($this->packStreamVersion, $this->connection, $this->serverState);
     }
 
-    private function persistentBuild()
+    private function persistentBuild(): AProtocol|null
     {
         $this->connection->setCache($this->cache);
-        $version = $this->cache->get($this->connection->getIdentifier());
 
+        $version = $this->cache->get($this->connection->getIdentifier());
         if (empty($version)) {
             return null;
         }
 
-        try {
-            if (!$this->connection->connect()) {
-                throw new ConnectException('Connection failed');
-            }
-
-            $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
-            if (!class_exists($protocolClass)) {
-                throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
-            }
-        } catch (BoltException $e) {
-            $this->serverState->set(ServerState::DEFUNCT);
-            $this->connection->disconnect();
-            throw $e;
+        $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
+        if (!class_exists($protocolClass)) {
+            throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
         }
 
         /** @var AProtocol $protocol */
@@ -123,6 +105,7 @@ final class Bolt
         $response = $protocol->reset()->getResponse();
         if ($response->getSignature() != Response::SIGNATURE_SUCCESS) {
             $this->connection->disconnect();
+            $this->connection->connect();
             return null;
         }
 

@@ -122,6 +122,8 @@ abstract class AProtocol
     {
         $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
         $message = reset($this->pipelinedMessages);
+        if (empty($message))
+            throw new ConnectException('No response waiting to be consumed');
         /** @var Response $response */
         $response = $this->{'_' . $message}()->current();
         if ($response->getSignature() != Response::SIGNATURE_RECORD)
