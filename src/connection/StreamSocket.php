@@ -23,6 +23,8 @@ class StreamSocket extends AConnection
      */
     protected $stream;
 
+    protected int $connectionFlags = STREAM_CLIENT_CONNECT;
+
     /**
      * Set SSL Context options
      * @link https://www.php.net/manual/en/context.ssl.php
@@ -41,7 +43,7 @@ class StreamSocket extends AConnection
             'ssl' => $this->sslContextOptions
         ]);
 
-        $this->stream = @stream_socket_client('tcp://' . $this->ip . ':' . $this->port, $errno, $errstr, $this->timeout, STREAM_CLIENT_CONNECT, $context);
+        $this->stream = @stream_socket_client('tcp://' . $this->ip . ':' . $this->port, $errno, $errstr, $this->timeout, $this->connectionFlags, $context);
 
         if ($this->stream === false) {
             throw new ConnectException($errstr, $errno);

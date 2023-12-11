@@ -4,7 +4,7 @@ namespace Bolt;
 
 use Bolt\error\ConnectException;
 use Bolt\error\BoltException;
-use Bolt\protocol\{AProtocol, ServerState};
+use Bolt\protocol\{AProtocol, Response, ServerState};
 use Bolt\connection\IConnection;
 use Bolt\helpers\FileCache;
 use Psr\SimpleCache\CacheInterface;
@@ -44,23 +44,14 @@ final class Bolt
         $this->serverState = new ServerState();
         $this->serverState->is(ServerState::DISCONNECTED, ServerState::DEFUNCT);
 
+        $protocol = null;
         if ($this->connection instanceof \Bolt\connection\PStreamSocket) {
-            $this->connection->setCache($this->cache);
+            $protocol = $this->persistentBuild();
         }
 
-        try {
-            if (!$this->connection->connect()) {
-                throw new ConnectException('Connection failed');
-            }
-
-            $version = $state = null;
-
-            if ($this->connection instanceof \Bolt\connection\PStreamSocket) {
-                $identifier = $this->connection->getIdentifier();
-                if ($this->cache->has($identifier)) {
-                    [$version, $state] = explode('|', $this->cache->get($identifier), 2);
-                }
-            }
+        if (empty($protocol)) {
+            $protocol = $this->normalBuild();
+        }
 
             /*
              * todo I was thinking about sending 0x00 0x00 to check if connection is active (reusing persistent connection)
@@ -71,29 +62,71 @@ final class Bolt
              * https://neo4j.com/docs/bolt/current/bolt/message/
              */
 
-            if (empty($version)) {
-                $version = $this->handshake();
-                $state = ServerState::CONNECTED;
+        if ($this->connection instanceof \Bolt\connection\PStreamSocket) {
+            $this->cache->set($this->connection->getIdentifier(), $protocol->getVersion());
+        }
+
+        $this->serverState->set(ServerState::CONNECTED);
+        return $protocol;
+    }
+
+    private function normalBuild()
+    {
+        try {
+            if (!$this->connection->connect()) {
+                throw new ConnectException('Connection failed');
             }
 
-            if ($this->connection instanceof \Bolt\connection\PStreamSocket) {
-                $this->serverState->stateChangeCallback = function (string $state) use ($version) {
-                    $this->cache->set($this->connection->getIdentifier(), $version . '|' . $state);
-                };
+            $version = $this->handshake();
+
+            $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
+            if (!class_exists($protocolClass)) {
+                throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
+            }
+        } catch (BoltException $e) {
+            $this->serverState->set(ServerState::DEFUNCT);
+            $this->connection->disconnect();
+            throw $e;
+        }
+
+        return new $protocolClass($this->packStreamVersion, $this->connection, $this->serverState);
+    }
+
+    private function persistentBuild()
+    {
+        $this->connection->setCache($this->cache);
+        $version = $this->cache->get($this->connection->getIdentifier());
+
+        if (empty($version)) {
+            return null;
+        }
+
+        try {
+            if (!$this->connection->connect()) {
+                throw new ConnectException('Connection failed');
             }
 
             $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
             if (!class_exists($protocolClass)) {
                 throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
             }
-        } catch (ConnectException $e) {
+        } catch (BoltException $e) {
             $this->serverState->set(ServerState::DEFUNCT);
             $this->connection->disconnect();
             throw $e;
         }
 
-        $this->serverState->set($state);
-        return new $protocolClass($this->packStreamVersion, $this->connection, $this->serverState);
+        /** @var AProtocol $protocol */
+        $protocol = new $protocolClass($this->packStreamVersion, $this->connection, $this->serverState);
+
+        /** @var Response $response */
+        $response = $protocol->reset()->getResponse();
+        if ($response->getSignature() != Response::SIGNATURE_SUCCESS) {
+            $this->connection->disconnect();
+            return null;
+        }
+
+        return $protocol;
     }
 
     public function setProtocolVersions(int|float|string ...$v): Bolt

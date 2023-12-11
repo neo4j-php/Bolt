@@ -80,11 +80,6 @@ class ServerState
     public $expectedServerStateMismatchCallback;
 
     /**
-     * @var callable(string $state)
-     */
-    public $stateChangeCallback;
-
-    /**
      * Internal enum to verify valid server state
      * @var string[]
      */
@@ -114,12 +109,8 @@ class ServerState
      */
     public function set(string $state): void
     {
-        if (in_array($state, self::$lt)) {
+        if (in_array($state, self::$lt))
             $this->current = $state;
-
-            if (is_callable($this->stateChangeCallback))
-                ($this->stateChangeCallback)($state);
-        }
     }
 
     /**

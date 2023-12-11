@@ -66,10 +66,8 @@ abstract class AProtocol
         $msg = '';
         while (true) {
             $header = $this->connection->read(2);
-            if (empty($header) || ord($header[0]) == 0x00 && ord($header[1]) == 0x00)
+            if ($msg !== '' && ord($header[0]) == 0x00 && ord($header[1]) == 0x00)
                 break;
-//            if ($msg !== '' && ord($header[0]) == 0x00 && ord($header[1]) == 0x00)
-//                break;
             $length = unpack('n', $header)[1] ?? 0;
             $msg .= $this->connection->read($length);
         }
@@ -110,22 +108,24 @@ abstract class AProtocol
     public function getResponses(): \Iterator
     {
         $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
-
-        while (true) {
-            $content = $this->read($signature);
-            if ($signature === 0)
-                return;
-            yield new Response('', $signature, $content);
+        while (count($this->pipelinedMessages) > 0) {
+            $message = reset($this->pipelinedMessages);
+            yield from $this->{'_' . $message}();
+            array_shift($this->pipelinedMessages);
         }
     }
 
     /**
      * Read one response from host output buffer
      */
-    public function getResponse(): Response|bool
+    public function getResponse(): Response
     {
         $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
-        $content = $this->read($signature);
-        return $signature !== 0 ? new Response('', $signature, $content) : false;
+        $message = reset($this->pipelinedMessages);
+        /** @var Response $response */
+        $response = $this->{'_' . $message}()->current();
+        if ($response->getSignature() != Response::SIGNATURE_RECORD)
+            array_shift($this->pipelinedMessages);
+        return $response;
     }
 }
