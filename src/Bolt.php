@@ -107,7 +107,6 @@ final class Bolt
 
         /** @var Response $response */
         $response = $protocol->reset()->getResponse();
-        //todo reset doesn't clear db output buffer? do I have to consume all ignored messages first?
         if ($response->getSignature() != Response::SIGNATURE_SUCCESS) {
             $this->connection->disconnect();
             $this->connection->connect();

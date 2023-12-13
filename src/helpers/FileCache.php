@@ -17,6 +17,14 @@ class FileCache implements CacheInterface
     {
         if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR))
             mkdir(__DIR__ . DIRECTORY_SEPARATOR . 'temp');
+
+        // clean old
+        foreach (scandir(__DIR__ . DIRECTORY_SEPARATOR . 'temp') as $file) {
+            if ($file == '.' || $file == '..')
+                continue;
+            if (filemtime(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $file) < strtotime('-1 hour'))
+                unlink(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $file);
+        }
     }
 
     /**

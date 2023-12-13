@@ -25,6 +25,22 @@ class PStreamSocket extends StreamSocket
         $this->cache = $cache;
     }
 
+    public function connect(): bool
+    {
+        $result = parent::connect();
+
+        //dump TCP buffer leftovers
+        $read = [$this->stream];
+        $write = $except = null;
+        if (stream_select($read, $write, $except, 0) ===  1) {
+            do {
+                $r = fread($this->stream, 1024);
+            } while ($r !== false && mb_strlen($r) == 1024);
+        }
+
+        return $result;
+    }
+
     public function getIdentifier(): string
     {
         if ($this->identifier === null)
