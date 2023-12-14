@@ -5,6 +5,7 @@ namespace Bolt;
 use Bolt\error\ConnectException;
 use Bolt\error\BoltException;
 use Bolt\protocol\{AProtocol, ServerState};
+use Bolt\enum\ServerState as SS;
 use Bolt\connection\IConnection;
 
 /**
@@ -36,7 +37,7 @@ final class Bolt
     public function build(): AProtocol
     {
         $this->serverState = new ServerState();
-        $this->serverState->is(ServerState::DISCONNECTED, ServerState::DEFUNCT);
+        $this->serverState->is(SS::DISCONNECTED, SS::DEFUNCT);
 
         try {
             if (!$this->connection->connect()) {
@@ -50,11 +51,11 @@ final class Bolt
                 throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
             }
         } catch (ConnectException $e) {
-            $this->serverState->set(ServerState::DEFUNCT);
+            $this->serverState->set(SS::DEFUNCT);
             throw $e;
         }
 
-        $this->serverState->set(ServerState::CONNECTED);
+        $this->serverState->set(version_compare($version, '5.1', '>=') ? SS::NEGOTIATION : SS::CONNECTED);
         return new $protocolClass($this->packStreamVersion, $this->connection, $this->serverState);
     }
 

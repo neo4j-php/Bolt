@@ -2,9 +2,8 @@
 
 namespace Bolt\tests\protocol;
 
-use Bolt\protocol\ServerState;
 use Bolt\protocol\V4;
-use Bolt\enum\Signature;
+use Bolt\enum\{Signature, ServerState};
 
 /**
  * Class V4Test
@@ -17,7 +16,7 @@ class V4Test extends ATest
 {
     public function test__construct(): V4
     {
-        $cls = new V4(1, $this->mockConnection(), new ServerState());
+        $cls = new V4(1, $this->mockConnection(), new \Bolt\protocol\ServerState());
         $this->assertInstanceOf(V4::class, $cls);
         $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
             $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');

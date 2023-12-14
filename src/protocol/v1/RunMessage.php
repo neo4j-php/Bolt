@@ -2,9 +2,8 @@
 
 namespace Bolt\protocol\v1;
 
-use Bolt\enum\{Message, Signature};
+use Bolt\enum\{Message, Signature, ServerState};
 use Bolt\protocol\{
-    ServerState,
     Response,
     V1,
     V2

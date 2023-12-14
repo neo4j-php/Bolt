@@ -2,9 +2,8 @@
 
 namespace Bolt\tests\protocol;
 
-use Bolt\protocol\ServerState;
 use Bolt\protocol\V4_3;
-use Bolt\enum\Signature;
+use Bolt\enum\{Signature, ServerState};
 
 /**
  * Class V4_3Test

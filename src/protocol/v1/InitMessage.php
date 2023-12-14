@@ -2,8 +2,8 @@
 
 namespace Bolt\protocol\v1;
 
-use Bolt\enum\{Message, Signature};
-use Bolt\protocol\{ServerState, Response};
+use Bolt\enum\{Message, Signature, ServerState};
+use Bolt\protocol\Response;
 use Bolt\error\BoltException;
 
 trait InitMessage

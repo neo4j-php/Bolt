@@ -2,10 +2,9 @@
 
 namespace Bolt\protocol\v5_1;
 
-use Bolt\enum\{Message, Signature};
+use Bolt\enum\{Message, Signature, ServerState};
 use Bolt\error\BoltException;
 use Bolt\protocol\Response;
-use Bolt\protocol\ServerState;
 
 trait LogonMessage
 {

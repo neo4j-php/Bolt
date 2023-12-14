@@ -9,6 +9,7 @@ use Bolt\error\UnpackException;
 use Bolt\packstream\{IPacker, IUnpacker};
 use Bolt\connection\IConnection;
 use Bolt\error\ConnectException;
+use Bolt\enum\ServerState as SS;
 
 /**
  * Abstract class AProtocol
@@ -80,9 +81,9 @@ abstract class AProtocol
             $signature = Signature::from($s);
 
             if ($signature == Signature::SUCCESS) {
-                $this->serverState->set(ServerState::FAILED);
+                $this->serverState->set(SS::FAILED);
             } elseif ($signature == Signature::IGNORED) {
-                $this->serverState->set(ServerState::INTERRUPTED);
+                $this->serverState->set(SS::INTERRUPTED);
                 // Ignored doesn't have any response content
                 $output = [];
             }
@@ -108,7 +109,7 @@ abstract class AProtocol
      */
     public function getResponses(): \Iterator
     {
-        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
+        $this->serverState->is(SS::READY, SS::TX_READY, SS::STREAMING, SS::TX_STREAMING);
         while (count($this->pipelinedMessages) > 0) {
             $message = reset($this->pipelinedMessages);
             yield from $this->{'_' . $message}();
@@ -121,7 +122,7 @@ abstract class AProtocol
      */
     public function getResponse(): Response
     {
-        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
+        $this->serverState->is(SS::READY, SS::TX_READY, SS::STREAMING, SS::TX_STREAMING);
         $message = reset($this->pipelinedMessages);
         /** @var Response $response */
         $response = $this->{'_' . $message}()->current();

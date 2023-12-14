@@ -2,8 +2,8 @@
 
 namespace Bolt\protocol\v4_3;
 
-use Bolt\enum\Message;
-use Bolt\protocol\{ServerState, Response, V4_3};
+use Bolt\enum\{Message, ServerState};
+use Bolt\protocol\{Response, V4_3};
 use Bolt\error\BoltException;
 
 trait RouteMessage
