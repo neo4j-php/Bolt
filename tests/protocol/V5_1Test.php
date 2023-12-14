@@ -42,7 +42,7 @@ class V5_1Test extends \Bolt\tests\protocol\ATest
 
         $cls->serverState->set(ServerState::CONNECTED);
         $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->hello()->getSignature());
-        $this->assertEquals(ServerState::UNAUTHENTICATED, $cls->serverState->get());
+        $this->assertEquals(ServerState::AUTHENTICATION, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::CONNECTED);
         $response = $cls->hello();
@@ -71,7 +71,7 @@ class V5_1Test extends \Bolt\tests\protocol\ATest
             '00098870617373776f7264',
         ];
 
-        $cls->serverState->set(ServerState::UNAUTHENTICATED);
+        $cls->serverState->set(ServerState::AUTHENTICATION);
         $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->logon([
             'scheme' => 'basic',
             'principal' => 'user',
@@ -79,7 +79,7 @@ class V5_1Test extends \Bolt\tests\protocol\ATest
         ])->getSignature());
         $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
-        $cls->serverState->set(ServerState::UNAUTHENTICATED);
+        $cls->serverState->set(ServerState::AUTHENTICATION);
         $response = $cls->logon([
             'scheme' => 'basic',
             'principal' => 'user',
@@ -105,7 +105,7 @@ class V5_1Test extends \Bolt\tests\protocol\ATest
 
         $cls->serverState->set(ServerState::READY);
         $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->logoff()->getSignature());
-        $this->assertEquals(ServerState::UNAUTHENTICATED, $cls->serverState->get());
+        $this->assertEquals(ServerState::AUTHENTICATION, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::READY);
         $response = $cls->logoff();

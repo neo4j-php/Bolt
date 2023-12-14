@@ -23,6 +23,12 @@ class ServerState
     public const CONNECTED = 'CONNECTED';
 
     /**
+     * CONNECTED state has been renamed to NEGOTIATION
+     * @see CONNECTED
+     */
+    public const NEGOTIATION = self::CONNECTED;
+
+        /**
      * This is not strictly a connection state, but is instead a logical state that exists after a connection has been closed. When DEFUNCT, a connection is permanently not usable.
      * This may arise due to a graceful shutdown or can occur after an unrecoverable error or protocol violation.
      * Clients and servers should clear up any resources associated with a connection on entering this state, including closing any open sockets.
@@ -67,7 +73,7 @@ class ServerState
     /**
      * Connection has been established and metadata has been sent back from the HELLO message or a LOGOFF message was received whilst in ready state. Ready to accept a LOGON message with authentication information.
      */
-    public const UNAUTHENTICATED = 'UNAUTHENTICATED';
+    public const AUTHENTICATION = 'AUTHENTICATION';
 
     /**
      * Internal pointer for current server state
@@ -93,7 +99,8 @@ class ServerState
         self::TX_STREAMING,
         self::FAILED,
         self::INTERRUPTED,
-        self::UNAUTHENTICATED
+        self::AUTHENTICATION,
+        self::NEGOTIATION
     ];
 
     /**

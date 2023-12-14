@@ -16,7 +16,7 @@ trait HelloMessage
      */
     public function hello(array $extra = []): Response
     {
-        $this->serverState->is(ServerState::CONNECTED);
+        $this->serverState->is(ServerState::NEGOTIATION);
 
         if (empty($extra['user_agent']))
             $extra['user_agent'] = \Bolt\helpers\Auth::$defaultUserAgent;
@@ -27,7 +27,7 @@ trait HelloMessage
         $content = $this->read($signature);
 
         if ($signature == Response::SIGNATURE_SUCCESS) {
-            $this->serverState->set(ServerState::UNAUTHENTICATED);
+            $this->serverState->set(ServerState::AUTHENTICATION);
         } elseif ($signature == Response::SIGNATURE_FAILURE) {
             $this->connection->disconnect();
             $this->serverState->set(ServerState::DEFUNCT);

@@ -22,7 +22,7 @@ trait LogoffMessage
         $this->write($this->packer->pack(0x6B));
         $content = $this->read($signature);
         if ($signature == Response::SIGNATURE_SUCCESS) {
-            $this->serverState->set(ServerState::UNAUTHENTICATED);
+            $this->serverState->set(ServerState::AUTHENTICATION);
         } else {
             $this->connection->disconnect();
             $this->serverState->set(ServerState::DEFUNCT);
