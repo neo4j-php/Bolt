@@ -30,10 +30,10 @@ class PerformanceTest extends ATest
             $protocol->run('MATCH (n:Test50k) RETURN count(n)')->getResponse();
             /** @var Response $response */
             $response = $protocol->pull()->getResponse();
-            if ($response->getSignature() !== Signature::RECORD)
+            if ($response->signature !== Signature::RECORD)
                 $this->markTestSkipped();
             $protocol->getResponse();
-            if ($response->getContent()[0] > 0) {
+            if ($response->content[0] > 0) {
                 sleep(60);
             } else {
                 iterator_to_array($protocol->run('CREATE (n:Test50k)')->pull()->getResponses(), false);
@@ -47,13 +47,13 @@ class PerformanceTest extends ATest
             ->run('UNWIND $x as x RETURN x', ['x' => $generator])
             ->getResponse();
 
-        if ($response->getSignature() !== Signature::SUCCESS)
-            $this->markTestIncomplete('[' . $response->getContent()['code'] . '] ' . $response->getContent()['message']);
+        if ($response->signature !== Signature::SUCCESS)
+            $this->markTestIncomplete('[' . $response->content['code'] . '] ' . $response->content['message']);
 
         $count = 0;
         /** @var Response $response */
         foreach ($protocol->pull()->getResponses() as $response) {
-            if ($response->getSignature() === Signature::RECORD)
+            if ($response->signature === Signature::RECORD)
                 $count++;
         }
 

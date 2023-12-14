@@ -59,7 +59,7 @@ class V4Test extends ATest
 
         $cls->serverState->set(ServerState::STREAMING);
         $responses = iterator_to_array($cls->pull(['n' => -1, 'qid' => -1])->getResponses(), false);
-        $this->assertEquals(Signature::IGNORED, $responses[0]->getSignature());
+        $this->assertEquals(Signature::IGNORED, $responses[0]->signature);
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 
@@ -84,7 +84,7 @@ class V4Test extends ATest
         ];
 
         $cls->serverState->set(ServerState::STREAMING);
-        $this->assertEquals(Signature::SUCCESS, $cls->discard(['n' => -1, 'qid' => -1])->getResponse()->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->discard(['n' => -1, 'qid' => -1])->getResponse()->signature);
         $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::STREAMING);
@@ -94,7 +94,7 @@ class V4Test extends ATest
 
         $cls->serverState->set(ServerState::STREAMING);
         $response = $cls->discard(['n' => -1, 'qid' => -1])->getResponse();
-        $this->assertEquals(Signature::IGNORED, $response->getSignature());
+        $this->assertEquals(Signature::IGNORED, $response->signature);
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 }

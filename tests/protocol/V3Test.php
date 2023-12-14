@@ -49,7 +49,7 @@ class V3Test extends ATest
         ];
 
         $cls->serverState->set(ServerState::CONNECTED);
-        $this->assertEquals(Signature::SUCCESS, $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'))->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'))->signature);
         $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::CONNECTED);
@@ -89,7 +89,7 @@ class V3Test extends ATest
         ];
 
         $cls->serverState->set(ServerState::READY);
-        $this->assertEquals(Signature::SUCCESS, $cls->run('RETURN 1')->getResponse()->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->run('RETURN 1')->getResponse()->signature);
         $this->assertEquals(ServerState::STREAMING, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::READY);
@@ -99,7 +99,7 @@ class V3Test extends ATest
 
         $cls->serverState->set(ServerState::READY);
         $response = $cls->run('not a CQL')->getResponse();
-        $this->assertEquals(Signature::IGNORED, $response->getSignature());
+        $this->assertEquals(Signature::IGNORED, $response->signature);
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 
@@ -120,7 +120,7 @@ class V3Test extends ATest
         ];
 
         $cls->serverState->set(ServerState::READY);
-        $this->assertEquals(Signature::SUCCESS, $cls->begin()->getResponse()->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->begin()->getResponse()->signature);
         $this->assertEquals(ServerState::TX_READY, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::READY);
@@ -130,7 +130,7 @@ class V3Test extends ATest
 
         $cls->serverState->set(ServerState::READY);
         $response = $cls->begin()->getResponse();
-        $this->assertEquals(Signature::IGNORED, $response->getSignature());
+        $this->assertEquals(Signature::IGNORED, $response->signature);
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 
@@ -150,7 +150,7 @@ class V3Test extends ATest
         ];
 
         $cls->serverState->set(ServerState::TX_READY);
-        $this->assertEquals(Signature::SUCCESS, $cls->commit()->getResponse()->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->commit()->getResponse()->signature);
         $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::TX_READY);
@@ -160,7 +160,7 @@ class V3Test extends ATest
 
         $cls->serverState->set(ServerState::TX_READY);
         $response = $cls->commit()->getResponse();
-        $this->assertEquals(Signature::IGNORED, $response->getSignature());
+        $this->assertEquals(Signature::IGNORED, $response->signature);
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 
@@ -180,7 +180,7 @@ class V3Test extends ATest
         ];
 
         $cls->serverState->set(ServerState::TX_READY);
-        $this->assertEquals(Signature::SUCCESS, $cls->rollback()->getResponse()->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->rollback()->getResponse()->signature);
         $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::TX_READY);
@@ -190,7 +190,7 @@ class V3Test extends ATest
 
         $cls->serverState->set(ServerState::TX_READY);
         $response = $cls->rollback()->getResponse();
-        $this->assertEquals(Signature::IGNORED, $response->getSignature());
+        $this->assertEquals(Signature::IGNORED, $response->signature);
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 

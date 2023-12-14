@@ -12,35 +12,16 @@ use Bolt\enum\{Message, Signature};
  */
 class Response
 {
+    /**
+     * @param Message $message Requested bolt message name
+     * @param Signature $signature Signature tells you result of your request
+     * @param array $content Response content
+     */
     public function __construct(
-        private readonly Message   $message,
-        private readonly Signature $signature,
-        private readonly array     $content = []
+        public readonly Message   $message,
+        public readonly Signature $signature,
+        public readonly array     $content = []
     )
     {
-    }
-
-    /**
-     * Get requested bolt message name
-     */
-    public function getMessage(): Message
-    {
-        return $this->message;
-    }
-
-    /**
-     * Signature tells you result of your request
-     */
-    public function getSignature(): Signature
-    {
-        return $this->signature;
-    }
-
-    /**
-     * Get response content
-     */
-    public function getContent(): array
-    {
-        return $this->content;
     }
 }

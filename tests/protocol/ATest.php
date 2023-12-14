@@ -110,8 +110,8 @@ abstract class ATest extends TestCase
 
     protected function checkFailure(Response $response): void
     {
-        $this->assertEquals(Signature::FAILURE, $response->getSignature());
-        $this->assertEquals('some error message', $response->getContent()['message']);
-        $this->assertEquals('Neo.ClientError.Statement.SyntaxError', $response->getContent()['code']);
+        $this->assertEquals(Signature::FAILURE, $response->signature);
+        $this->assertEquals('some error message', $response->content['message']);
+        $this->assertEquals('Neo.ClientError.Statement.SyntaxError', $response->content['code']);
     }
 }

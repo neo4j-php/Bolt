@@ -16,27 +16,22 @@ use Bolt\protocol\v1\structures\Node as v1_Node;
 class Node extends v1_Node
 {
     public function __construct(
-        int   $id,
-        array $labels,
-        array $properties,
-        private string  $element_id
+        int                    $id,
+        array                  $labels,
+        array                  $properties,
+        public readonly string $element_id
     )
     {
         parent::__construct($id, $labels, $properties);
     }
 
-    public function element_id(): string
-    {
-        return $this->element_id;
-    }
-
     public function __toString(): string
     {
         return json_encode([
-            'identity' => $this->id(),
-            'labels' => $this->labels(),
-            'properties' => $this->properties(),
-            'element_id' => $this->element_id()
+            'identity' => $this->id,
+            'labels' => $this->labels,
+            'properties' => $this->properties,
+            'element_id' => $this->element_id
         ]);
     }
 }

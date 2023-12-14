@@ -16,26 +16,11 @@ use Bolt\protocol\IStructure;
 class UnboundRelationship implements IStructure
 {
     public function __construct(
-        private int    $id,
-        private string $type,
-        private array  $properties
+        public readonly int    $id,
+        public readonly string $type,
+        public readonly array  $properties
     )
     {
-    }
-
-    public function id(): int
-    {
-        return $this->id;
-    }
-
-    public function type(): string
-    {
-        return $this->type;
-    }
-
-    public function properties(): array
-    {
-        return $this->properties;
     }
 
     public function __toString(): string

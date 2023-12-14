@@ -42,16 +42,16 @@ class ATest extends \PHPUnit\Framework\TestCase
                 'scheme' => 'basic',
                 'principal' => $name,
                 'credentials' => $password
-            ])->getSignature());
+            ])->signature);
         } elseif (method_exists($protocol, 'logon')) {
-            $this->assertEquals(Signature::SUCCESS, $protocol->hello()->getSignature());
+            $this->assertEquals(Signature::SUCCESS, $protocol->hello()->signature);
             $this->assertEquals(Signature::SUCCESS, $protocol->logon([
                 'scheme' => 'basic',
                 'principal' => $name,
                 'credentials' => $password
-            ])->getSignature());
+            ])->signature);
         } else {
-            $this->assertEquals(Signature::SUCCESS, $protocol->hello(Auth::basic($name, $password))->getSignature());
+            $this->assertEquals(Signature::SUCCESS, $protocol->hello(Auth::basic($name, $password))->signature);
         }
     }
 

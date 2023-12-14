@@ -24,7 +24,7 @@ class Unpacker implements IUnpacker
     /**
      * @inheritDoc
      */
-    public function __construct(private array $structuresLt = [])
+    public function __construct(private readonly array $structuresLt = [])
     {
         $this->littleEndian = unpack('S', "\x01\x00")[1] === 1;
     }

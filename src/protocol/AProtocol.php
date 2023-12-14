@@ -125,7 +125,7 @@ abstract class AProtocol
         $message = reset($this->pipelinedMessages);
         /** @var Response $response */
         $response = $this->{'_' . $message}()->current();
-        if ($response->getSignature() != Signature::RECORD)
+        if ($response->signature != Signature::RECORD)
             array_shift($this->pipelinedMessages);
         return $response;
     }

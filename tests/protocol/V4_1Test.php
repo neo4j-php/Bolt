@@ -49,7 +49,7 @@ class V4_1Test extends ATest
         ];
 
         $cls->serverState->set(ServerState::CONNECTED);
-        $this->assertEquals(Signature::SUCCESS, $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'))->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'))->signature);
         $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::CONNECTED);

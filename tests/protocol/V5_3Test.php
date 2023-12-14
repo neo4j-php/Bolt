@@ -34,7 +34,7 @@ class V5_3Test extends \Bolt\tests\protocol\ATest
         ];
 
         $cls->serverState->set(ServerState::CONNECTED);
-        $this->assertEquals(Signature::SUCCESS, $cls->hello()->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->hello()->signature);
         $this->assertEquals(ServerState::AUTHENTICATION, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::CONNECTED);

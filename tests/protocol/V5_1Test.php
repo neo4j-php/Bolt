@@ -41,7 +41,7 @@ class V5_1Test extends \Bolt\tests\protocol\ATest
         ];
 
         $cls->serverState->set(ServerState::CONNECTED);
-        $this->assertEquals(Signature::SUCCESS, $cls->hello()->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->hello()->signature);
         $this->assertEquals(ServerState::AUTHENTICATION, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::CONNECTED);
@@ -76,7 +76,7 @@ class V5_1Test extends \Bolt\tests\protocol\ATest
             'scheme' => 'basic',
             'principal' => 'user',
             'credentials' => 'password'
-        ])->getSignature());
+        ])->signature);
         $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::AUTHENTICATION);
@@ -104,7 +104,7 @@ class V5_1Test extends \Bolt\tests\protocol\ATest
         ];
 
         $cls->serverState->set(ServerState::READY);
-        $this->assertEquals(Signature::SUCCESS, $cls->logoff()->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->logoff()->signature);
         $this->assertEquals(ServerState::AUTHENTICATION, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::READY);

@@ -48,7 +48,7 @@ class V4_4Test extends ATest
         ];
 
         $cls->serverState->set(ServerState::READY);
-        $this->assertEquals(Signature::SUCCESS, $cls->route(['address' => 'localhost:7687'], [], ['db' => null])->getResponse()->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->route(['address' => 'localhost:7687'], [], ['db' => null])->getResponse()->signature);
         $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::READY);
@@ -58,7 +58,7 @@ class V4_4Test extends ATest
 
         $cls->serverState->set(ServerState::READY);
         $response = $cls->route(['address' => 'localhost:7687'], [], ['db' => null])->getResponse();
-        $this->assertEquals(Signature::IGNORED, $response->getSignature());
+        $this->assertEquals(Signature::IGNORED, $response->signature);
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 

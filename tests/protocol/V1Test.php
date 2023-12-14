@@ -51,7 +51,7 @@ class V1Test extends ATest
         unset($auth['user_agent']);
 
         $cls->serverState->set(ServerState::CONNECTED);
-        $this->assertEquals(Signature::SUCCESS, $cls->init(\Bolt\helpers\Auth::$defaultUserAgent, $auth)->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->init(\Bolt\helpers\Auth::$defaultUserAgent, $auth)->signature);
         $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::CONNECTED);
@@ -88,7 +88,7 @@ class V1Test extends ATest
         ];
 
         $cls->serverState->set(ServerState::READY);
-        $this->assertEquals(Signature::SUCCESS, $cls->run('RETURN 1')->getResponse()->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->run('RETURN 1')->getResponse()->signature);
         $this->assertEquals(ServerState::STREAMING, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::READY);
@@ -98,7 +98,7 @@ class V1Test extends ATest
 
         $cls->serverState->set(ServerState::READY);
         $response = $cls->run('not a CQL')->getResponse();
-        $this->assertEquals(Signature::IGNORED, $response->getSignature());
+        $this->assertEquals(Signature::IGNORED, $response->signature);
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 
@@ -131,7 +131,7 @@ class V1Test extends ATest
 
         $cls->serverState->set(ServerState::STREAMING);
         $responses = iterator_to_array($cls->pullAll()->getResponses(), false);
-        $this->assertEquals(Signature::IGNORED, $responses[0]->getSignature());
+        $this->assertEquals(Signature::IGNORED, $responses[0]->signature);
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 
@@ -161,7 +161,7 @@ class V1Test extends ATest
 
         $cls->serverState->set(ServerState::STREAMING);
         $response = $cls->discardAll()->getResponse();
-        $this->assertEquals(Signature::IGNORED, $response->getSignature());
+        $this->assertEquals(Signature::IGNORED, $response->signature);
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 

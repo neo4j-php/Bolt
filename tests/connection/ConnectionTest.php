@@ -101,7 +101,7 @@ final class ConnectionTest extends ATest
             ->reset()
             ->getResponse();
 
-        $this->assertEquals(Signature::FAILURE, $response->getSignature());
+        $this->assertEquals(Signature::FAILURE, $response->signature);
         $protocol = (new Bolt($conn))->setProtocolVersions($this->getCompatibleBoltVersion())->build();
         $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
 
