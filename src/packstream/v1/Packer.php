@@ -84,7 +84,7 @@ class Packer implements IPacker
                 yield from $this->packString($param);
                 break;
             case 'array':
-                if ($param === array_values($param)) {
+                if (array_is_list($param)) {
                     yield from $this->packList($param);
                 } else {
                     yield from $this->packDictionary($param);
