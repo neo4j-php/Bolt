@@ -17,7 +17,7 @@ trait LogonMessage
      */
     public function logon(array $auth): Response
     {
-        $this->serverState->is(ServerState::UNAUTHENTICATED);
+        $this->serverState->is(ServerState::AUTHENTICATION);
         $this->write($this->packer->pack(0x6A, (object)$auth));
         $content = $this->read($signature);
         if ($signature == Response::SIGNATURE_SUCCESS) {
