@@ -2,6 +2,7 @@
 
 namespace Bolt\protocol\v5_1;
 
+use Bolt\enum\{Message, Signature};
 use Bolt\error\BoltException;
 use Bolt\protocol\Response;
 use Bolt\protocol\ServerState;
@@ -20,12 +21,12 @@ trait LogonMessage
         $this->serverState->is(ServerState::AUTHENTICATION);
         $this->write($this->packer->pack(0x6A, (object)$auth));
         $content = $this->read($signature);
-        if ($signature == Response::SIGNATURE_SUCCESS) {
+        if ($signature == Signature::SUCCESS) {
             $this->serverState->set(ServerState::READY);
-        } elseif ($signature == Response::SIGNATURE_FAILURE) {
+        } elseif ($signature == Signature::FAILURE) {
             $this->connection->disconnect();
             $this->serverState->set(ServerState::DEFUNCT);
         }
-        return new Response(Response::MESSAGE_LOGON, $signature, $content);
+        return new Response(Message::LOGON, $signature, $content);
     }
 }

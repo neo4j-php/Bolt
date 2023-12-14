@@ -17,6 +17,7 @@ use Bolt\tests\structures\v1\{
     DateTimeTrait,
     DateTimeZoneIdTrait
 };
+use Bolt\enum\Signature;
 
 /**
  * Class StructuresTest
@@ -44,7 +45,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
         $extra['patch_bolt'] = ['utc'];
         /** @var Response $helloResponse */
         $helloResponse = $protocol->hello($extra);
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $helloResponse->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $helloResponse->getSignature());
 
         if (version_compare($protocol->getVersion(), '5', '>=') || version_compare($protocol->getVersion(), '4.3', '<')) {
             $this->markTestSkipped('You are not running Neo4j version with patch_bolt support.');

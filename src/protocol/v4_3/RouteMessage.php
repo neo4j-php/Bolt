@@ -2,6 +2,7 @@
 
 namespace Bolt\protocol\v4_3;
 
+use Bolt\enum\Message;
 use Bolt\protocol\{ServerState, Response, V4_3};
 use Bolt\error\BoltException;
 
@@ -29,6 +30,6 @@ trait RouteMessage
     protected function _route(): iterable
     {
         $content = $this->read($signature);
-        yield new Response(Response::MESSAGE_ROUTE, $signature, $content);
+        yield new Response(Message::ROUTE, $signature, $content);
     }
 }

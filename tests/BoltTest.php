@@ -3,8 +3,9 @@
 namespace Bolt\tests;
 
 use Bolt\Bolt;
+use Bolt\enum\Signature;
 use Exception;
-use Bolt\protocol\{AProtocol, Response};
+use Bolt\protocol\AProtocol;
 
 /**
  * Class BoltTest
@@ -99,7 +100,7 @@ class BoltTest extends ATest
             ->getResponses();
 
         foreach ($gen as $response) {
-            $this->assertEquals(Response::SIGNATURE_SUCCESS, $response->getSignature());
+            $this->assertEquals(Signature::SUCCESS, $response->getSignature());
         }
     }
 
@@ -152,7 +153,7 @@ class BoltTest extends ATest
                     'address' => ($GLOBALS['NEO_HOST'] ?? '127.0.0.1') . ':' . ($GLOBALS['NEO_PORT'] ?? 7687)
                 ])
                 ->getResponse();
-            $this->assertEquals(Response::SIGNATURE_SUCCESS, $response->getSignature());
+            $this->assertEquals(Signature::SUCCESS, $response->getSignature());
         } else {
             $this->markTestSkipped('Old Neo4j version does not support route message');
         }
@@ -166,7 +167,7 @@ class BoltTest extends ATest
         $response = $protocol
             ->reset()
             ->getResponse();
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $response->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $response->getSignature());
     }
 
     /**

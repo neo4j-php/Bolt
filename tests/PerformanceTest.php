@@ -4,6 +4,7 @@ namespace Bolt\tests;
 
 use Bolt\Bolt;
 use Bolt\connection\Socket;
+use Bolt\enum\Signature;
 use Bolt\protocol\Response;
 use Bolt\tests\packstream\v1\generators\RandomDataGenerator;
 
@@ -29,7 +30,7 @@ class PerformanceTest extends ATest
             $protocol->run('MATCH (n:Test50k) RETURN count(n)')->getResponse();
             /** @var Response $response */
             $response = $protocol->pull()->getResponse();
-            if ($response->getSignature() !== Response::SIGNATURE_RECORD)
+            if ($response->getSignature() !== Signature::RECORD)
                 $this->markTestSkipped();
             $protocol->getResponse();
             if ($response->getContent()[0] > 0) {
@@ -46,13 +47,13 @@ class PerformanceTest extends ATest
             ->run('UNWIND $x as x RETURN x', ['x' => $generator])
             ->getResponse();
 
-        if ($response->getSignature() !== Response::SIGNATURE_SUCCESS)
+        if ($response->getSignature() !== Signature::SUCCESS)
             $this->markTestIncomplete('[' . $response->getContent()['code'] . '] ' . $response->getContent()['message']);
 
         $count = 0;
         /** @var Response $response */
         foreach ($protocol->pull()->getResponses() as $response) {
-            if ($response->getSignature() === Response::SIGNATURE_RECORD)
+            if ($response->getSignature() === Signature::RECORD)
                 $count++;
         }
 

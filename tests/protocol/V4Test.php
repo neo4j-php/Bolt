@@ -2,10 +2,9 @@
 
 namespace Bolt\tests\protocol;
 
-use Bolt\protocol\Response;
 use Bolt\protocol\ServerState;
 use Bolt\protocol\V4;
-use Bolt\packstream\v1\{Packer, Unpacker};
+use Bolt\enum\Signature;
 
 /**
  * Class V4Test
@@ -60,7 +59,7 @@ class V4Test extends ATest
 
         $cls->serverState->set(ServerState::STREAMING);
         $responses = iterator_to_array($cls->pull(['n' => -1, 'qid' => -1])->getResponses(), false);
-        $this->assertEquals(Response::SIGNATURE_IGNORED, $responses[0]->getSignature());
+        $this->assertEquals(Signature::IGNORED, $responses[0]->getSignature());
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 
@@ -85,7 +84,7 @@ class V4Test extends ATest
         ];
 
         $cls->serverState->set(ServerState::STREAMING);
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->discard(['n' => -1, 'qid' => -1])->getResponse()->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->discard(['n' => -1, 'qid' => -1])->getResponse()->getSignature());
         $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::STREAMING);
@@ -95,7 +94,7 @@ class V4Test extends ATest
 
         $cls->serverState->set(ServerState::STREAMING);
         $response = $cls->discard(['n' => -1, 'qid' => -1])->getResponse();
-        $this->assertEquals(Response::SIGNATURE_IGNORED, $response->getSignature());
+        $this->assertEquals(Signature::IGNORED, $response->getSignature());
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 }

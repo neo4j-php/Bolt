@@ -5,7 +5,6 @@ namespace Bolt\tests\structures\v1;
 use Bolt\Bolt;
 use Bolt\protocol\{
     AProtocol,
-    Response,
     V3,
     V4_2,
     V4_3,
@@ -26,6 +25,7 @@ use Bolt\protocol\v1\structures\{
     Time,
     UnboundRelationship
 };
+use Bolt\enum\Signature;
 
 /**
  * Class StructuresTest
@@ -49,7 +49,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
 
         return $protocol;
     }

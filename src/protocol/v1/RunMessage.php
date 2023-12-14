@@ -2,6 +2,7 @@
 
 namespace Bolt\protocol\v1;
 
+use Bolt\enum\{Message, Signature};
 use Bolt\protocol\{
     ServerState,
     Response,
@@ -36,10 +37,10 @@ trait RunMessage
     {
         $content = $this->read($signature);
 
-        if ($signature == Response::SIGNATURE_SUCCESS) {
+        if ($signature == Signature::SUCCESS) {
             $this->serverState->set(ServerState::STREAMING);
         }
 
-        yield new Response(Response::MESSAGE_RUN, $signature, $content);
+        yield new Response(Message::RUN, $signature, $content);
     }
 }

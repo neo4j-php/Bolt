@@ -9,6 +9,7 @@ use Bolt\protocol\{
     V4_3,
     V5
 };
+use Bolt\enum\Signature;
 use Exception;
 
 trait DateTimeZoneIdTrait
@@ -37,7 +38,7 @@ trait DateTimeZoneIdTrait
 
             /** @var Response $response */
             foreach ($res as $response) {
-                if ($response->getSignature() == Response::SIGNATURE_FAILURE) {
+                if ($response->getSignature() == Signature::FAILURE) {
                     throw new Exception($response->getContent()['message']);
                 }
             }

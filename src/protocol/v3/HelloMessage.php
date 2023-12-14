@@ -2,6 +2,7 @@
 
 namespace Bolt\protocol\v3;
 
+use Bolt\enum\{Message, Signature};
 use Bolt\protocol\{ServerState, Response};
 use Bolt\error\BoltException;
 
@@ -22,13 +23,13 @@ trait HelloMessage
         $this->write($this->packer->pack(0x01, $extra));
         $content = $this->read($signature);
 
-        if ($signature == Response::SIGNATURE_SUCCESS) {
+        if ($signature == Signature::SUCCESS) {
             $this->serverState->set(ServerState::READY);
-        } elseif ($signature == Response::SIGNATURE_FAILURE) {
+        } elseif ($signature == Signature::FAILURE) {
             $this->connection->disconnect();
             $this->serverState->set(ServerState::DEFUNCT);
         }
 
-        return new Response(Response::MESSAGE_HELLO, $signature, $content);
+        return new Response(Message::HELLO, $signature, $content);
     }
 }

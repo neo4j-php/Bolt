@@ -2,6 +2,7 @@
 
 namespace Bolt\protocol\v3;
 
+use Bolt\enum\{Message, Signature};
 use Bolt\protocol\{ServerState, Response, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
 use Bolt\error\BoltException;
 
@@ -38,10 +39,10 @@ trait RunMessage
     {
         $content = $this->read($signature);
 
-        if ($signature == Response::SIGNATURE_SUCCESS) {
+        if ($signature == Signature::SUCCESS) {
             $this->serverState->set(str_starts_with($this->serverState->get(), 'TX_') ? ServerState::TX_STREAMING : ServerState::STREAMING);
         }
 
-        yield new Response(Response::MESSAGE_RUN, $signature, $content);
+        yield new Response(Message::RUN, $signature, $content);
     }
 }

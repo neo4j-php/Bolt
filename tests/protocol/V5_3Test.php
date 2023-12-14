@@ -1,8 +1,8 @@
 <?php
 
-use Bolt\protocol\Response;
 use Bolt\protocol\ServerState;
 use Bolt\protocol\V5_3;
+use Bolt\enum\Signature;
 
 /**
  * Class V5_3Test
@@ -34,7 +34,7 @@ class V5_3Test extends \Bolt\tests\protocol\ATest
         ];
 
         $cls->serverState->set(ServerState::CONNECTED);
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->hello()->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->hello()->getSignature());
         $this->assertEquals(ServerState::AUTHENTICATION, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::CONNECTED);

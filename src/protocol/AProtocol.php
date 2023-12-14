@@ -2,6 +2,8 @@
 
 namespace Bolt\protocol;
 
+use Bolt\enum\Signature;
+use Bolt\error\BoltException;
 use Bolt\error\PackException;
 use Bolt\error\UnpackException;
 use Bolt\packstream\{IPacker, IUnpacker};
@@ -58,9 +60,9 @@ abstract class AProtocol
 
     /**
      * Read from connection
-     * @throws ConnectException
+     * @throws BoltException
      */
-    protected function read(?int &$signature): array
+    protected function read(?Signature &$signature = Signature::NONE): array
     {
         $msg = '';
         while (true) {
@@ -72,14 +74,14 @@ abstract class AProtocol
         }
 
         $output = [];
-        $signature = 0;
         if (!empty($msg)) {
             $output = $this->unpacker->unpack($msg);
-            $signature = $this->unpacker->getSignature();
+            $s = $this->unpacker->getSignature();
+            $signature = Signature::from($s);
 
-            if ($signature == Response::SIGNATURE_FAILURE) {
+            if ($signature == Signature::SUCCESS) {
                 $this->serverState->set(ServerState::FAILED);
-            } elseif ($signature == Response::SIGNATURE_IGNORED) {
+            } elseif ($signature == Signature::IGNORED) {
                 $this->serverState->set(ServerState::INTERRUPTED);
                 // Ignored doesn't have any response content
                 $output = [];
@@ -123,7 +125,7 @@ abstract class AProtocol
         $message = reset($this->pipelinedMessages);
         /** @var Response $response */
         $response = $this->{'_' . $message}()->current();
-        if ($response->getSignature() != Response::SIGNATURE_RECORD)
+        if ($response->getSignature() != Signature::RECORD)
             array_shift($this->pipelinedMessages);
         return $response;
     }
