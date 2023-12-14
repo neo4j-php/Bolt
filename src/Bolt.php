@@ -6,8 +6,6 @@ use Bolt\error\ConnectException;
 use Bolt\error\BoltException;
 use Bolt\protocol\{AProtocol, Response, ServerState};
 use Bolt\connection\IConnection;
-use Bolt\helpers\FileCache;
-use Psr\SimpleCache\CacheInterface;
 
 /**
  * Main class Bolt
@@ -26,17 +24,9 @@ final class Bolt
     public static bool $debug = false;
     public ServerState $serverState;
 
-    /**
-     * @param IConnection $connection
-     * @param CacheInterface|null $cache Persistent key value storage
-     */
-    public function __construct(private IConnection $connection, private CacheInterface|null $cache = null)
+    public function __construct(private IConnection $connection)
     {
         $this->setProtocolVersions(5.4, 5, 4.4);
-
-        if ($this->cache === null) {
-            $this->cache = new FileCache();
-        }
     }
 
     /**
@@ -70,7 +60,7 @@ final class Bolt
         }
 
         if ($this->connection instanceof \Bolt\connection\PStreamSocket) {
-            $this->cache->set($this->connection->getIdentifier(), $protocol->getVersion());
+            $this->connection->getCache()->set($this->connection->getIdentifier(), $protocol->getVersion());
         }
 
         return $protocol;
@@ -88,11 +78,9 @@ final class Bolt
         return new $protocolClass($this->packStreamVersion, $this->connection, $this->serverState);
     }
 
-    private function persistentBuild(): AProtocol|null
+    private function persistentBuild(): ?AProtocol
     {
-        $this->connection->setCache($this->cache);
-
-        $version = $this->cache->get($this->connection->getIdentifier());
+        $version = $this->connection->getCache()->get($this->connection->getIdentifier());
         if (empty($version)) {
             return null;
         }
