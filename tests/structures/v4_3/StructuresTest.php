@@ -44,7 +44,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
         $extra = \Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
         $extra['patch_bolt'] = ['utc'];
         /** @var Response $helloResponse */
-        $helloResponse = $protocol->hello($extra);
+        $helloResponse = $protocol->hello($extra)->getResponse();
         $this->assertEquals(Signature::SUCCESS, $helloResponse->signature);
 
         if (version_compare($protocol->getVersion(), '5', '>=') || version_compare($protocol->getVersion(), '4.3', '<')) {

@@ -13,6 +13,7 @@ namespace Bolt\protocol;
 class V3 extends AProtocol
 {
     use \Bolt\protocol\v1\AvailableStructures;
+    use \Bolt\protocol\v3\ServerStateTransition;
 
     use \Bolt\protocol\v1\PullAllMessage;
     use \Bolt\protocol\v1\DiscardAllMessage;

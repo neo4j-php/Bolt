@@ -49,7 +49,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
-        $this->assertEquals(Signature::SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->signature);
+        $this->assertEquals(Signature::SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getResponse()->signature);
 
         return $protocol;
     }
@@ -264,7 +264,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
         );
         $this->assertInstanceOf(Path::class, $res[1]->content[0]);
 
-        foreach ($res[1]->content[0]->rels() as $rel) {
+        foreach ($res[1]->content[0]->rels as $rel) {
             $this->assertInstanceOf(UnboundRelationship::class, $rel);
 
             $this->assertEquals($res[1]->content[1], $rel->id);

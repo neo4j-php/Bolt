@@ -201,18 +201,4 @@ class BoltTest extends ATest
 
         $protocol->rollback();
     }
-
-    /**
-     * @depends testHello
-     */
-    public function testServerStateMismatchCallback(AProtocol $protocol): void
-    {
-        $protocol->serverState->set(\Bolt\enum\ServerState::FAILED);
-        $protocol->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
-            throw new Exception('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
-        };
-
-        $this->expectException(Exception::class);
-        iterator_to_array($protocol->run('RETURN 1 as num')->getResponses(), false);
-    }
 }

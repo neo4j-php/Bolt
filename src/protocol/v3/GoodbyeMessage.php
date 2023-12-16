@@ -18,6 +18,6 @@ trait GoodbyeMessage
     {
         $this->write($this->packer->pack(0x02));
         $this->connection->disconnect();
-        $this->serverState->set(ServerState::DEFUNCT);
+        $this->serverState = ServerState::DEFUNCT;
     }
 }
