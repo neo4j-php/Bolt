@@ -233,8 +233,7 @@ class Packer implements IPacker
             }
             $packerMethod = 'pack' . ucfirst($packerMethod);
 
-            $methodName = $parameter->getName();
-            yield from $this->{$packerMethod}($structure->{$methodName});
+            yield from [$this, $packerMethod]($structure->{$parameter->getName()});
         }
     }
 
