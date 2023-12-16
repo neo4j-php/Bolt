@@ -17,16 +17,11 @@ use Bolt\protocol\IStructure;
  */
 class LocalTime implements IStructure
 {
-    public function __construct(private int $nanoseconds)
-    {
-    }
-
     /**
-     * nanosecond since midnight
+     * @param int $nanoseconds nanosecond since midnight
      */
-    public function nanoseconds(): int
+    public function __construct(public readonly int $nanoseconds)
     {
-        return $this->nanoseconds;
     }
 
     public function __toString(): string

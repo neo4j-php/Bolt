@@ -2,8 +2,8 @@
 
 namespace Bolt\protocol\v1;
 
+use Bolt\enum\{Message, Signature, ServerState};
 use Bolt\protocol\{
-    ServerState,
     Response,
     V1,
     V2,
@@ -25,7 +25,7 @@ trait DiscardAllMessage
         $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
         $this->write($this->packer->pack(0x2F));
         $this->pipelinedMessages[] = __FUNCTION__;
-        $this->serverState->set(str_starts_with($this->serverState->get(), 'TX_') ? ServerState::TX_READY : ServerState::READY);
+        $this->serverState->set(in_array($this->serverState->get(), [ServerState::TX_READY, ServerState::TX_STREAMING]) ? ServerState::TX_READY : ServerState::READY);
         return $this;
     }
 
@@ -37,10 +37,10 @@ trait DiscardAllMessage
     {
         $content = $this->read($signature);
 
-        if ($signature == Response::SIGNATURE_SUCCESS) {
-            $this->serverState->set(str_starts_with($this->serverState->get(), 'TX_') ? ServerState::TX_READY : ServerState::READY);
+        if ($signature == Signature::SUCCESS) {
+            $this->serverState->set(in_array($this->serverState->get(), [ServerState::TX_READY, ServerState::TX_STREAMING]) ? ServerState::TX_READY : ServerState::READY);
         }
 
-        yield new Response(Response::MESSAGE_DISCARD_ALL, $signature, $content);
+        yield new Response(Message::DISCARD_ALL, $signature, $content);
     }
 }

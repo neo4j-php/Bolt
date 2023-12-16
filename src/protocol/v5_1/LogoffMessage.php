@@ -2,10 +2,9 @@
 
 namespace Bolt\protocol\v5_1;
 
+use Bolt\enum\{Message, Signature, ServerState};
 use Bolt\error\BoltException;
 use Bolt\protocol\Response;
-use Bolt\protocol\ServerState;
-use Bolt\protocol\V5_1;
 
 trait LogoffMessage
 {
@@ -21,12 +20,12 @@ trait LogoffMessage
         $this->serverState->is(ServerState::READY);
         $this->write($this->packer->pack(0x6B));
         $content = $this->read($signature);
-        if ($signature == Response::SIGNATURE_SUCCESS) {
+        if ($signature == Signature::SUCCESS) {
             $this->serverState->set(ServerState::AUTHENTICATION);
         } else {
             $this->connection->disconnect();
             $this->serverState->set(ServerState::DEFUNCT);
         }
-        return new Response(Response::MESSAGE_LOGOFF, $signature, $content);
+        return new Response(Message::LOGOFF, $signature, $content);
     }
 }

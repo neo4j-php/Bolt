@@ -1,8 +1,9 @@
 <?php
 
-use Bolt\protocol\Response;
-use Bolt\protocol\ServerState;
+namespace Bolt\tests\protocol;
+
 use Bolt\protocol\V5_1;
+use Bolt\enum\{Signature, ServerState};
 
 /**
  * Class V5_1Test
@@ -40,11 +41,11 @@ class V5_1Test extends \Bolt\tests\protocol\ATest
             '000988626f6c742d706870',
         ];
 
-        $cls->serverState->set(ServerState::CONNECTED);
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->hello()->getSignature());
+        $cls->serverState->set(ServerState::NEGOTIATION);
+        $this->assertEquals(Signature::SUCCESS, $cls->hello()->signature);
         $this->assertEquals(ServerState::AUTHENTICATION, $cls->serverState->get());
 
-        $cls->serverState->set(ServerState::CONNECTED);
+        $cls->serverState->set(ServerState::NEGOTIATION);
         $response = $cls->hello();
         $this->checkFailure($response);
         $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
@@ -72,11 +73,11 @@ class V5_1Test extends \Bolt\tests\protocol\ATest
         ];
 
         $cls->serverState->set(ServerState::AUTHENTICATION);
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->logon([
+        $this->assertEquals(Signature::SUCCESS, $cls->logon([
             'scheme' => 'basic',
             'principal' => 'user',
             'credentials' => 'password'
-        ])->getSignature());
+        ])->signature);
         $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::AUTHENTICATION);
@@ -104,7 +105,7 @@ class V5_1Test extends \Bolt\tests\protocol\ATest
         ];
 
         $cls->serverState->set(ServerState::READY);
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->logoff()->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->logoff()->signature);
         $this->assertEquals(ServerState::AUTHENTICATION, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::READY);

@@ -2,11 +2,14 @@
 
 namespace Bolt\protocol;
 
+use Bolt\enum\Signature;
+use Bolt\error\BoltException;
 use Bolt\error\PackException;
 use Bolt\error\UnpackException;
 use Bolt\packstream\{IPacker, IUnpacker};
 use Bolt\connection\IConnection;
 use Bolt\error\ConnectException;
+use Bolt\enum\ServerState as SS;
 
 /**
  * Abstract class AProtocol
@@ -58,9 +61,9 @@ abstract class AProtocol
 
     /**
      * Read from connection
-     * @throws ConnectException
+     * @throws BoltException
      */
-    protected function read(?int &$signature): array
+    protected function read(?Signature &$signature = Signature::NONE): array
     {
         $msg = '';
         while (true) {
@@ -72,15 +75,15 @@ abstract class AProtocol
         }
 
         $output = [];
-        $signature = 0;
         if (!empty($msg)) {
             $output = $this->unpacker->unpack($msg);
-            $signature = $this->unpacker->getSignature();
+            $s = $this->unpacker->getSignature();
+            $signature = Signature::from($s);
 
-            if ($signature == Response::SIGNATURE_FAILURE) {
-                $this->serverState->set(ServerState::FAILED);
-            } elseif ($signature == Response::SIGNATURE_IGNORED) {
-                $this->serverState->set(ServerState::INTERRUPTED);
+            if ($signature == Signature::SUCCESS) {
+                $this->serverState->set(SS::FAILED);
+            } elseif ($signature == Signature::IGNORED) {
+                $this->serverState->set(SS::INTERRUPTED);
                 // Ignored doesn't have any response content
                 $output = [];
             }
@@ -106,7 +109,7 @@ abstract class AProtocol
      */
     public function getResponses(): \Iterator
     {
-        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
+        $this->serverState->is(SS::READY, SS::TX_READY, SS::STREAMING, SS::TX_STREAMING);
         while (count($this->pipelinedMessages) > 0) {
             $message = reset($this->pipelinedMessages);
             yield from $this->{'_' . $message}();
@@ -119,11 +122,11 @@ abstract class AProtocol
      */
     public function getResponse(): Response
     {
-        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
+        $this->serverState->is(SS::READY, SS::TX_READY, SS::STREAMING, SS::TX_STREAMING);
         $message = reset($this->pipelinedMessages);
         /** @var Response $response */
         $response = $this->{'_' . $message}()->current();
-        if ($response->getSignature() != Response::SIGNATURE_RECORD)
+        if ($response->signature != Signature::RECORD)
             array_shift($this->pipelinedMessages);
         return $response;
     }

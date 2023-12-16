@@ -3,8 +3,9 @@
 namespace Bolt\tests;
 
 use Bolt\Bolt;
+use Bolt\enum\Signature;
 use Exception;
-use Bolt\protocol\{AProtocol, Response};
+use Bolt\protocol\AProtocol;
 
 /**
  * Class BoltTest
@@ -80,9 +81,9 @@ class BoltTest extends ATest
             ->run('RETURN 1 AS num, 2 AS cnt', [], ['mode' => 'r'])
             ->pull();
 
-        $this->assertArrayHasKey('fields', $protocol->getResponse()->getContent());
+        $this->assertArrayHasKey('fields', $protocol->getResponse()->content);
 
-        $res = $protocol->getResponse()->getContent();
+        $res = $protocol->getResponse()->content;
         $this->assertEquals(1, $res[0] ?? 0);
         $this->assertEquals(2, $res[1] ?? 0);
         $protocol->getResponse(); // last success message
@@ -99,7 +100,7 @@ class BoltTest extends ATest
             ->getResponses();
 
         foreach ($gen as $response) {
-            $this->assertEquals(Response::SIGNATURE_SUCCESS, $response->getSignature());
+            $this->assertEquals(Signature::SUCCESS, $response->signature);
         }
     }
 
@@ -123,7 +124,7 @@ class BoltTest extends ATest
             false
         );
 
-        $id = $res[2]->getContent()[1];
+        $id = $res[2]->content[1];
         $this->assertIsInt($id);
 
         $res = iterator_to_array(
@@ -138,7 +139,7 @@ class BoltTest extends ATest
             false
         );
 
-        $this->assertEquals(0, $res[1]->getContent()[0]);
+        $this->assertEquals(0, $res[1]->content[0]);
     }
 
     /**
@@ -152,7 +153,7 @@ class BoltTest extends ATest
                     'address' => ($GLOBALS['NEO_HOST'] ?? '127.0.0.1') . ':' . ($GLOBALS['NEO_PORT'] ?? 7687)
                 ])
                 ->getResponse();
-            $this->assertEquals(Response::SIGNATURE_SUCCESS, $response->getSignature());
+            $this->assertEquals(Signature::SUCCESS, $response->signature);
         } else {
             $this->markTestSkipped('Old Neo4j version does not support route message');
         }
@@ -166,7 +167,7 @@ class BoltTest extends ATest
         $response = $protocol
             ->reset()
             ->getResponse();
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $response->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $response->signature);
     }
 
     /**
@@ -181,7 +182,7 @@ class BoltTest extends ATest
             ->run('CREATE (a:Test) RETURN ID(a)')
             ->pull()
             ->getResponses();
-        $id = iterator_to_array($gen, false)[2]->getContent()[0];
+        $id = iterator_to_array($gen, false)[2]->content[0];
 
         $data = [];
         while (strlen(serialize($data)) < 65535 * 2) {
@@ -194,8 +195,8 @@ class BoltTest extends ATest
                 ->pull()
                 ->getResponses();
             $result = iterator_to_array($gen, false);
-            $this->assertInstanceOf(\Bolt\protocol\v1\structures\Node::class, $result[1]->getContent()[0]);
-            $this->assertCount(count($data), $result[1]->getContent()[0]->properties());
+            $this->assertInstanceOf(\Bolt\protocol\v1\structures\Node::class, $result[1]->content[0]);
+            $this->assertCount(count($data), $result[1]->content[0]->properties);
         }
 
         $protocol->rollback();
@@ -206,7 +207,7 @@ class BoltTest extends ATest
      */
     public function testServerStateMismatchCallback(AProtocol $protocol): void
     {
-        $protocol->serverState->set(\Bolt\protocol\ServerState::FAILED);
+        $protocol->serverState->set(\Bolt\enum\ServerState::FAILED);
         $protocol->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
             throw new Exception('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
         };

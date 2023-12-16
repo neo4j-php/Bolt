@@ -2,9 +2,9 @@
 
 namespace Bolt\protocol\v5_4;
 
+use Bolt\enum\{Message, ServerState, Signature};
 use Bolt\error\BoltException;
 use Bolt\protocol\Response;
-use Bolt\protocol\ServerState;
 
 trait TelemetryMessage
 {
@@ -19,13 +19,15 @@ trait TelemetryMessage
      */
     public function telemetry(int $api): Response
     {
+        $this->serverState->is(ServerState::READY);
+
         $this->write($this->packer->pack(0x54, $api));
         $content = $this->read($signature);
 
-        if ($signature === Response::SIGNATURE_FAILURE) {
+        if ($signature === Signature::FAILURE) {
             $this->serverState->set(ServerState::FAILED);
         }
 
-        return new Response(Response::MESSAGE_TELEMETRY, $signature, $content);
+        return new Response(Message::TELEMETRY, $signature, $content);
     }
 }

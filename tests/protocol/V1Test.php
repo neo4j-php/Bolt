@@ -2,10 +2,8 @@
 
 namespace Bolt\tests\protocol;
 
-use Bolt\protocol\Response;
-use Bolt\protocol\ServerState;
+use Bolt\enum\{ServerState, Signature};
 use Bolt\protocol\V1;
-use Bolt\packstream\v1\{Packer, Unpacker};
 
 /**
  * Class V1Test
@@ -18,7 +16,7 @@ class V1Test extends ATest
 {
     public function test__construct(): V1
     {
-        $cls = new V1(1, $this->mockConnection(), new ServerState());
+        $cls = new V1(1, $this->mockConnection(), new \Bolt\protocol\ServerState());
         $this->assertInstanceOf(V1::class, $cls);
         $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
             $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
@@ -52,7 +50,7 @@ class V1Test extends ATest
         unset($auth['user_agent']);
 
         $cls->serverState->set(ServerState::CONNECTED);
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->init(\Bolt\helpers\Auth::$defaultUserAgent, $auth)->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->init(\Bolt\helpers\Auth::$defaultUserAgent, $auth)->signature);
         $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::CONNECTED);
@@ -89,7 +87,7 @@ class V1Test extends ATest
         ];
 
         $cls->serverState->set(ServerState::READY);
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->run('RETURN 1')->getResponse()->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->run('RETURN 1')->getResponse()->signature);
         $this->assertEquals(ServerState::STREAMING, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::READY);
@@ -99,7 +97,7 @@ class V1Test extends ATest
 
         $cls->serverState->set(ServerState::READY);
         $response = $cls->run('not a CQL')->getResponse();
-        $this->assertEquals(Response::SIGNATURE_IGNORED, $response->getSignature());
+        $this->assertEquals(Signature::IGNORED, $response->signature);
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 
@@ -132,7 +130,7 @@ class V1Test extends ATest
 
         $cls->serverState->set(ServerState::STREAMING);
         $responses = iterator_to_array($cls->pullAll()->getResponses(), false);
-        $this->assertEquals(Response::SIGNATURE_IGNORED, $responses[0]->getSignature());
+        $this->assertEquals(Signature::IGNORED, $responses[0]->signature);
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 
@@ -162,7 +160,7 @@ class V1Test extends ATest
 
         $cls->serverState->set(ServerState::STREAMING);
         $response = $cls->discardAll()->getResponse();
-        $this->assertEquals(Response::SIGNATURE_IGNORED, $response->getSignature());
+        $this->assertEquals(Signature::IGNORED, $response->signature);
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 

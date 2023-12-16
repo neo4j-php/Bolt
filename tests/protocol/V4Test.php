@@ -2,10 +2,8 @@
 
 namespace Bolt\tests\protocol;
 
-use Bolt\protocol\Response;
-use Bolt\protocol\ServerState;
 use Bolt\protocol\V4;
-use Bolt\packstream\v1\{Packer, Unpacker};
+use Bolt\enum\{Signature, ServerState};
 
 /**
  * Class V4Test
@@ -18,7 +16,7 @@ class V4Test extends ATest
 {
     public function test__construct(): V4
     {
-        $cls = new V4(1, $this->mockConnection(), new ServerState());
+        $cls = new V4(1, $this->mockConnection(), new \Bolt\protocol\ServerState());
         $this->assertInstanceOf(V4::class, $cls);
         $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
             $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
@@ -60,7 +58,7 @@ class V4Test extends ATest
 
         $cls->serverState->set(ServerState::STREAMING);
         $responses = iterator_to_array($cls->pull(['n' => -1, 'qid' => -1])->getResponses(), false);
-        $this->assertEquals(Response::SIGNATURE_IGNORED, $responses[0]->getSignature());
+        $this->assertEquals(Signature::IGNORED, $responses[0]->signature);
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 
@@ -85,7 +83,7 @@ class V4Test extends ATest
         ];
 
         $cls->serverState->set(ServerState::STREAMING);
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->discard(['n' => -1, 'qid' => -1])->getResponse()->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->discard(['n' => -1, 'qid' => -1])->getResponse()->signature);
         $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::STREAMING);
@@ -95,7 +93,7 @@ class V4Test extends ATest
 
         $cls->serverState->set(ServerState::STREAMING);
         $response = $cls->discard(['n' => -1, 'qid' => -1])->getResponse();
-        $this->assertEquals(Response::SIGNATURE_IGNORED, $response->getSignature());
+        $this->assertEquals(Signature::IGNORED, $response->signature);
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 }

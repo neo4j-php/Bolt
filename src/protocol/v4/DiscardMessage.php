@@ -2,7 +2,8 @@
 
 namespace Bolt\protocol\v4;
 
-use Bolt\protocol\{ServerState, Response, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
+use Bolt\enum\{Message, Signature, ServerState};
+use Bolt\protocol\{Response, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
 use Bolt\error\BoltException;
 
 trait DiscardMessage
@@ -26,7 +27,7 @@ trait DiscardMessage
 
         $this->pipelinedMessages[] = __FUNCTION__;
         //we assume all records were discarded
-        $this->serverState->set(str_starts_with($this->serverState->get(), 'TX_') ? ServerState::TX_READY : ServerState::READY);
+        $this->serverState->set(in_array($this->serverState->get(), [ServerState::TX_READY, ServerState::TX_STREAMING]) ? ServerState::TX_READY : ServerState::READY);
         return $this;
     }
 
@@ -38,14 +39,14 @@ trait DiscardMessage
     {
         $content = $this->read($signature);
 
-        if ($signature == Response::SIGNATURE_SUCCESS) {
+        if ($signature == Signature::SUCCESS) {
             if ($content['has_more'] ?? false) {
-                $this->serverState->set(str_starts_with($this->serverState->get(), 'TX_') ? ServerState::TX_STREAMING : ServerState::STREAMING);
+                $this->serverState->set(in_array($this->serverState->get(), [ServerState::TX_READY, ServerState::TX_STREAMING]) ? ServerState::TX_STREAMING : ServerState::STREAMING);
             } else {
-                $this->serverState->set(str_starts_with($this->serverState->get(), 'TX_') ? ServerState::TX_READY : ServerState::READY);
+                $this->serverState->set(in_array($this->serverState->get(), [ServerState::TX_READY, ServerState::TX_STREAMING]) ? ServerState::TX_READY : ServerState::READY);
             }
         }
 
-        yield new Response(Response::MESSAGE_DISCARD, $signature, $content);
+        yield new Response(Message::DISCARD, $signature, $content);
     }
 }

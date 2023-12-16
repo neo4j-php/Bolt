@@ -2,10 +2,8 @@
 
 namespace Bolt\tests\protocol;
 
-use Bolt\protocol\Response;
-use Bolt\protocol\ServerState;
 use Bolt\protocol\V4_3;
-use Bolt\packstream\v1\{Packer, Unpacker};
+use Bolt\enum\{Signature, ServerState};
 
 /**
  * Class V4_3Test
@@ -47,7 +45,7 @@ class V4_3Test extends ATest
         ];
 
         $cls->serverState->set(ServerState::READY);
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->route(['address' => 'localhost:7687'])->getResponse()->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $cls->route(['address' => 'localhost:7687'])->getResponse()->signature);
         $this->assertEquals(ServerState::READY, $cls->serverState->get());
 
         $cls->serverState->set(ServerState::READY);
@@ -57,7 +55,7 @@ class V4_3Test extends ATest
 
         $cls->serverState->set(ServerState::READY);
         $response = $cls->route(['address' => 'localhost:7687'])->getResponse();
-        $this->assertEquals(Response::SIGNATURE_IGNORED, $response->getSignature());
+        $this->assertEquals(Signature::IGNORED, $response->signature);
         $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
     }
 

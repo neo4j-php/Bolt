@@ -17,41 +17,15 @@ class Path implements IStructure
 {
     /**
      * @param Node[] $nodes
-     * @param UnboundRelationship[] $rels
-     * @param int[] $ids
+     * @param UnboundRelationship[] $rels list of unbound relationships
+     * @param int[] $ids relationship id and node id to represent the path
      */
     public function __construct(
-        private array $nodes,
-        private array $rels,
-        private array $ids
+        public readonly array $nodes,
+        public readonly array $rels,
+        public readonly array $ids
     )
     {
-    }
-
-    /**
-     * @return Node[]
-     */
-    public function nodes(): array
-    {
-        return $this->nodes;
-    }
-
-    /**
-     * list of unbound relationships
-     * @return UnboundRelationship[]
-     */
-    public function rels(): array
-    {
-        return $this->rels;
-    }
-
-    /**
-     * relationship id and node id to represent the path
-     * @return int[]
-     */
-    public function ids(): array
-    {
-        return $this->ids;
     }
 
     public function __toString(): string
@@ -66,7 +40,7 @@ class Path implements IStructure
         for ($i = 0; $i < count($this->nodes) - 1; $i++) {
             $obj['segments'][] = [
                 'start' => json_decode($this->nodes[$i], true),
-                'relationship' => array_merge(json_decode($this->rels[$i], true), ['start' => $this->nodes[$i]->id(), 'end' => $this->nodes[$i + 1]->id()]),
+                'relationship' => array_merge(json_decode($this->rels[$i], true), ['start' => $this->nodes[$i]->id, 'end' => $this->nodes[$i + 1]->id()]),
                 'end' => json_decode($this->nodes[$i + 1], true)
             ];
         }

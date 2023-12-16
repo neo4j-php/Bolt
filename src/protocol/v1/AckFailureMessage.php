@@ -2,8 +2,8 @@
 
 namespace Bolt\protocol\v1;
 
+use Bolt\enum\{Message, Signature, ServerState};
 use Bolt\protocol\{
-    ServerState,
     Response,
     V1,
     V2
@@ -37,13 +37,13 @@ trait AckFailureMessage
     {
         $content = $this->read($signature);
 
-        if ($signature == Response::SIGNATURE_SUCCESS) {
+        if ($signature == Signature::SUCCESS) {
             $this->serverState->set(ServerState::READY);
-        } elseif ($signature == Response::SIGNATURE_FAILURE) {
+        } elseif ($signature == Signature::FAILURE) {
             $this->connection->disconnect();
             $this->serverState->set(ServerState::DEFUNCT);
         }
 
-        yield new Response(Response::MESSAGE_ACK_FAILURE, $signature, $content);
+        yield new Response(Message::ACK_FAILURE, $signature, $content);
     }
 }

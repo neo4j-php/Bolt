@@ -1,8 +1,9 @@
 <?php
 
-use Bolt\protocol\Response;
-use Bolt\protocol\ServerState;
+namespace Bolt\tests\protocol;
+
 use Bolt\protocol\V5_3;
+use Bolt\enum\{Signature, ServerState};
 
 /**
  * Class V5_3Test
@@ -33,11 +34,11 @@ class V5_3Test extends \Bolt\tests\protocol\ATest
             [0x7F, (object)['message' => 'some error message', 'code' => 'Neo.ClientError.Statement.SyntaxError']]
         ];
 
-        $cls->serverState->set(ServerState::CONNECTED);
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->hello()->getSignature());
+        $cls->serverState->set(ServerState::NEGOTIATION);
+        $this->assertEquals(Signature::SUCCESS, $cls->hello()->signature);
         $this->assertEquals(ServerState::AUTHENTICATION, $cls->serverState->get());
 
-        $cls->serverState->set(ServerState::CONNECTED);
+        $cls->serverState->set(ServerState::NEGOTIATION);
         $response = $cls->hello();
         $this->checkFailure($response);
         $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());

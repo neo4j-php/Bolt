@@ -2,7 +2,8 @@
 
 namespace Bolt\protocol\v1;
 
-use Bolt\protocol\{ServerState, Response, V1, V2, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
+use Bolt\enum\{Message, Signature, ServerState};
+use Bolt\protocol\{Response, V1, V2, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
 use Bolt\error\BoltException;
 
 trait ResetMessage
@@ -30,13 +31,13 @@ trait ResetMessage
     {
         $content = $this->read($signature);
 
-        if ($signature == Response::SIGNATURE_SUCCESS) {
+        if ($signature == Signature::SUCCESS) {
             $this->serverState->set(ServerState::READY);
-        } elseif ($signature == Response::SIGNATURE_FAILURE) {
+        } elseif ($signature == Signature::FAILURE) {
             $this->connection->disconnect();
             $this->serverState->set(ServerState::DEFUNCT);
         }
 
-        yield new Response(Response::MESSAGE_RESET, $signature, $content);
+        yield new Response(Message::RESET, $signature, $content);
     }
 }
