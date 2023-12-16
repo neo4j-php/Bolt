@@ -35,23 +35,23 @@ class ATest extends \PHPUnit\Framework\TestCase
      * @param string $name
      * @param string $password
      */
-    protected function sayHello(AProtocol $protocol, string $name, string $password)
+    protected function sayHello(AProtocol $protocol, string $name, string $password): void
     {
         if (method_exists($protocol, 'init')) {
             $this->assertEquals(Signature::SUCCESS, $protocol->init(Auth::$defaultUserAgent, [
                 'scheme' => 'basic',
                 'principal' => $name,
                 'credentials' => $password
-            ])->signature);
+            ])->getResponse()->signature);
         } elseif (method_exists($protocol, 'logon')) {
-            $this->assertEquals(Signature::SUCCESS, $protocol->hello()->signature);
+            $this->assertEquals(Signature::SUCCESS, $protocol->hello()->getResponse()->signature);
             $this->assertEquals(Signature::SUCCESS, $protocol->logon([
                 'scheme' => 'basic',
                 'principal' => $name,
                 'credentials' => $password
-            ])->signature);
+            ])->getResponse()->signature);
         } else {
-            $this->assertEquals(Signature::SUCCESS, $protocol->hello(Auth::basic($name, $password))->signature);
+            $this->assertEquals(Signature::SUCCESS, $protocol->hello(Auth::basic($name, $password))->getResponse()->signature);
         }
     }
 

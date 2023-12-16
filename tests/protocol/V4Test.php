@@ -16,11 +16,8 @@ class V4Test extends ATest
 {
     public function test__construct(): V4
     {
-        $cls = new V4(1, $this->mockConnection(), new \Bolt\protocol\ServerState());
+        $cls = new V4(1, $this->mockConnection());
         $this->assertInstanceOf(V4::class, $cls);
-        $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
-            $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
-        };
         return $cls;
     }
 
@@ -45,21 +42,21 @@ class V4Test extends ATest
             '00 01 ff',
         ];
 
-        $cls->serverState->set(ServerState::STREAMING);
+        $cls->serverState = ServerState::STREAMING;
         $res = iterator_to_array($cls->pull(['n' => -1, 'qid' => -1])->getResponses(), false);
         $this->assertIsArray($res);
         $this->assertCount(2, $res);
-        $this->assertEquals(ServerState::READY, $cls->serverState->get());
+        $this->assertEquals(ServerState::READY, $cls->serverState);
 
-        $cls->serverState->set(ServerState::STREAMING);
+        $cls->serverState = ServerState::STREAMING;
         $responses = iterator_to_array($cls->pull(['n' => -1, 'qid' => -1])->getResponses(), false);
         $this->checkFailure($responses[0]);
-        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+        $this->assertEquals(ServerState::FAILED, $cls->serverState);
 
-        $cls->serverState->set(ServerState::STREAMING);
+        $cls->serverState = ServerState::INTERRUPTED;
         $responses = iterator_to_array($cls->pull(['n' => -1, 'qid' => -1])->getResponses(), false);
         $this->assertEquals(Signature::IGNORED, $responses[0]->signature);
-        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState);
     }
 
     /**
@@ -82,18 +79,18 @@ class V4Test extends ATest
             '0001ff',
         ];
 
-        $cls->serverState->set(ServerState::STREAMING);
+        $cls->serverState = ServerState::STREAMING;
         $this->assertEquals(Signature::SUCCESS, $cls->discard(['n' => -1, 'qid' => -1])->getResponse()->signature);
-        $this->assertEquals(ServerState::READY, $cls->serverState->get());
+        $this->assertEquals(ServerState::READY, $cls->serverState);
 
-        $cls->serverState->set(ServerState::STREAMING);
+        $cls->serverState = ServerState::STREAMING;
         $response = $cls->discard(['n' => -1, 'qid' => -1])->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+        $this->assertEquals(ServerState::FAILED, $cls->serverState);
 
-        $cls->serverState->set(ServerState::STREAMING);
+        $cls->serverState = ServerState::INTERRUPTED;
         $response = $cls->discard(['n' => -1, 'qid' => -1])->getResponse();
         $this->assertEquals(Signature::IGNORED, $response->signature);
-        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Bolt\protocol\v4_3;
 
-use Bolt\enum\{Message, ServerState};
+use Bolt\enum\Message;
 use Bolt\protocol\{Response, V4_3};
 use Bolt\error\BoltException;
 
@@ -17,7 +17,6 @@ trait RouteMessage
      */
     public function route(array $routing, array $bookmarks = [], ?string $db = null): V4_3
     {
-        $this->serverState->is(ServerState::READY);
         $this->write($this->packer->pack(0x66, (object)$routing, $bookmarks, $db));
         $this->pipelinedMessages[] = __FUNCTION__;
         return $this;

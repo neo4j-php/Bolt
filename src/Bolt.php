@@ -4,8 +4,8 @@ namespace Bolt;
 
 use Bolt\error\ConnectException;
 use Bolt\error\BoltException;
-use Bolt\protocol\{AProtocol, ServerState};
-use Bolt\enum\ServerState as SS;
+use Bolt\protocol\AProtocol;
+use Bolt\enum\ServerState;
 use Bolt\connection\IConnection;
 
 /**
@@ -23,7 +23,6 @@ final class Bolt
     private int $packStreamVersion = 1;
 
     public static bool $debug = false;
-    public ServerState $serverState;
 
     public function __construct(private IConnection $connection)
     {
@@ -36,27 +35,20 @@ final class Bolt
      */
     public function build(): AProtocol
     {
-        $this->serverState = new ServerState();
-        $this->serverState->is(SS::DISCONNECTED, SS::DEFUNCT);
-
-        try {
-            if (!$this->connection->connect()) {
-                throw new ConnectException('Connection failed');
-            }
-
-            $version = $this->handshake();
-
-            $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
-            if (!class_exists($protocolClass)) {
-                throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
-            }
-        } catch (ConnectException $e) {
-            $this->serverState->set(SS::DEFUNCT);
-            throw $e;
+        if (!$this->connection->connect()) {
+            throw new ConnectException('Connection failed');
         }
 
-        $this->serverState->set(version_compare($version, '5.1', '>=') ? SS::NEGOTIATION : SS::CONNECTED);
-        return new $protocolClass($this->packStreamVersion, $this->connection, $this->serverState);
+        $version = $this->handshake();
+
+        $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
+        if (!class_exists($protocolClass)) {
+            throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
+        }
+
+        $protocol = new $protocolClass($this->packStreamVersion, $this->connection);
+        $protocol->serverState = version_compare($version, '5.1', '>=') ? ServerState::NEGOTIATION : ServerState::CONNECTED;
+        return $protocol;
     }
 
     public function setProtocolVersions(int|float|string ...$v): Bolt

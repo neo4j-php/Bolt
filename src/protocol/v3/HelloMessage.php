@@ -2,8 +2,8 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\enum\{Message, Signature, ServerState};
-use Bolt\protocol\Response;
+use Bolt\enum\Message;
+use Bolt\protocol\{Response, V3, V4, V4_1, V4_2, V4_3, V4_4, V5};
 use Bolt\error\BoltException;
 
 trait HelloMessage
@@ -16,20 +16,20 @@ trait HelloMessage
      * @param array $extra Use \Bolt\helpers\Auth to generate appropriate array
      * @throws BoltException
      */
-    public function hello(array $extra): Response
+    public function hello(array $extra): V3|V4|V4_1|V4_2|V4_3|V4_4|V5
     {
-        $this->serverState->is(ServerState::CONNECTED);
-
         $this->write($this->packer->pack(0x01, $extra));
+        $this->pipelinedMessages[] = __FUNCTION__;
+        return $this;
+    }
+
+    /**
+     * Read HELLO response
+     * @throws BoltException
+     */
+    public function _hello(): iterable
+    {
         $content = $this->read($signature);
-
-        if ($signature == Signature::SUCCESS) {
-            $this->serverState->set(ServerState::READY);
-        } elseif ($signature == Signature::FAILURE) {
-            $this->connection->disconnect();
-            $this->serverState->set(ServerState::DEFUNCT);
-        }
-
-        return new Response(Message::HELLO, $signature, $content);
+        yield new Response(Message::HELLO, $signature, $content);
     }
 }

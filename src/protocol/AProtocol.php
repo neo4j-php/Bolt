@@ -2,14 +2,13 @@
 
 namespace Bolt\protocol;
 
-use Bolt\enum\Signature;
+use Bolt\enum\{Signature, ServerState};
 use Bolt\error\BoltException;
 use Bolt\error\PackException;
 use Bolt\error\UnpackException;
 use Bolt\packstream\{IPacker, IUnpacker};
 use Bolt\connection\IConnection;
 use Bolt\error\ConnectException;
-use Bolt\enum\ServerState as SS;
 
 /**
  * Abstract class AProtocol
@@ -26,6 +25,8 @@ abstract class AProtocol
     protected IPacker $packer;
     protected IUnpacker $unpacker;
 
+    public ServerState $serverState;
+
     /**
      * @throws UnpackException
      * @throws PackException
@@ -33,7 +34,6 @@ abstract class AProtocol
     public function __construct(
         int                   $packStreamVersion,
         protected IConnection $connection,
-        public ServerState    $serverState
     )
     {
         $packerClass = "\\Bolt\\packstream\\v" . $packStreamVersion . "\\Packer";
@@ -80,10 +80,7 @@ abstract class AProtocol
             $s = $this->unpacker->getSignature();
             $signature = Signature::from($s);
 
-            if ($signature == Signature::SUCCESS) {
-                $this->serverState->set(SS::FAILED);
-            } elseif ($signature == Signature::IGNORED) {
-                $this->serverState->set(SS::INTERRUPTED);
+            if ($signature == Signature::IGNORED) {
                 // Ignored doesn't have any response content
                 $output = [];
             }
@@ -109,11 +106,8 @@ abstract class AProtocol
      */
     public function getResponses(): \Iterator
     {
-        $this->serverState->is(SS::READY, SS::TX_READY, SS::STREAMING, SS::TX_STREAMING);
         while (count($this->pipelinedMessages) > 0) {
-            $message = reset($this->pipelinedMessages);
-            yield from $this->{'_' . $message}();
-            array_shift($this->pipelinedMessages);
+            yield $this->getResponse();
         }
     }
 
@@ -122,12 +116,25 @@ abstract class AProtocol
      */
     public function getResponse(): Response
     {
-        $this->serverState->is(SS::READY, SS::TX_READY, SS::STREAMING, SS::TX_STREAMING);
+        $serverState = $this->serverState;
+
         $message = reset($this->pipelinedMessages);
         /** @var Response $response */
         $response = $this->{'_' . $message}()->current();
         if ($response->signature != Signature::RECORD)
             array_shift($this->pipelinedMessages);
+
+        foreach (($this->serverStateTransition ?? []) as $transition) {
+            if ($transition[0] === $serverState && $transition[1] === $response->message && $transition[2] === $response->signature) {
+                $this->serverState = $transition[3];
+                if ($response->signature === Signature::SUCCESS && ($response->content['has_more'] ?? false))
+                    $this->serverState = ($serverState === ServerState::TX_READY || $serverState === ServerState::TX_STREAMING) ? ServerState::TX_STREAMING : ServerState::STREAMING;
+                if ($transition[3] === ServerState::DEFUNCT)
+                    $this->connection->disconnect();
+                break;
+            }
+        }
+
         return $response;
     }
 }

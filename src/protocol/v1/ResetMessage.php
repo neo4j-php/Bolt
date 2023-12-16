@@ -2,7 +2,7 @@
 
 namespace Bolt\protocol\v1;
 
-use Bolt\enum\{Message, Signature, ServerState};
+use Bolt\enum\Message;
 use Bolt\protocol\{Response, V1, V2, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
 use Bolt\error\BoltException;
 
@@ -19,7 +19,6 @@ trait ResetMessage
     {
         $this->write($this->packer->pack(0x0F));
         $this->pipelinedMessages[] = __FUNCTION__;
-        $this->serverState->set(ServerState::READY);
         return $this;
     }
 
@@ -30,14 +29,6 @@ trait ResetMessage
     protected function _reset(): iterable
     {
         $content = $this->read($signature);
-
-        if ($signature == Signature::SUCCESS) {
-            $this->serverState->set(ServerState::READY);
-        } elseif ($signature == Signature::FAILURE) {
-            $this->connection->disconnect();
-            $this->serverState->set(ServerState::DEFUNCT);
-        }
-
         yield new Response(Message::RESET, $signature, $content);
     }
 }

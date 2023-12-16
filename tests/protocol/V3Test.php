@@ -16,11 +16,8 @@ class V3Test extends ATest
 {
     public function test__construct(): V3
     {
-        $cls = new V3(1, $this->mockConnection(), new \Bolt\protocol\ServerState());
+        $cls = new V3(1, $this->mockConnection());
         $this->assertInstanceOf(V3::class, $cls);
-        $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
-            $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
-        };
         return $cls;
     }
 
@@ -47,14 +44,14 @@ class V3Test extends ATest
             '00098870617373776f7264',
         ];
 
-        $cls->serverState->set(ServerState::CONNECTED);
-        $this->assertEquals(Signature::SUCCESS, $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'))->signature);
-        $this->assertEquals(ServerState::READY, $cls->serverState->get());
+        $cls->serverState = ServerState::CONNECTED;
+        $this->assertEquals(Signature::SUCCESS, $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'))->getResponse()->signature);
+        $this->assertEquals(ServerState::READY, $cls->serverState);
 
-        $cls->serverState->set(ServerState::CONNECTED);
-        $response = $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'));
+        $cls->serverState = ServerState::CONNECTED;
+        $response = $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'))->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
+        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState);
     }
 
     /**
@@ -87,19 +84,19 @@ class V3Test extends ATest
             '00 01 a0',
         ];
 
-        $cls->serverState->set(ServerState::READY);
+        $cls->serverState = ServerState::READY;
         $this->assertEquals(Signature::SUCCESS, $cls->run('RETURN 1')->getResponse()->signature);
-        $this->assertEquals(ServerState::STREAMING, $cls->serverState->get());
+        $this->assertEquals(ServerState::STREAMING, $cls->serverState);
 
-        $cls->serverState->set(ServerState::READY);
+        $cls->serverState = ServerState::READY;
         $response = $cls->run('not a CQL')->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+        $this->assertEquals(ServerState::FAILED, $cls->serverState);
 
-        $cls->serverState->set(ServerState::READY);
+        $cls->serverState = ServerState::INTERRUPTED;
         $response = $cls->run('not a CQL')->getResponse();
         $this->assertEquals(Signature::IGNORED, $response->signature);
-        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState);
     }
 
     /**
@@ -118,19 +115,19 @@ class V3Test extends ATest
             '00 01 a0',
         ];
 
-        $cls->serverState->set(ServerState::READY);
+        $cls->serverState = ServerState::READY;
         $this->assertEquals(Signature::SUCCESS, $cls->begin()->getResponse()->signature);
-        $this->assertEquals(ServerState::TX_READY, $cls->serverState->get());
+        $this->assertEquals(ServerState::TX_READY, $cls->serverState);
 
-        $cls->serverState->set(ServerState::READY);
+        $cls->serverState = ServerState::READY;
         $response = $cls->begin()->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+        $this->assertEquals(ServerState::FAILED, $cls->serverState);
 
-        $cls->serverState->set(ServerState::READY);
+        $cls->serverState = ServerState::INTERRUPTED;
         $response = $cls->begin()->getResponse();
         $this->assertEquals(Signature::IGNORED, $response->signature);
-        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState);
     }
 
     /**
@@ -148,19 +145,19 @@ class V3Test extends ATest
             '00 01 12',
         ];
 
-        $cls->serverState->set(ServerState::TX_READY);
+        $cls->serverState = ServerState::TX_READY;
         $this->assertEquals(Signature::SUCCESS, $cls->commit()->getResponse()->signature);
-        $this->assertEquals(ServerState::READY, $cls->serverState->get());
+        $this->assertEquals(ServerState::READY, $cls->serverState);
 
-        $cls->serverState->set(ServerState::TX_READY);
+        $cls->serverState = ServerState::TX_READY;
         $response = $cls->commit()->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+        $this->assertEquals(ServerState::FAILED, $cls->serverState);
 
-        $cls->serverState->set(ServerState::TX_READY);
+        $cls->serverState = ServerState::INTERRUPTED;
         $response = $cls->commit()->getResponse();
         $this->assertEquals(Signature::IGNORED, $response->signature);
-        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState);
     }
 
     /**
@@ -178,19 +175,19 @@ class V3Test extends ATest
             '00 01 13',
         ];
 
-        $cls->serverState->set(ServerState::TX_READY);
+        $cls->serverState = ServerState::TX_READY;
         $this->assertEquals(Signature::SUCCESS, $cls->rollback()->getResponse()->signature);
-        $this->assertEquals(ServerState::READY, $cls->serverState->get());
+        $this->assertEquals(ServerState::READY, $cls->serverState);
 
-        $cls->serverState->set(ServerState::TX_READY);
+        $cls->serverState = ServerState::TX_READY;
         $response = $cls->rollback()->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+        $this->assertEquals(ServerState::FAILED, $cls->serverState);
 
-        $cls->serverState->set(ServerState::TX_READY);
+        $cls->serverState = ServerState::INTERRUPTED;
         $response = $cls->rollback()->getResponse();
         $this->assertEquals(Signature::IGNORED, $response->signature);
-        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState);
     }
 
     /**
@@ -205,7 +202,7 @@ class V3Test extends ATest
         ];
 
         $cls->goodbye();
-        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
+        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState);
     }
 
 }

@@ -2,8 +2,8 @@
 
 namespace Bolt\protocol\v5_1;
 
-use Bolt\enum\{Message, Signature, ServerState};
-use Bolt\protocol\Response;
+use Bolt\enum\Message;
+use Bolt\protocol\{Response, V5_1, V5_2, V5_3, V5_4};
 use Bolt\error\BoltException;
 
 trait HelloMessage
@@ -15,25 +15,25 @@ trait HelloMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-hello
      * @throws BoltException
      */
-    public function hello(array $extra = []): Response
+    public function hello(array $extra = []): V5_1|V5_2|V5_3|V5_4
     {
-        $this->serverState->is(ServerState::NEGOTIATION);
-
         if (empty($extra['user_agent']))
             $extra['user_agent'] = \Bolt\helpers\Auth::$defaultUserAgent;
         if (isset($extra['routing']) && is_array($extra['routing']))
             $extra['routing'] = (object)$extra['routing'];
 
         $this->write($this->packer->pack(0x01, (object)$extra));
+        $this->pipelinedMessages[] = __FUNCTION__;
+        return $this;
+    }
+
+    /**
+     * Read HELLO response
+     * @throws BoltException
+     */
+    public function _hello(): iterable
+    {
         $content = $this->read($signature);
-
-        if ($signature == Signature::SUCCESS) {
-            $this->serverState->set(ServerState::AUTHENTICATION);
-        } elseif ($signature == Signature::FAILURE) {
-            $this->connection->disconnect();
-            $this->serverState->set(ServerState::DEFUNCT);
-        }
-
-        return new Response(Message::HELLO, $signature, $content);
+        yield new Response(Message::HELLO, $signature, $content);
     }
 }

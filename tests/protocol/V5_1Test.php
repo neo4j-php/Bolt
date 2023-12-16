@@ -16,11 +16,8 @@ class V5_1Test extends \Bolt\tests\protocol\ATest
 {
     public function test__construct(): V5_1
     {
-        $cls = new V5_1(1, $this->mockConnection(), new \Bolt\protocol\ServerState());
+        $cls = new V5_1(1, $this->mockConnection());
         $this->assertInstanceOf(V5_1::class, $cls);
-        $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
-            $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
-        };
         return $cls;
     }
 
@@ -41,14 +38,14 @@ class V5_1Test extends \Bolt\tests\protocol\ATest
             '000988626f6c742d706870',
         ];
 
-        $cls->serverState->set(ServerState::NEGOTIATION);
-        $this->assertEquals(Signature::SUCCESS, $cls->hello()->signature);
-        $this->assertEquals(ServerState::AUTHENTICATION, $cls->serverState->get());
+        $cls->serverState = ServerState::NEGOTIATION;
+        $this->assertEquals(Signature::SUCCESS, $cls->hello()->getResponse()->signature);
+        $this->assertEquals(ServerState::AUTHENTICATION, $cls->serverState);
 
-        $cls->serverState->set(ServerState::NEGOTIATION);
-        $response = $cls->hello();
+        $cls->serverState = ServerState::NEGOTIATION;
+        $response = $cls->hello()->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
+        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState);
     }
 
     /**
@@ -72,22 +69,22 @@ class V5_1Test extends \Bolt\tests\protocol\ATest
             '00098870617373776f7264',
         ];
 
-        $cls->serverState->set(ServerState::AUTHENTICATION);
+        $cls->serverState = ServerState::AUTHENTICATION;
         $this->assertEquals(Signature::SUCCESS, $cls->logon([
             'scheme' => 'basic',
             'principal' => 'user',
             'credentials' => 'password'
-        ])->signature);
-        $this->assertEquals(ServerState::READY, $cls->serverState->get());
+        ])->getResponse()->signature);
+        $this->assertEquals(ServerState::READY, $cls->serverState);
 
-        $cls->serverState->set(ServerState::AUTHENTICATION);
+        $cls->serverState = ServerState::AUTHENTICATION;
         $response = $cls->logon([
             'scheme' => 'basic',
             'principal' => 'user',
             'credentials' => 'password'
-        ]);
+        ])->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
+        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState);
     }
 
     /**
@@ -104,13 +101,13 @@ class V5_1Test extends \Bolt\tests\protocol\ATest
             '00016b',
         ];
 
-        $cls->serverState->set(ServerState::READY);
-        $this->assertEquals(Signature::SUCCESS, $cls->logoff()->signature);
-        $this->assertEquals(ServerState::AUTHENTICATION, $cls->serverState->get());
+        $cls->serverState = ServerState::READY;
+        $this->assertEquals(Signature::SUCCESS, $cls->logoff()->getResponse()->signature);
+        $this->assertEquals(ServerState::AUTHENTICATION, $cls->serverState);
 
-        $cls->serverState->set(ServerState::READY);
-        $response = $cls->logoff();
+        $cls->serverState = ServerState::READY;
+        $response = $cls->logoff()->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
+        $this->assertEquals(ServerState::FAILED, $cls->serverState);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Bolt\protocol\v1;
 
-use Bolt\enum\{Message, Signature, ServerState};
+use Bolt\enum\Message;
 use Bolt\protocol\{
     Response,
     V1,
@@ -22,10 +22,8 @@ trait AckFailureMessage
      */
     public function ackFailure(): V1|V2
     {
-        $this->serverState->is(ServerState::FAILED);
         $this->write($this->packer->pack(0x0E));
         $this->pipelinedMessages[] = __FUNCTION__;
-        $this->serverState->set(ServerState::READY);
         return $this;
     }
 
@@ -36,14 +34,6 @@ trait AckFailureMessage
     protected function _ackFailure(): iterable
     {
         $content = $this->read($signature);
-
-        if ($signature == Signature::SUCCESS) {
-            $this->serverState->set(ServerState::READY);
-        } elseif ($signature == Signature::FAILURE) {
-            $this->connection->disconnect();
-            $this->serverState->set(ServerState::DEFUNCT);
-        }
-
         yield new Response(Message::ACK_FAILURE, $signature, $content);
     }
 }

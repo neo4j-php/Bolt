@@ -16,11 +16,8 @@ class V4_1Test extends ATest
 {
     public function test__construct(): V4_1
     {
-        $cls = new V4_1(1, $this->mockConnection(), new \Bolt\protocol\ServerState());
+        $cls = new V4_1(1, $this->mockConnection());
         $this->assertInstanceOf(V4_1::class, $cls);
-        $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
-            $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
-        };
         return $cls;
     }
 
@@ -47,13 +44,13 @@ class V4_1Test extends ATest
             '00098870617373776f7264',
         ];
 
-        $cls->serverState->set(ServerState::CONNECTED);
-        $this->assertEquals(Signature::SUCCESS, $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'))->signature);
-        $this->assertEquals(ServerState::READY, $cls->serverState->get());
+        $cls->serverState = ServerState::CONNECTED;
+        $this->assertEquals(Signature::SUCCESS, $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'))->getResponse()->signature);
+        $this->assertEquals(ServerState::READY, $cls->serverState);
 
-        $cls->serverState->set(ServerState::CONNECTED);
-        $response = $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'));
+        $cls->serverState = ServerState::CONNECTED;
+        $response = $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'))->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
+        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState);
     }
 }

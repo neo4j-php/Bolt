@@ -16,11 +16,8 @@ class V5Test extends ATest
 {
     public function test__construct(): V5
     {
-        $cls = new V5(1, $this->mockConnection(), new \Bolt\protocol\ServerState());
+        $cls = new V5(1, $this->mockConnection());
         $this->assertInstanceOf(V5::class, $cls);
-        $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
-            $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
-        };
         return $cls;
     }
 }
