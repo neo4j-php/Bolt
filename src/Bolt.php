@@ -5,7 +5,7 @@ namespace Bolt;
 use Bolt\error\ConnectException;
 use Bolt\error\BoltException;
 use Bolt\protocol\AProtocol;
-use Bolt\enum\ServerState;
+use Bolt\enum\{Signature, ServerState};
 use Bolt\connection\IConnection;
 
 /**
@@ -26,7 +26,7 @@ final class Bolt
 
     public function __construct(private IConnection $connection)
     {
-        $this->setProtocolVersions(5, 4.4);
+        $this->setProtocolVersions(5.4, 5, 4.4);
     }
 
     /**
@@ -35,10 +35,34 @@ final class Bolt
      */
     public function build(): AProtocol
     {
-        if (!$this->connection->connect()) {
-            throw new ConnectException('Connection failed');
+        $protocol = null;
+
+        try {
+            if (!$this->connection->connect()) {
+                throw new ConnectException('Connection failed');
+            }
+
+            if ($this->connection instanceof \Bolt\connection\PStreamSocket) {
+                $protocol = $this->persistentBuild();
+            }
+
+            if (empty($protocol)) {
+                $protocol = $this->normalBuild();
+            }
+        } catch (BoltException $e) {
+            $this->connection->disconnect();
+            throw $e;
         }
 
+        if ($this->connection instanceof \Bolt\connection\PStreamSocket) {
+            $this->connection->getCache()->set($this->connection->getIdentifier(), $protocol->getVersion());
+        }
+
+        return $protocol;
+    }
+
+    private function normalBuild(): AProtocol
+    {
         $version = $this->handshake();
 
         $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
@@ -48,6 +72,31 @@ final class Bolt
 
         $protocol = new $protocolClass($this->packStreamVersion, $this->connection);
         $protocol->serverState = version_compare($version, '5.1', '>=') ? ServerState::NEGOTIATION : ServerState::CONNECTED;
+        return $protocol;
+    }
+
+    private function persistentBuild(): ?AProtocol
+    {
+        $version = $this->connection->getCache()->get($this->connection->getIdentifier());
+        if (empty($version)) {
+            return null;
+        }
+
+        $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
+        if (!class_exists($protocolClass)) {
+            throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
+        }
+
+        /** @var AProtocol $protocol */
+        $protocol = new $protocolClass($this->packStreamVersion, $this->connection);
+        $protocol->serverState = ServerState::INTERRUPTED;
+
+        if ($protocol->reset()->getResponse()->signature != Signature::SUCCESS) {
+            $this->connection->disconnect();
+            $this->connection->connect();
+            return null;
+        }
+
         return $protocol;
     }
 
@@ -62,12 +111,6 @@ final class Bolt
     public function setPackStreamVersion(int $version = 1): Bolt
     {
         $this->packStreamVersion = $version;
-        return $this;
-    }
-
-    public function setConnection(IConnection $connection): Bolt
-    {
-        $this->connection = $connection;
         return $this;
     }
 

@@ -16,12 +16,14 @@ use Bolt\error\ConnectionTimeoutException;
  */
 class StreamSocket extends AConnection
 {
-    private array $sslContextOptions = [];
+    protected array $sslContextOptions = [];
 
     /**
      * @var resource
      */
-    private $stream;
+    protected $stream;
+
+    protected int $connectionFlags = STREAM_CLIENT_CONNECT;
 
     /**
      * Set SSL Context options
@@ -41,7 +43,7 @@ class StreamSocket extends AConnection
             'ssl' => $this->sslContextOptions
         ]);
 
-        $this->stream = @stream_socket_client('tcp://' . $this->ip . ':' . $this->port, $errno, $errstr, $this->timeout, STREAM_CLIENT_CONNECT, $context);
+        $this->stream = @stream_socket_client('tcp://' . $this->ip . ':' . $this->port, $errno, $errstr, $this->timeout, $this->connectionFlags, $context);
 
         if ($this->stream === false) {
             throw new ConnectException($errstr, $errno);
@@ -107,8 +109,10 @@ class StreamSocket extends AConnection
 
     public function disconnect(): void
     {
-        if (is_resource($this->stream))
+        if (is_resource($this->stream)) {
             stream_socket_shutdown($this->stream, STREAM_SHUT_RDWR);
+            unset($this->stream);
+        }
     }
 
     /**
@@ -123,7 +127,7 @@ class StreamSocket extends AConnection
     /**
      * @throws ConnectException
      */
-    private function configureTimeout(): void
+    protected function configureTimeout(): void
     {
         if (is_resource($this->stream)) {
             $timeout = (int)floor($this->timeout);
