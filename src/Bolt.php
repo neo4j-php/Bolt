@@ -5,7 +5,7 @@ namespace Bolt;
 use Bolt\error\ConnectException;
 use Bolt\error\BoltException;
 use Bolt\protocol\{AProtocol, Response};
-use Bolt\enum\ServerState;
+use Bolt\enum\{Signature, ServerState};
 use Bolt\connection\IConnection;
 
 /**
@@ -90,9 +90,7 @@ final class Bolt
         /** @var AProtocol $protocol */
         $protocol = new $protocolClass($this->packStreamVersion, $this->connection);
 
-        /** @var Response $response */
-        $response = $protocol->reset()->getResponse();
-        if ($response->getSignature() != Response::SIGNATURE_SUCCESS) {
+        if ($protocol->reset()->getResponse()->signature != Signature::SUCCESS) {
             $this->connection->disconnect();
             $this->connection->connect();
             return null;
