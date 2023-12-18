@@ -182,10 +182,6 @@ foreach ($protocol->getResponses() as $response) {
 Directory `src` contains autoload file which accepts only Bolt library namespaces. Main Bolt namespace points to this
 directory. If you have installed this project with composer, you have to load `vendor/autoload.php`.
 
-## :vertical_traffic_light: Server state
-
-Server state is not reported by server but it is evaluated by received response. You can access current state through property `$protocol->serverState`. This property is updated with every call `getResponse(s)`.
-
 ## :chains: Connection
 
 Bolt class constructor accepts connection argument. This argument has to be instance of class which implements IConnection interface. Library offers few options.
@@ -252,6 +248,10 @@ timeout for establishing socket connection itself you have to set ini directive 
 
 _Setting up ini directive isn't part of connection class because function `ini_set` can be disabled on production
 environments for security reasons._
+
+## :vertical_traffic_light: Server state
+
+Server state is not reported by server but it is evaluated by received response. You can access current state through property `$protocol->serverState`. This property is updated with every call `getResponse(s)`.
 
 ## :pushpin: More solutions
 
