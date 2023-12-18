@@ -16,45 +16,30 @@ use Bolt\protocol\v1\structures\Relationship as v1_Relationship;
 class Relationship extends v1_Relationship
 {
     public function __construct(
-        int            $id,
-        int            $startNodeId,
-        int            $endNodeId,
-        string         $type,
-        array          $properties,
-        private string $element_id,
-        private string $start_node_element_id,
-        private string $end_node_element_id
+        int                    $id,
+        int                    $startNodeId,
+        int                    $endNodeId,
+        string                 $type,
+        array                  $properties,
+        public readonly string $element_id,
+        public readonly string $start_node_element_id,
+        public readonly string $end_node_element_id
     )
     {
         parent::__construct($id, $startNodeId, $endNodeId, $type, $properties);
     }
 
-    public function element_id(): string
-    {
-        return $this->element_id;
-    }
-
-    public function start_node_element_id(): string
-    {
-        return $this->start_node_element_id;
-    }
-
-    public function end_node_element_id(): string
-    {
-        return $this->end_node_element_id;
-    }
-
     public function __toString(): string
     {
         return json_encode([
-            'identity' => $this->id(),
-            'start' => $this->startNodeId(),
-            'end' => $this->endNodeId(),
-            'type' => $this->type(),
-            'properties' => $this->properties(),
-            'element_id' => $this->element_id(),
-            'start_node_element_id' => $this->start_node_element_id(),
-            'end_node_element_id' => $this->end_node_element_id()
+            'identity' => $this->id,
+            'start' => $this->startNodeId,
+            'end' => $this->endNodeId,
+            'type' => $this->type,
+            'properties' => $this->properties,
+            'element_id' => $this->element_id,
+            'start_node_element_id' => $this->start_node_element_id,
+            'end_node_element_id' => $this->end_node_element_id
         ]);
     }
 }

@@ -2,7 +2,8 @@
 
 namespace Bolt\protocol\v1;
 
-use Bolt\protocol\{ServerState, Response};
+use Bolt\enum\Message;
+use Bolt\protocol\{V1, V2};
 use Bolt\error\BoltException;
 
 trait InitMessage
@@ -14,21 +15,10 @@ trait InitMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-init
      * @throws BoltException
      */
-    public function init(string $userAgent, array $authToken): Response
+    public function init(string $userAgent, array $authToken): V1|V2
     {
-        $this->serverState->is(ServerState::CONNECTED);
-
         $this->write($this->packer->pack(0x01, $userAgent, $authToken));
-        $content = $this->read($signature);
-
-        if ($signature == Response::SIGNATURE_SUCCESS) {
-            $this->serverState->set(ServerState::READY);
-        } elseif ($signature == Response::SIGNATURE_FAILURE) {
-            // ..but must immediately close the connection after the failure has been sent.
-            $this->connection->disconnect();
-            $this->serverState->set(ServerState::DEFUNCT);
-        }
-
-        return new Response(Response::MESSAGE_INIT, $signature, $content);
+        $this->pipelinedMessages[] = Message::INIT;
+        return $this;
     }
 }

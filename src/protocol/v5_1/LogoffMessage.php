@@ -2,10 +2,9 @@
 
 namespace Bolt\protocol\v5_1;
 
+use Bolt\enum\Message;
 use Bolt\error\BoltException;
-use Bolt\protocol\Response;
-use Bolt\protocol\ServerState;
-use Bolt\protocol\V5_1;
+use Bolt\protocol\{V5_1, V5_2, V5_3, V5_4};
 
 trait LogoffMessage
 {
@@ -16,17 +15,10 @@ trait LogoffMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-logoff
      * @throws BoltException
      */
-    public function logoff(): Response
+    public function logoff(): V5_1|V5_2|V5_3|V5_4
     {
-        $this->serverState->is(ServerState::READY);
         $this->write($this->packer->pack(0x6B));
-        $content = $this->read($signature);
-        if ($signature == Response::SIGNATURE_SUCCESS) {
-            $this->serverState->set(ServerState::UNAUTHENTICATED);
-        } else {
-            $this->connection->disconnect();
-            $this->serverState->set(ServerState::DEFUNCT);
-        }
-        return new Response(Response::MESSAGE_LOGOFF, $signature, $content);
+        $this->pipelinedMessages[] = Message::LOGOFF;
+        return $this;
     }
 }

@@ -17,30 +17,17 @@ use Bolt\protocol\IStructure;
  */
 class Point2D implements IStructure
 {
+    /**
+     * @param int $srid Spatial Reference System Identifier
+     * @param float $x
+     * @param float $y
+     */
     public function __construct(
-        private int   $srid,
-        private float $x,
-        private float $y
+        public readonly int   $srid,
+        public readonly float $x,
+        public readonly float $y
     )
     {
-    }
-
-    /**
-     * Spatial Reference System Identifier
-     */
-    public function srid(): int
-    {
-        return $this->srid;
-    }
-
-    public function x(): float
-    {
-        return $this->x;
-    }
-
-    public function y(): float
-    {
-        return $this->y;
     }
 
     public function __toString(): string

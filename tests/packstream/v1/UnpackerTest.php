@@ -5,6 +5,7 @@ namespace Bolt\tests\packstream\v1;
 use Bolt\Bolt;
 use Bolt\protocol\{AProtocol, Response};
 use Bolt\tests\ATest;
+use Bolt\enum\Signature;
 
 /**
  * Class UnpackerTest
@@ -44,8 +45,8 @@ class UnpackerTest extends ATest
 
         /** @var Response $response */
         foreach ($gen as $response) {
-            if ($response->getSignature() == Response::SIGNATURE_RECORD)
-                $this->assertNull($response->getContent()[0]);
+            if ($response->signature == Signature::RECORD)
+                $this->assertNull($response->content[0]);
         }
     }
 
@@ -61,9 +62,9 @@ class UnpackerTest extends ATest
 
         /** @var Response $response */
         foreach ($gen as $response) {
-            if ($response->getSignature() == Response::SIGNATURE_RECORD) {
-                $this->assertTrue($response->getContent()[0]);
-                $this->assertFalse($response->getContent()[1]);
+            if ($response->signature == Signature::RECORD) {
+                $this->assertTrue($response->content[0]);
+                $this->assertFalse($response->content[1]);
             }
         }
     }
@@ -80,9 +81,9 @@ class UnpackerTest extends ATest
 
         /** @var Response $response */
         foreach ($gen as $response) {
-            if ($response->getSignature() == Response::SIGNATURE_RECORD) {
+            if ($response->signature == Signature::RECORD) {
                 foreach ([-16, 0, 127, -17, -128, 128, 32767, 32768, 2147483647, 2147483648, 9223372036854775807, -129, -32768, -32769, -2147483648, -2147483649, -9223372036854775808] as $i => $value) {
-                    $this->assertEquals($value, $response->getContent()[$i]);
+                    $this->assertEquals($value, $response->content[$i]);
                 }
             }
         }
@@ -103,8 +104,8 @@ class UnpackerTest extends ATest
 
             /** @var Response $response */
             foreach ($gen as $response) {
-                if ($response->getSignature() == Response::SIGNATURE_RECORD) {
-                    $this->assertEqualsWithDelta($num, $response->getContent()[0], 0.000001);
+                if ($response->signature == Signature::RECORD) {
+                    $this->assertEqualsWithDelta($num, $response->content[0], 0.000001);
                 }
             }
         }
@@ -123,8 +124,8 @@ class UnpackerTest extends ATest
 
         /** @var Response $response */
         foreach ($gen as $response) {
-            if ($response->getSignature() == Response::SIGNATURE_RECORD) {
-                $this->assertEquals($str, $response->getContent()[0]);
+            if ($response->signature == Signature::RECORD) {
+                $this->assertEquals($str, $response->content[0]);
             }
         }
     }
@@ -156,8 +157,8 @@ class UnpackerTest extends ATest
 
         /** @var Response $response */
         foreach ($gen as $response) {
-            if ($response->getSignature() == Response::SIGNATURE_RECORD) {
-                $this->assertEquals(range(0, $size), $response->getContent()[0]);
+            if ($response->signature == Signature::RECORD) {
+                $this->assertEquals(range(0, $size), $response->content[0]);
             }
         }
     }
@@ -181,10 +182,10 @@ class UnpackerTest extends ATest
 
         /** @var Response $response */
         foreach ($gen as $response) {
-            if ($response->getSignature() == Response::SIGNATURE_RECORD) {
-                $this->assertCount($size, $response->getContent()[0]);
-            } elseif ($response->getSignature() == Response::SIGNATURE_FAILURE) {
-                $this->markTestIncomplete(print_r($response->getContent(), true));
+            if ($response->signature == Signature::RECORD) {
+                $this->assertCount($size, $response->content[0]);
+            } elseif ($response->signature == Signature::FAILURE) {
+                $this->markTestIncomplete(print_r($response->content, true));
             }
         }
     }

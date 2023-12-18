@@ -2,8 +2,8 @@
 
 namespace Bolt\protocol\v1;
 
+use Bolt\enum\{Message, Signature};
 use Bolt\protocol\{
-    ServerState,
     Response,
     V1,
     V2,
@@ -22,10 +22,8 @@ trait PullAllMessage
      */
     public function pullAll(): V1|V2|V3
     {
-        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
         $this->write($this->packer->pack(0x3F));
-        $this->pipelinedMessages[] = __FUNCTION__;
-        $this->serverState->set(str_starts_with($this->serverState->get(), 'TX_') ? ServerState::TX_READY : ServerState::READY);
+        $this->pipelinedMessages[] = Message::PULL_ALL;
         return $this;
     }
 
@@ -37,12 +35,7 @@ trait PullAllMessage
     {
         do {
             $content = $this->read($signature);
-
-            if ($signature == Response::SIGNATURE_SUCCESS) {
-                $this->serverState->set(str_starts_with($this->serverState->get(), 'TX_') ? ServerState::TX_READY : ServerState::READY);
-            }
-
-            yield new Response(Response::MESSAGE_PULL_ALL, $signature, $content);
-        } while ($signature == Response::SIGNATURE_RECORD);
+            yield new Response(Message::PULL_ALL, $signature, $content);
+        } while ($signature == Signature::RECORD);
     }
 }

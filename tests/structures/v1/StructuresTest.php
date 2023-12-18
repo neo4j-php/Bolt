@@ -5,7 +5,6 @@ namespace Bolt\tests\structures\v1;
 use Bolt\Bolt;
 use Bolt\protocol\{
     AProtocol,
-    Response,
     V3,
     V4_2,
     V4_3,
@@ -26,6 +25,7 @@ use Bolt\protocol\v1\structures\{
     Time,
     UnboundRelationship
 };
+use Bolt\enum\Signature;
 
 /**
  * Class StructuresTest
@@ -49,7 +49,12 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getSignature());
+        $this->assertEquals(Signature::SUCCESS, $protocol->hello([
+            'user_agent' => 'bolt-php',
+            'scheme' => 'basic',
+            'principal' => $GLOBALS['NEO_USER'],
+            'credentials' => $GLOBALS['NEO_PASS'],
+        ])->getResponse()->signature);
 
         return $protocol;
     }
@@ -72,7 +77,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
                 ->getResponses(),
             false
         );
-        $dateStructure = $res[1]->getContent()[0];
+        $dateStructure = $res[1]->content[0];
 
         $this->assertInstanceOf(Date::class, $dateStructure);
         $this->assertEquals($date, (string)$dateStructure, 'unpack ' . $date . ' != ' . $dateStructure);
@@ -87,7 +92,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
                 ->getResponses(),
             false
         );
-        $this->assertEquals($date, $res[1]->getContent()[0], 'pack ' . $date . ' != ' . $res[1]->getContent()[0]);
+        $this->assertEquals($date, $res[1]->content[0], 'pack ' . $date . ' != ' . $res[1]->content[0]);
     }
 
     private string $expectedDateTimeClass = DateTime::class;
@@ -110,7 +115,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
                 ->getResponses(),
             false
         );
-        $durationStructure = $res[1]->getContent()[0];
+        $durationStructure = $res[1]->content[0];
 
         $this->assertInstanceOf(Duration::class, $durationStructure);
         $this->assertEquals($duration, (string)$durationStructure, 'unpack ' . $duration . ' != ' . $durationStructure);
@@ -126,7 +131,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
             false
         );
 
-        $this->assertEquals($duration, $res[1]->getContent()[0], 'pack ' . $duration . ' != ' . $res[1]->getContent()[0]);
+        $this->assertEquals($duration, $res[1]->content[0], 'pack ' . $duration . ' != ' . $res[1]->content[0]);
     }
 
     public function durationProvider(): \Generator
@@ -163,7 +168,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
                 ->getResponses(),
             false
         );
-        $localDateTimeStructure = $res[1]->getContent()[0];
+        $localDateTimeStructure = $res[1]->content[0];
 
         $this->assertInstanceOf(LocalDateTime::class, $localDateTimeStructure);
         $this->assertEquals($datetime, (string)$localDateTimeStructure, 'unpack ' . $datetime . ' != ' . $localDateTimeStructure);
@@ -179,7 +184,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
             false
         );
         $datetime = rtrim($datetime, '.0');
-        $this->assertEquals($datetime, $res[1]->getContent()[0], 'pack ' . $datetime . ' != ' . $res[1]->getContent()[0]);
+        $this->assertEquals($datetime, $res[1]->content[0], 'pack ' . $datetime . ' != ' . $res[1]->content[0]);
     }
 
     /**
@@ -202,7 +207,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
                 ->getResponses(),
             false
         );
-        $localTimeStructure = $res[1]->getContent()[0];
+        $localTimeStructure = $res[1]->content[0];
 
         $this->assertInstanceOf(LocalTime::class, $localTimeStructure);
         $this->assertEquals($time, (string)$localTimeStructure, 'unpack ' . $time . ' != ' . $localTimeStructure);
@@ -218,7 +223,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
             false
         );
         $time = rtrim($time, '.0');
-        $this->assertEquals($time, $res[1]->getContent()[0], 'pack ' . $time . ' != ' . $res[1]->getContent()[0]);
+        $this->assertEquals($time, $res[1]->content[0], 'pack ' . $time . ' != ' . $res[1]->content[0]);
     }
 
     /**
@@ -236,11 +241,11 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
                 ->getResponses(),
             false
         );
-        $this->assertInstanceOf(Node::class, $res[1]->getContent()[0]);
+        $this->assertInstanceOf(Node::class, $res[1]->content[0]);
 
-        $this->assertEquals($res[1]->getContent()[1], $res[1]->getContent()[0]->id());
-        $this->assertEquals(['Test'], $res[1]->getContent()[0]->labels());
-        $this->assertEquals(['param1' => 123], $res[1]->getContent()[0]->properties());
+        $this->assertEquals($res[1]->content[1], $res[1]->content[0]->id);
+        $this->assertEquals(['Test'], $res[1]->content[0]->labels);
+        $this->assertEquals(['param1' => 123], $res[1]->content[0]->properties);
 
         //pack not supported
 
@@ -262,14 +267,14 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
                 ->getResponses(),
             false
         );
-        $this->assertInstanceOf(Path::class, $res[1]->getContent()[0]);
+        $this->assertInstanceOf(Path::class, $res[1]->content[0]);
 
-        foreach ($res[1]->getContent()[0]->rels() as $rel) {
+        foreach ($res[1]->content[0]->rels as $rel) {
             $this->assertInstanceOf(UnboundRelationship::class, $rel);
 
-            $this->assertEquals($res[1]->getContent()[1], $rel->id());
-            $this->assertEquals('HAS', $rel->type());
-            $this->assertEquals(['param1' => 123], $rel->properties());
+            $this->assertEquals($res[1]->content[1], $rel->id);
+            $this->assertEquals('HAS', $rel->type);
+            $this->assertEquals(['param1' => 123], $rel->properties);
         }
 
         //pack not supported
@@ -290,19 +295,19 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
                 ->getResponses(),
             false
         );
-        $this->assertInstanceOf(Point2D::class, $res[1]->getContent()[0]);
+        $this->assertInstanceOf(Point2D::class, $res[1]->content[0]);
 
         //pack
         $res = iterator_to_array(
             $protocol
                 ->run('RETURN toString($p)', [
-                    'p' => $res[1]->getContent()[0]
+                    'p' => $res[1]->content[0]
                 ], ['mode' => 'r'])
                 ->pull()
                 ->getResponses(),
             false
         );
-        $this->assertStringStartsWith('point(', $res[1]->getContent()[0]);
+        $this->assertStringStartsWith('point(', $res[1]->content[0]);
     }
 
     /**
@@ -318,19 +323,19 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
                 ->getResponses(),
             false
         );
-        $this->assertInstanceOf(Point3D::class, $res[1]->getContent()[0]);
+        $this->assertInstanceOf(Point3D::class, $res[1]->content[0]);
 
         //pack
         $res = iterator_to_array(
             $protocol
                 ->run('RETURN toString($p)', [
-                    'p' => $res[1]->getContent()[0]
+                    'p' => $res[1]->content[0]
                 ], ['mode' => 'r'])
                 ->pull()
                 ->getResponses(),
             false
         );
-        $this->assertStringStartsWith('point(', $res[1]->getContent()[0]);
+        $this->assertStringStartsWith('point(', $res[1]->content[0]);
     }
 
     /**
@@ -348,13 +353,13 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
                 ->getResponses(),
             false
         );
-        $this->assertInstanceOf(Relationship::class, $res[1]->getContent()[0]);
+        $this->assertInstanceOf(Relationship::class, $res[1]->content[0]);
 
-        $this->assertEquals($res[1]->getContent()[1], $res[1]->getContent()[0]->id());
-        $this->assertEquals('HAS', $res[1]->getContent()[0]->type());
-        $this->assertEquals(['param1' => 123], $res[1]->getContent()[0]->properties());
-        $this->assertEquals($res[1]->getContent()[2], $res[1]->getContent()[0]->startNodeId());
-        $this->assertEquals($res[1]->getContent()[3], $res[1]->getContent()[0]->endNodeId());
+        $this->assertEquals($res[1]->content[1], $res[1]->content[0]->id);
+        $this->assertEquals('HAS', $res[1]->content[0]->type);
+        $this->assertEquals(['param1' => 123], $res[1]->content[0]->properties);
+        $this->assertEquals($res[1]->content[2], $res[1]->content[0]->startNodeId);
+        $this->assertEquals($res[1]->content[3], $res[1]->content[0]->endNodeId);
 
         //pack not supported
 
@@ -381,7 +386,7 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
                 ->getResponses(),
             false
         );
-        $timeStructure = $res[1]->getContent()[0];
+        $timeStructure = $res[1]->content[0];
 
         $this->assertInstanceOf(Time::class, $timeStructure);
         $this->assertEquals($time, (string)$timeStructure, 'unpack ' . $time . ' != ' . $timeStructure);
@@ -399,6 +404,6 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
 
         // neo4j returns fraction of seconds not padded with zeros ... zero timezone offset returns as Z
         $time = preg_replace(["/\.?0+(.\d{2}:\d{2})$/", "/\+00:00$/"], ['$1', 'Z'], $time);
-        $this->assertEquals($time, $res[1]->getContent()[0], 'pack ' . $time . ' != ' . $res[1]->getContent()[0]);
+        $this->assertEquals($time, $res[1]->content[0], 'pack ' . $time . ' != ' . $res[1]->content[0]);
     }
 }

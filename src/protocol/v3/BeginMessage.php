@@ -2,7 +2,8 @@
 
 namespace Bolt\protocol\v3;
 
-use Bolt\protocol\{ServerState, Response, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
+use Bolt\enum\Message;
+use Bolt\protocol\{V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
 use Bolt\error\BoltException;
 
 trait BeginMessage
@@ -16,25 +17,8 @@ trait BeginMessage
      */
     public function begin(array $extra = []): V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1|V5_2|V5_3|V5_4
     {
-        $this->serverState->is(ServerState::READY);
         $this->write($this->packer->pack(0x11, (object)$extra));
-        $this->pipelinedMessages[] = __FUNCTION__;
-        $this->serverState->set(ServerState::TX_READY);
+        $this->pipelinedMessages[] = Message::BEGIN;
         return $this;
-    }
-
-    /**
-     * Read BEGIN response
-     * @throws BoltException
-     */
-    protected function _begin(): iterable
-    {
-        $content = $this->read($signature);
-
-        if ($signature == Response::SIGNATURE_SUCCESS) {
-            $this->serverState->set(ServerState::TX_READY);
-        }
-
-        yield new Response(Response::MESSAGE_BEGIN, $signature, $content);
     }
 }

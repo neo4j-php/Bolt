@@ -6,3 +6,5 @@ cert/
 *.lock
 *.cache
 phpunit.dev.xml
+temp/
+tmp/

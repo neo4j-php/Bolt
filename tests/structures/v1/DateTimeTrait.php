@@ -30,7 +30,7 @@ trait DateTimeTrait
                 ->getResponses(),
             false
         );
-        $dateTimeStructure = $res[1]->getContent()[0];
+        $dateTimeStructure = $res[1]->content[0];
 
         $this->assertInstanceOf($this->expectedDateTimeClass, $dateTimeStructure);
         $this->assertEquals($datetime, (string)$dateTimeStructure, 'unpack ' . $datetime . ' != ' . $dateTimeStructure);
@@ -48,6 +48,6 @@ trait DateTimeTrait
 
         // neo4j returns fraction of seconds not padded with zeros ... zero timezone offset returns as Z
         $datetime = preg_replace(["/\.?0+(.\d{2}:\d{2})$/", "/\+00:00$/"], ['$1', 'Z'], $datetime);
-        $this->assertEquals($datetime, $res[1]->getContent()[0], 'pack ' . $datetime . ' != ' . $res[1]->getContent()[0]);
+        $this->assertEquals($datetime, $res[1]->content[0], 'pack ' . $datetime . ' != ' . $res[1]->content[0]);
     }
 }

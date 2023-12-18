@@ -2,9 +2,9 @@
 
 namespace Bolt\protocol\v5_1;
 
+use Bolt\enum\Message;
 use Bolt\error\BoltException;
-use Bolt\protocol\Response;
-use Bolt\protocol\ServerState;
+use Bolt\protocol\{V5_1, V5_2, V5_3, V5_4};
 
 trait LogonMessage
 {
@@ -15,17 +15,10 @@ trait LogonMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-logon
      * @throws BoltException
      */
-    public function logon(array $auth): Response
+    public function logon(array $auth): V5_1|V5_2|V5_3|V5_4
     {
-        $this->serverState->is(ServerState::UNAUTHENTICATED);
         $this->write($this->packer->pack(0x6A, (object)$auth));
-        $content = $this->read($signature);
-        if ($signature == Response::SIGNATURE_SUCCESS) {
-            $this->serverState->set(ServerState::READY);
-        } elseif ($signature == Response::SIGNATURE_FAILURE) {
-            $this->connection->disconnect();
-            $this->serverState->set(ServerState::DEFUNCT);
-        }
-        return new Response(Response::MESSAGE_LOGON, $signature, $content);
+        $this->pipelinedMessages[] = Message::LOGON;
+        return $this;
     }
 }

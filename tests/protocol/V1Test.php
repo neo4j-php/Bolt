@@ -2,10 +2,8 @@
 
 namespace Bolt\tests\protocol;
 
-use Bolt\protocol\Response;
-use Bolt\protocol\ServerState;
+use Bolt\enum\{ServerState, Signature};
 use Bolt\protocol\V1;
-use Bolt\packstream\v1\{Packer, Unpacker};
 
 /**
  * Class V1Test
@@ -18,11 +16,8 @@ class V1Test extends ATest
 {
     public function test__construct(): V1
     {
-        $cls = new V1(1, $this->mockConnection(), new ServerState());
+        $cls = new V1(1, $this->mockConnection());
         $this->assertInstanceOf(V1::class, $cls);
-        $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
-            $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
-        };
         return $cls;
     }
 
@@ -48,17 +43,20 @@ class V1Test extends ATest
             '00098870617373776f7264',
         ];
 
-        $auth = \Bolt\helpers\Auth::basic('user', 'password');
-        unset($auth['user_agent']);
+        $auth = [
+            'scheme' => 'basic',
+            'principal' => 'user',
+            'credentials' => 'password'
+        ];
 
-        $cls->serverState->set(ServerState::CONNECTED);
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->init(\Bolt\helpers\Auth::$defaultUserAgent, $auth)->getSignature());
-        $this->assertEquals(ServerState::READY, $cls->serverState->get());
+        $cls->serverState = ServerState::CONNECTED;
+        $this->assertEquals(Signature::SUCCESS, $cls->init('bolt-php', $auth)->getResponse()->signature);
+        $this->assertEquals(ServerState::READY, $cls->serverState);
 
-        $cls->serverState->set(ServerState::CONNECTED);
-        $response = $cls->init(\Bolt\helpers\Auth::$defaultUserAgent, $auth);
+        $cls->serverState = ServerState::CONNECTED;
+        $response = $cls->init('bolt-php', $auth)->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
+        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState);
     }
 
     /**
@@ -88,19 +86,19 @@ class V1Test extends ATest
             '00 01 a0'
         ];
 
-        $cls->serverState->set(ServerState::READY);
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->run('RETURN 1')->getResponse()->getSignature());
-        $this->assertEquals(ServerState::STREAMING, $cls->serverState->get());
+        $cls->serverState = ServerState::READY;
+        $this->assertEquals(Signature::SUCCESS, $cls->run('RETURN 1')->getResponse()->signature);
+        $this->assertEquals(ServerState::STREAMING, $cls->serverState);
 
-        $cls->serverState->set(ServerState::READY);
+        $cls->serverState = ServerState::READY;
         $response = $cls->run('not a CQL')->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+        $this->assertEquals(ServerState::FAILED, $cls->serverState);
 
-        $cls->serverState->set(ServerState::READY);
+        $cls->serverState = ServerState::INTERRUPTED;
         $response = $cls->run('not a CQL')->getResponse();
-        $this->assertEquals(Response::SIGNATURE_IGNORED, $response->getSignature());
-        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
+        $this->assertEquals(Signature::IGNORED, $response->signature);
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState);
     }
 
     /**
@@ -119,21 +117,21 @@ class V1Test extends ATest
             '00013f',
         ];
 
-        $cls->serverState->set(ServerState::STREAMING);
+        $cls->serverState = ServerState::STREAMING;
         $res = iterator_to_array($cls->pullAll()->getResponses(), false);
         $this->assertIsArray($res);
         $this->assertCount(2, $res);
-        $this->assertEquals(ServerState::READY, $cls->serverState->get());
+        $this->assertEquals(ServerState::READY, $cls->serverState);
 
-        $cls->serverState->set(ServerState::STREAMING);
+        $cls->serverState = ServerState::STREAMING;
         $responses = iterator_to_array($cls->pullAll()->getResponses(), false);
         $this->checkFailure($responses[0]);
-        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+        $this->assertEquals(ServerState::FAILED, $cls->serverState);
 
-        $cls->serverState->set(ServerState::STREAMING);
+        $cls->serverState = ServerState::INTERRUPTED;
         $responses = iterator_to_array($cls->pullAll()->getResponses(), false);
-        $this->assertEquals(Response::SIGNATURE_IGNORED, $responses[0]->getSignature());
-        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
+        $this->assertEquals(Signature::IGNORED, $responses[0]->signature);
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState);
     }
 
     /**
@@ -151,19 +149,19 @@ class V1Test extends ATest
             '00012f',
         ];
 
-        $cls->serverState->set(ServerState::STREAMING);
+        $cls->serverState = ServerState::STREAMING;
         $cls->discardAll()->getResponse();
-        $this->assertEquals(ServerState::READY, $cls->serverState->get());
+        $this->assertEquals(ServerState::READY, $cls->serverState);
 
-        $cls->serverState->set(ServerState::STREAMING);
+        $cls->serverState = ServerState::STREAMING;
         $response = $cls->discardAll()->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+        $this->assertEquals(ServerState::FAILED, $cls->serverState);
 
-        $cls->serverState->set(ServerState::STREAMING);
+        $cls->serverState = ServerState::INTERRUPTED;
         $response = $cls->discardAll()->getResponse();
-        $this->assertEquals(Response::SIGNATURE_IGNORED, $response->getSignature());
-        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
+        $this->assertEquals(Signature::IGNORED, $response->signature);
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState);
     }
 
     /**
@@ -181,11 +179,11 @@ class V1Test extends ATest
         ];
 
         $cls->reset()->getResponse();
-        $this->assertEquals(ServerState::READY, $cls->serverState->get());
+        $this->assertEquals(ServerState::READY, $cls->serverState);
 
         $response = $cls->reset()->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
+        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState);
     }
 
     /**
@@ -202,13 +200,13 @@ class V1Test extends ATest
             '00010e',
         ];
 
-        $cls->serverState->set(ServerState::FAILED);
+        $cls->serverState = ServerState::FAILED;
         $cls->ackFailure()->getResponse();
-        $this->assertEquals(ServerState::READY, $cls->serverState->get());
+        $this->assertEquals(ServerState::READY, $cls->serverState);
 
-        $cls->serverState->set(ServerState::FAILED);
+        $cls->serverState = ServerState::FAILED;
         $response = $cls->ackFailure()->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
+        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState);
     }
 }

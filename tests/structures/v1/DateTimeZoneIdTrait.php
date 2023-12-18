@@ -9,6 +9,7 @@ use Bolt\protocol\{
     V4_3,
     V5
 };
+use Bolt\enum\Signature;
 use Exception;
 
 trait DateTimeZoneIdTrait
@@ -37,12 +38,12 @@ trait DateTimeZoneIdTrait
 
             /** @var Response $response */
             foreach ($res as $response) {
-                if ($response->getSignature() == Response::SIGNATURE_FAILURE) {
-                    throw new Exception($response->getContent()['message']);
+                if ($response->signature == Signature::FAILURE) {
+                    throw new Exception($response->content['message']);
                 }
             }
 
-            $dateTimeZoneIdStructure = $res[1]->getContent()[0];
+            $dateTimeZoneIdStructure = $res[1]->content[0];
 
             $this->assertInstanceOf($this->expectedDateTimeZoneIdClass, $dateTimeZoneIdStructure);
             $this->assertEquals($datetime, (string)$dateTimeZoneIdStructure, 'unpack ' . $datetime . ' != ' . $dateTimeZoneIdStructure);
@@ -60,7 +61,7 @@ trait DateTimeZoneIdTrait
 
             // neo4j returns fraction of seconds not padded with zeros ... also contains timezone offset before timezone id
             $datetime = preg_replace("/\.?0+\[/", '[', $datetime);
-            $dateTimeZoneIdStructure = preg_replace("/([+\-]\d{2}:\d{2}|Z)\[/", '[', $res[1]->getContent()[0]);
+            $dateTimeZoneIdStructure = preg_replace("/([+\-]\d{2}:\d{2}|Z)\[/", '[', $res[1]->content[0]);
             $this->assertEquals($datetime, $dateTimeZoneIdStructure, 'pack ' . $datetime . ' != ' . $dateTimeZoneIdStructure);
         } catch (Exception $e) {
             if (str_starts_with($e->getMessage(), 'Invalid value for TimeZone: Text \'' . $timezone . '\'')) {

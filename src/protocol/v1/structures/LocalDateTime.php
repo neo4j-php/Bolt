@@ -17,24 +17,15 @@ use Bolt\protocol\IStructure;
  */
 class LocalDateTime implements IStructure
 {
+    /**
+     * @param int $seconds seconds since the Unix epoch
+     * @param int $nanoseconds
+     */
     public function __construct(
-        private int $seconds,
-        private int $nanoseconds
+        public readonly int $seconds,
+        public readonly int $nanoseconds
     )
     {
-    }
-
-    /**
-     * seconds since the Unix epoch
-     */
-    public function seconds(): int
-    {
-        return $this->seconds;
-    }
-
-    public function nanoseconds(): int
-    {
-        return $this->nanoseconds;
     }
 
     public function __toString(): string

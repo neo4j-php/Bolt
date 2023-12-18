@@ -6,6 +6,7 @@ use Bolt\protocol\Response;
 use PHPUnit\Framework\TestCase;
 use Bolt\connection\AConnection;
 use Bolt\packstream\v1\Packer;
+use Bolt\enum\Signature;
 
 /**
  * Class ATest
@@ -109,8 +110,8 @@ abstract class ATest extends TestCase
 
     protected function checkFailure(Response $response): void
     {
-        $this->assertEquals(Response::SIGNATURE_FAILURE, $response->getSignature());
-        $this->assertEquals('some error message', $response->getContent()['message']);
-        $this->assertEquals('Neo.ClientError.Statement.SyntaxError', $response->getContent()['code']);
+        $this->assertEquals(Signature::FAILURE, $response->signature);
+        $this->assertEquals('some error message', $response->content['message']);
+        $this->assertEquals('Neo.ClientError.Statement.SyntaxError', $response->content['code']);
     }
 }

@@ -1,26 +1,31 @@
 <?php
 
-namespace Bolt\protocol;
+namespace Bolt\enum;
 
 /**
- * Class ServerState ..keep track of assumed server state
+ * Enum ServerState
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
- * @package Bolt
- * @see https://www.neo4j.com/docs/bolt/current/bolt/server-state/
+ * @package Bolt\enum
  */
-class ServerState
+enum ServerState
 {
     /**
      * No socket connection has yet been established. This is the initial state and exists only in a logical sense prior to the socket being opened.
      */
-    public const DISCONNECTED = 'DISCONNECTED';
+    case DISCONNECTED;
 
     /**
      * After a new protocol connection has been established and handshake has been completed successfully, the server enters the CONNECTED state.
      * The connection has not yet been authenticated and permits only one transition, through successful initialization, into the READY state.
      */
-    public const CONNECTED = 'CONNECTED';
+    case CONNECTED;
+
+    /**
+     * CONNECTED state has been renamed to NEGOTIATION in Bolt v5.1
+     * @see CONNECTED
+     */
+    case NEGOTIATION;
 
     /**
      * This is not strictly a connection state, but is instead a logical state that exists after a connection has been closed. When DEFUNCT, a connection is permanently not usable.
@@ -28,103 +33,44 @@ class ServerState
      * Clients and servers should clear up any resources associated with a connection on entering this state, including closing any open sockets.
      * This is a terminal state on which no further transitions may be carried out. The <DISCONNECT> signal will set the connection in the DEFUNCT server state.
      */
-    public const DEFUNCT = 'DEFUNCT';
+    case DEFUNCT;
 
     /**
      * The READY state can handle the request messages RUN and BEGIN and receive a query.
      */
-    public const READY = 'READY';
+    case READY;
 
     /**
      * When STREAMING, a result is available for streaming from server to client.
      * This result must be fully consumed or discarded by a client before the server can re-enter the READY state and allow any further queries to be executed.
      */
-    public const STREAMING = 'STREAMING';
+    case STREAMING;
 
     /**
      * When transaction started
      */
-    public const TX_READY = 'TX_READY';
+    case TX_READY;
 
     /**
      * When TX_STREAMING, a result is available for streaming from server to client. This result must be fully consumed or discarded by a client before the server can transition to the TX_READY state.
      */
-    public const TX_STREAMING = 'TX_STREAMING';
+    case TX_STREAMING;
 
     /**
      * When FAILED, a connection is in a temporarily unusable state. This is generally as the result of encountering a recoverable error.
      * This mode ensures that only one failure can exist at a time, preventing cascading issues from batches of work.
      */
-    public const FAILED = 'FAILED';
+    case FAILED;
 
     /**
      * This state occurs between the server receiving the jump-ahead <INTERRUPT> and the queued RESET message, (the RESET message triggers an <INTERRUPT>).
      * Most incoming messages are ignored when the server are in an INTERRUPTED state, with the exception of the RESET that allows transition back to READY.
      * The <INTERRUPT> signal will set the connection in the INTERRUPTED server state.
      */
-    public const INTERRUPTED = 'INTERRUPTED';
+    case INTERRUPTED;
 
     /**
      * Connection has been established and metadata has been sent back from the HELLO message or a LOGOFF message was received whilst in ready state. Ready to accept a LOGON message with authentication information.
      */
-    public const UNAUTHENTICATED = 'UNAUTHENTICATED';
-
-    /**
-     * Internal pointer for current server state
-     */
-    private string $current = self::DISCONNECTED;
-
-    /**
-     * @var callable(string $current, array $expected)
-     */
-    public $expectedServerStateMismatchCallback;
-
-    /**
-     * Internal enum to verify valid server state
-     * @var string[]
-     */
-    private static array $lt = [
-        self::DISCONNECTED,
-        self::CONNECTED,
-        self::DEFUNCT,
-        self::READY,
-        self::STREAMING,
-        self::TX_READY,
-        self::TX_STREAMING,
-        self::FAILED,
-        self::INTERRUPTED,
-        self::UNAUTHENTICATED
-    ];
-
-    /**
-     * Get current server state
-     */
-    public function get(): string
-    {
-        return $this->current;
-    }
-
-    /**
-     * Set current server state
-     */
-    public function set(string $state): void
-    {
-        if (in_array($state, self::$lt))
-            $this->current = $state;
-    }
-
-    /**
-     * Check if current server state equals one of requested
-     */
-    public function is(string ...$states): bool
-    {
-        foreach ($states as $state) {
-            if (in_array($state, self::$lt) && $this->current === $state)
-                return true;
-        }
-
-        if (is_callable($this->expectedServerStateMismatchCallback))
-            ($this->expectedServerStateMismatchCallback)($this->get(), $states);
-        return false;
-    }
+    case AUTHENTICATION;
 }
