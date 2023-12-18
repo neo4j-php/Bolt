@@ -2,7 +2,7 @@
 
 namespace Bolt\protocol;
 
-use Bolt\enum\{Signature, ServerState};
+use Bolt\enum\{Message, Signature, ServerState};
 use Bolt\error\BoltException;
 use Bolt\error\PackException;
 use Bolt\error\UnpackException;
@@ -19,7 +19,7 @@ use Bolt\error\ConnectException;
  */
 abstract class AProtocol
 {
-    /** @var string[] */
+    /** @var Message[] */
     protected array $pipelinedMessages = [];
 
     protected IPacker $packer;
@@ -121,8 +121,20 @@ abstract class AProtocol
         $message = reset($this->pipelinedMessages);
         if ($message === false)
             throw new ConnectException('No response waiting to be consumed');
-        /** @var Response $response */
-        $response = $this->{'_' . $message}()->current();
+
+        $methodName = '_' . (
+            str_contains($message->name, '_')
+                ? preg_replace("/_([a-z])/", "strtoupper('$1')", strtolower($message->name))
+                : strtolower($message->name)
+            );
+        if (method_exists($this, $methodName)) {
+            /** @var Response $response */
+            $response = $this->$methodName()->current();
+        } else {
+            $content = $this->read($signature);
+            $response = new Response($message, $signature, $content);
+        }
+
         if ($response->signature != Signature::RECORD)
             array_shift($this->pipelinedMessages);
 

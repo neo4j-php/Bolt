@@ -3,7 +3,7 @@
 namespace Bolt\protocol\v3;
 
 use Bolt\enum\Message;
-use Bolt\protocol\{Response, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
+use Bolt\protocol\{V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
 use Bolt\error\BoltException;
 
 trait RunMessage
@@ -23,17 +23,7 @@ trait RunMessage
             (object)$parameters,
             (object)$extra
         ));
-        $this->pipelinedMessages[] = __FUNCTION__;
+        $this->pipelinedMessages[] = Message::RUN;
         return $this;
-    }
-
-    /**
-     * Read RUN response
-     * @throws BoltException
-     */
-    protected function _run(): iterable
-    {
-        $content = $this->read($signature);
-        yield new Response(Message::RUN, $signature, $content);
     }
 }

@@ -3,7 +3,7 @@
 namespace Bolt\protocol\v1;
 
 use Bolt\enum\Message;
-use Bolt\protocol\{Response, V1, V2, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
+use Bolt\protocol\{V1, V2, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
 use Bolt\error\BoltException;
 
 trait ResetMessage
@@ -18,17 +18,7 @@ trait ResetMessage
     public function reset(): V1|V2|V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1|V5_2|V5_3|V5_4
     {
         $this->write($this->packer->pack(0x0F));
-        $this->pipelinedMessages[] = __FUNCTION__;
+        $this->pipelinedMessages[] = Message::RESET;
         return $this;
-    }
-
-    /**
-     * Read RESET response
-     * @throws BoltException
-     */
-    protected function _reset(): iterable
-    {
-        $content = $this->read($signature);
-        yield new Response(Message::RESET, $signature, $content);
     }
 }

@@ -23,7 +23,7 @@ trait PullAllMessage
     public function pullAll(): V1|V2|V3
     {
         $this->write($this->packer->pack(0x3F));
-        $this->pipelinedMessages[] = __FUNCTION__;
+        $this->pipelinedMessages[] = Message::PULL_ALL;
         return $this;
     }
 

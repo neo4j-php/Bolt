@@ -3,7 +3,7 @@
 namespace Bolt\protocol\v4_3;
 
 use Bolt\enum\Message;
-use Bolt\protocol\{Response, V4_3};
+use Bolt\protocol\{V4_3};
 use Bolt\error\BoltException;
 
 trait RouteMessage
@@ -18,17 +18,7 @@ trait RouteMessage
     public function route(array $routing, array $bookmarks = [], ?string $db = null): V4_3
     {
         $this->write($this->packer->pack(0x66, (object)$routing, $bookmarks, $db));
-        $this->pipelinedMessages[] = __FUNCTION__;
+        $this->pipelinedMessages[] = Message::ROUTE;
         return $this;
-    }
-
-    /**
-     * Read ROUTE response
-     * @throws BoltException
-     */
-    protected function _route(): iterable
-    {
-        $content = $this->read($signature);
-        yield new Response(Message::ROUTE, $signature, $content);
     }
 }

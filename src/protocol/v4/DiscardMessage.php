@@ -3,7 +3,7 @@
 namespace Bolt\protocol\v4;
 
 use Bolt\enum\Message;
-use Bolt\protocol\{Response, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
+use Bolt\protocol\{V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
 use Bolt\error\BoltException;
 
 trait DiscardMessage
@@ -21,17 +21,7 @@ trait DiscardMessage
         if (!array_key_exists('n', $extra))
             $extra['n'] = -1;
         $this->write($this->packer->pack(0x2F, $extra));
-        $this->pipelinedMessages[] = __FUNCTION__;
+        $this->pipelinedMessages[] = Message::DISCARD;
         return $this;
-    }
-
-    /**
-     * Read DISCARD response
-     * @throws BoltException
-     */
-    protected function _discard(): iterable
-    {
-        $content = $this->read($signature);
-        yield new Response(Message::DISCARD, $signature, $content);
     }
 }

@@ -21,7 +21,7 @@ trait PullMessage
         if (!array_key_exists('n', $extra))
             $extra['n'] = -1;
         $this->write($this->packer->pack(0x3F, $extra));
-        $this->pipelinedMessages[] = __FUNCTION__;
+        $this->pipelinedMessages[] = Message::PULL;
         return $this;
     }
 

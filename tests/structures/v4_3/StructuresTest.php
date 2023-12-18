@@ -41,10 +41,14 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
-        $extra = \Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
-        $extra['patch_bolt'] = ['utc'];
         /** @var Response $helloResponse */
-        $helloResponse = $protocol->hello($extra)->getResponse();
+        $helloResponse = $protocol->hello([
+            'user_agent' => 'bolt-php',
+            'scheme' => 'basic',
+            'principal' => $GLOBALS['NEO_USER'],
+            'credentials' => $GLOBALS['NEO_PASS'],
+            'patch_bolt' => ['utc']
+        ])->getResponse();
         $this->assertEquals(Signature::SUCCESS, $helloResponse->signature);
 
         if (version_compare($protocol->getVersion(), '5', '>=') || version_compare($protocol->getVersion(), '4.3', '<')) {

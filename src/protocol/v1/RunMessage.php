@@ -3,11 +3,7 @@
 namespace Bolt\protocol\v1;
 
 use Bolt\enum\Message;
-use Bolt\protocol\{
-    Response,
-    V1,
-    V2
-};
+use Bolt\protocol\{V1, V2};
 use Bolt\error\BoltException;
 
 trait RunMessage
@@ -22,17 +18,7 @@ trait RunMessage
     public function run(string $query, array $parameters = []): V1|V2
     {
         $this->write($this->packer->pack(0x10, $query, (object)$parameters));
-        $this->pipelinedMessages[] = __FUNCTION__;
+        $this->pipelinedMessages[] = Message::RUN;
         return $this;
-    }
-
-    /**
-     * Read RUN response
-     * @throws BoltException
-     */
-    protected function _run(): iterable
-    {
-        $content = $this->read($signature);
-        yield new Response(Message::RUN, $signature, $content);
     }
 }

@@ -3,7 +3,7 @@
 namespace Bolt\protocol\v3;
 
 use Bolt\enum\Message;
-use Bolt\protocol\{Response, V3, V4, V4_1, V4_2, V4_3, V4_4, V5};
+use Bolt\protocol\{V3, V4, V4_1, V4_2, V4_3, V4_4, V5};
 use Bolt\error\BoltException;
 
 trait HelloMessage
@@ -19,17 +19,7 @@ trait HelloMessage
     public function hello(array $extra): V3|V4|V4_1|V4_2|V4_3|V4_4|V5
     {
         $this->write($this->packer->pack(0x01, $extra));
-        $this->pipelinedMessages[] = __FUNCTION__;
+        $this->pipelinedMessages[] = Message::HELLO;
         return $this;
-    }
-
-    /**
-     * Read HELLO response
-     * @throws BoltException
-     */
-    public function _hello(): iterable
-    {
-        $content = $this->read($signature);
-        yield new Response(Message::HELLO, $signature, $content);
     }
 }

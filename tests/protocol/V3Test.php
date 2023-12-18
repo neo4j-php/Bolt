@@ -45,11 +45,21 @@ class V3Test extends ATest
         ];
 
         $cls->serverState = ServerState::CONNECTED;
-        $this->assertEquals(Signature::SUCCESS, $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'))->getResponse()->signature);
+        $this->assertEquals(Signature::SUCCESS, $cls->hello([
+            'user_agent' => 'bolt-php',
+            'scheme' => 'basic',
+            'principal' => 'user',
+            'credentials' => 'password',
+        ])->getResponse()->signature);
         $this->assertEquals(ServerState::READY, $cls->serverState);
 
         $cls->serverState = ServerState::CONNECTED;
-        $response = $cls->hello(\Bolt\helpers\Auth::basic('user', 'password'))->getResponse();
+        $response = $cls->hello([
+            'user_agent' => 'bolt-php',
+            'scheme' => 'basic',
+            'principal' => 'user',
+            'credentials' => 'password',
+        ])->getResponse();
         $this->checkFailure($response);
         $this->assertEquals(ServerState::DEFUNCT, $cls->serverState);
     }

@@ -3,12 +3,7 @@
 namespace Bolt\protocol\v1;
 
 use Bolt\enum\Message;
-use Bolt\protocol\{
-    Response,
-    V1,
-    V2,
-    V3
-};
+use Bolt\protocol\{V1, V2, V3};
 use Bolt\error\BoltException;
 
 trait DiscardAllMessage
@@ -23,17 +18,7 @@ trait DiscardAllMessage
     public function discardAll(): V1|V2|V3
     {
         $this->write($this->packer->pack(0x2F));
-        $this->pipelinedMessages[] = __FUNCTION__;
+        $this->pipelinedMessages[] = Message::DISCARD_ALL;
         return $this;
-    }
-
-    /**
-     * Read DISCARD_ALL response
-     * @throws BoltException
-     */
-    protected function _discardAll(): iterable
-    {
-        $content = $this->read($signature);
-        yield new Response(Message::DISCARD_ALL, $signature, $content);
     }
 }

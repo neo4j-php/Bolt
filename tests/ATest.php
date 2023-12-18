@@ -4,7 +4,6 @@ namespace Bolt\tests;
 
 use Bolt\protocol\AProtocol;
 use Bolt\enum\Signature;
-use Bolt\helpers\Auth;
 
 /**
  * Class ATest
@@ -38,7 +37,7 @@ class ATest extends \PHPUnit\Framework\TestCase
     protected function sayHello(AProtocol $protocol, string $name, string $password): void
     {
         if (method_exists($protocol, 'init')) {
-            $this->assertEquals(Signature::SUCCESS, $protocol->init(Auth::$defaultUserAgent, [
+            $this->assertEquals(Signature::SUCCESS, $protocol->init('bolt-php', [
                 'scheme' => 'basic',
                 'principal' => $name,
                 'credentials' => $password
@@ -51,7 +50,12 @@ class ATest extends \PHPUnit\Framework\TestCase
                 'credentials' => $password
             ])->getResponse()->signature);
         } else {
-            $this->assertEquals(Signature::SUCCESS, $protocol->hello(Auth::basic($name, $password))->getResponse()->signature);
+            $this->assertEquals(Signature::SUCCESS, $protocol->hello([
+                'user_agent' => 'bolt-php',
+                'scheme' => 'basic',
+                'principal' => $name,
+                'credentials' => $password,
+            ])->getResponse()->signature);
         }
     }
 

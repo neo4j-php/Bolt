@@ -4,7 +4,7 @@ namespace Bolt\protocol\v5_1;
 
 use Bolt\enum\Message;
 use Bolt\error\BoltException;
-use Bolt\protocol\{Response, V5_1, V5_2, V5_3, V5_4};
+use Bolt\protocol\{V5_1, V5_2, V5_3, V5_4};
 
 trait LogonMessage
 {
@@ -18,17 +18,7 @@ trait LogonMessage
     public function logon(array $auth): V5_1|V5_2|V5_3|V5_4
     {
         $this->write($this->packer->pack(0x6A, (object)$auth));
-        $this->pipelinedMessages[] = __FUNCTION__;
+        $this->pipelinedMessages[] = Message::LOGON;
         return $this;
-    }
-
-    /**
-     * Read LOGON response
-     * @throws BoltException
-     */
-    public function _logon(): iterable
-    {
-        $content = $this->read($signature);
-        yield new Response(Message::LOGON, $signature, $content);
     }
 }

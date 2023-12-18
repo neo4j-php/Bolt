@@ -5,7 +5,6 @@ namespace Bolt\protocol\v5_4;
 use Bolt\protocol\V5_4;
 use Bolt\enum\Message;
 use Bolt\error\BoltException;
-use Bolt\protocol\Response;
 
 trait TelemetryMessage
 {
@@ -19,17 +18,7 @@ trait TelemetryMessage
     public function telemetry(int $api): V5_4
     {
         $this->write($this->packer->pack(0x54, $api));
-        $this->pipelinedMessages[] = __FUNCTION__;
+        $this->pipelinedMessages[] = Message::TELEMETRY;
         return $this;
-    }
-
-    /**
-     * Read TELEMETRY response
-     * @throws BoltException
-     */
-    public function _telemetry(): iterable
-    {
-        $content = $this->read($signature);
-        yield new Response(Message::TELEMETRY, $signature, $content);
     }
 }

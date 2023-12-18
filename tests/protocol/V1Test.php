@@ -43,15 +43,18 @@ class V1Test extends ATest
             '00098870617373776f7264',
         ];
 
-        $auth = \Bolt\helpers\Auth::basic('user', 'password');
-        unset($auth['user_agent']);
+        $auth = [
+            'scheme' => 'basic',
+            'principal' => 'user',
+            'credentials' => 'password'
+        ];
 
         $cls->serverState = ServerState::CONNECTED;
-        $this->assertEquals(Signature::SUCCESS, $cls->init(\Bolt\helpers\Auth::$defaultUserAgent, $auth)->getResponse()->signature);
+        $this->assertEquals(Signature::SUCCESS, $cls->init('bolt-php', $auth)->getResponse()->signature);
         $this->assertEquals(ServerState::READY, $cls->serverState);
 
         $cls->serverState = ServerState::CONNECTED;
-        $response = $cls->init(\Bolt\helpers\Auth::$defaultUserAgent, $auth)->getResponse();
+        $response = $cls->init('bolt-php', $auth)->getResponse();
         $this->checkFailure($response);
         $this->assertEquals(ServerState::DEFUNCT, $cls->serverState);
     }

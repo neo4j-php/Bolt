@@ -49,7 +49,12 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
-        $this->assertEquals(Signature::SUCCESS, $protocol->hello(\Bolt\helpers\Auth::basic($GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']))->getResponse()->signature);
+        $this->assertEquals(Signature::SUCCESS, $protocol->hello([
+            'user_agent' => 'bolt-php',
+            'scheme' => 'basic',
+            'principal' => $GLOBALS['NEO_USER'],
+            'credentials' => $GLOBALS['NEO_PASS'],
+        ])->getResponse()->signature);
 
         return $protocol;
     }
