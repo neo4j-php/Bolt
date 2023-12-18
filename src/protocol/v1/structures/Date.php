@@ -17,16 +17,11 @@ use Bolt\protocol\IStructure;
  */
 class Date implements IStructure
 {
-    public function __construct(private int $days)
-    {
-    }
-
     /**
-     * days since the Unix epoch
+     * @param int $days days since the Unix epoch
      */
-    public function days(): int
+    public function __construct(public readonly int $days)
     {
-        return $this->days;
     }
 
     public function __toString(): string

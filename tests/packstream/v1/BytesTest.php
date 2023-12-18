@@ -42,7 +42,7 @@ class BytesTest extends ATest
                 ->getResponses(),
             false
         );
-        $this->assertEquals($arr, $res[1]->getContent()[0]);
+        $this->assertEquals($arr, $res[1]->content[0]);
     }
 
     public function providerBytes(): \Generator

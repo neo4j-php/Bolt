@@ -66,12 +66,12 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
                 ->getResponses(),
             false
         );
-        $this->assertInstanceOf(Node::class, $res[1]->getContent()[0]);
+        $this->assertInstanceOf(Node::class, $res[1]->content[0]);
 
-        $this->assertEquals($res[1]->getContent()[1], $res[1]->getContent()[0]->id());
-        $this->assertEquals($res[1]->getContent()[2], $res[1]->getContent()[0]->element_id());
-        $this->assertEquals(['Test'], $res[1]->getContent()[0]->labels());
-        $this->assertEquals(['param1' => 123], $res[1]->getContent()[0]->properties());
+        $this->assertEquals($res[1]->content[1], $res[1]->content[0]->id);
+        $this->assertEquals($res[1]->content[2], $res[1]->content[0]->element_id);
+        $this->assertEquals(['Test'], $res[1]->content[0]->labels);
+        $this->assertEquals(['param1' => 123], $res[1]->content[0]->properties);
 
         //pack not supported
 
@@ -93,15 +93,15 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
                 ->getResponses(),
             false
         );
-        $this->assertInstanceOf(Path::class, $res[1]->getContent()[0]);
+        $this->assertInstanceOf(Path::class, $res[1]->content[0]);
 
-        foreach ($res[1]->getContent()[0]->rels() as $rel) {
+        foreach ($res[1]->content[0]->rels as $rel) {
             $this->assertInstanceOf(UnboundRelationship::class, $rel);
 
-            $this->assertEquals($res[1]->getContent()[1], $rel->id());
-            $this->assertEquals($res[1]->getContent()[2], $rel->element_id());
-            $this->assertEquals('HAS', $rel->type());
-            $this->assertEquals(['param1' => 123], $rel->properties());
+            $this->assertEquals($res[1]->content[1], $rel->id);
+            $this->assertEquals($res[1]->content[2], $rel->element_id);
+            $this->assertEquals('HAS', $rel->type);
+            $this->assertEquals(['param1' => 123], $rel->properties);
         }
 
         //pack not supported
@@ -124,16 +124,16 @@ class StructuresTest extends \Bolt\tests\structures\AStructures
                 ->getResponses(),
             false
         );
-        $this->assertInstanceOf(Relationship::class, $res[1]->getContent()[0]);
+        $this->assertInstanceOf(Relationship::class, $res[1]->content[0]);
 
-        $this->assertEquals($res[1]->getContent()[1], $res[1]->getContent()[0]->id());
-        $this->assertEquals($res[1]->getContent()[2], $res[1]->getContent()[0]->element_id());
-        $this->assertEquals('HAS', $res[1]->getContent()[0]->type());
-        $this->assertEquals(['param1' => 123], $res[1]->getContent()[0]->properties());
-        $this->assertEquals($res[1]->getContent()[3], $res[1]->getContent()[0]->startNodeId());
-        $this->assertEquals($res[1]->getContent()[4], $res[1]->getContent()[0]->endNodeId());
-        $this->assertEquals($res[1]->getContent()[5], $res[1]->getContent()[0]->start_node_element_id());
-        $this->assertEquals($res[1]->getContent()[6], $res[1]->getContent()[0]->end_node_element_id());
+        $this->assertEquals($res[1]->content[1], $res[1]->content[0]->id);
+        $this->assertEquals($res[1]->content[2], $res[1]->content[0]->element_id);
+        $this->assertEquals('HAS', $res[1]->content[0]->type);
+        $this->assertEquals(['param1' => 123], $res[1]->content[0]->properties);
+        $this->assertEquals($res[1]->content[3], $res[1]->content[0]->startNodeId);
+        $this->assertEquals($res[1]->content[4], $res[1]->content[0]->endNodeId);
+        $this->assertEquals($res[1]->content[5], $res[1]->content[0]->start_node_element_id);
+        $this->assertEquals($res[1]->content[6], $res[1]->content[0]->end_node_element_id);
 
         //pack not supported
 

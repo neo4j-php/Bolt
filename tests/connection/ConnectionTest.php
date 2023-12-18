@@ -3,7 +3,6 @@
 namespace Bolt\tests\connection;
 
 use Bolt\Bolt;
-use Bolt\protocol\Response;
 use Bolt\tests\ATest;
 use Bolt\connection\{
     IConnection,
@@ -11,6 +10,7 @@ use Bolt\connection\{
     StreamSocket
 };
 use Bolt\error\ConnectionTimeoutException;
+use Bolt\enum\Signature;
 
 /**
  * Class ConnectionTest
@@ -101,7 +101,7 @@ final class ConnectionTest extends ATest
             ->reset()
             ->getResponse();
 
-        $this->assertEquals(Response::SIGNATURE_FAILURE, $response->getSignature());
+        $this->assertEquals(Signature::FAILURE, $response->signature);
         $protocol = (new Bolt($conn))->setProtocolVersions($this->getCompatibleBoltVersion())->build();
         $this->sayHello($protocol, $GLOBALS['NEO_USER'], $GLOBALS['NEO_PASS']);
 

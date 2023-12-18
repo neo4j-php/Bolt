@@ -2,6 +2,7 @@
 
 namespace Bolt\protocol;
 
+use Bolt\enum\{Signature, ServerState};
 use Bolt\error\BoltException;
 use Bolt\error\PackException;
 use Bolt\error\UnpackException;
@@ -24,6 +25,8 @@ abstract class AProtocol
     protected IPacker $packer;
     protected IUnpacker $unpacker;
 
+    public ServerState $serverState;
+
     /**
      * @throws UnpackException
      * @throws PackException
@@ -31,7 +34,6 @@ abstract class AProtocol
     public function __construct(
         int                   $packStreamVersion,
         protected IConnection $connection,
-        public ServerState    $serverState
     )
     {
         $packerClass = "\\Bolt\\packstream\\v" . $packStreamVersion . "\\Packer";
@@ -61,7 +63,7 @@ abstract class AProtocol
      * Read from connection
      * @throws BoltException
      */
-    protected function read(?int &$signature): array
+    protected function read(?Signature &$signature = Signature::NONE): array
     {
         $msg = '';
         while (true) {
@@ -73,15 +75,12 @@ abstract class AProtocol
         }
 
         $output = [];
-        $signature = 0;
         if (!empty($msg)) {
             $output = $this->unpacker->unpack($msg);
-            $signature = $this->unpacker->getSignature();
+            $s = $this->unpacker->getSignature();
+            $signature = Signature::from($s);
 
-            if ($signature == Response::SIGNATURE_FAILURE) {
-                $this->serverState->set(ServerState::FAILED);
-            } elseif ($signature == Response::SIGNATURE_IGNORED) {
-                $this->serverState->set(ServerState::INTERRUPTED);
+            if ($signature == Signature::IGNORED) {
                 // Ignored doesn't have any response content
                 $output = [];
             }
@@ -107,11 +106,8 @@ abstract class AProtocol
      */
     public function getResponses(): \Iterator
     {
-        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
         while (count($this->pipelinedMessages) > 0) {
-            $message = reset($this->pipelinedMessages);
-            yield from $this->{'_' . $message}();
-            array_shift($this->pipelinedMessages);
+            yield $this->getResponse();
         }
     }
 
@@ -120,14 +116,27 @@ abstract class AProtocol
      */
     public function getResponse(): Response
     {
-        $this->serverState->is(ServerState::READY, ServerState::TX_READY, ServerState::STREAMING, ServerState::TX_STREAMING);
+        $serverState = $this->serverState;
+
         $message = reset($this->pipelinedMessages);
         if (empty($message))
             throw new ConnectException('No response waiting to be consumed');
         /** @var Response $response */
         $response = $this->{'_' . $message}()->current();
-        if ($response->getSignature() != Response::SIGNATURE_RECORD)
+        if ($response->signature != Signature::RECORD)
             array_shift($this->pipelinedMessages);
+
+        foreach (($this->serverStateTransition ?? []) as $transition) {
+            if ($transition[0] === $serverState && $transition[1] === $response->message && $transition[2] === $response->signature) {
+                $this->serverState = $transition[3];
+                if ($response->signature === Signature::SUCCESS && ($response->content['has_more'] ?? false))
+                    $this->serverState = ($serverState === ServerState::TX_READY || $serverState === ServerState::TX_STREAMING) ? ServerState::TX_STREAMING : ServerState::STREAMING;
+                if ($transition[3] === ServerState::DEFUNCT)
+                    $this->connection->disconnect();
+                break;
+            }
+        }
+
         return $response;
     }
 }

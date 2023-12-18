@@ -2,10 +2,8 @@
 
 namespace Bolt\tests\protocol;
 
-use Bolt\protocol\Response;
-use Bolt\protocol\ServerState;
 use Bolt\protocol\V4_3;
-use Bolt\packstream\v1\{Packer, Unpacker};
+use Bolt\enum\{Signature, ServerState};
 
 /**
  * Class V4_3Test
@@ -18,11 +16,8 @@ class V4_3Test extends ATest
 {
     public function test__construct(): V4_3
     {
-        $cls = new V4_3(1, $this->mockConnection(), new \Bolt\protocol\ServerState());
+        $cls = new V4_3(1, $this->mockConnection());
         $this->assertInstanceOf(V4_3::class, $cls);
-        $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
-            $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
-        };
         return $cls;
     }
 
@@ -46,19 +41,19 @@ class V4_3Test extends ATest
             '0001c0',
         ];
 
-        $cls->serverState->set(ServerState::READY);
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->route(['address' => 'localhost:7687'])->getResponse()->getSignature());
-        $this->assertEquals(ServerState::READY, $cls->serverState->get());
+        $cls->serverState = ServerState::READY;
+        $this->assertEquals(Signature::SUCCESS, $cls->route(['address' => 'localhost:7687'])->getResponse()->signature);
+        $this->assertEquals(ServerState::READY, $cls->serverState);
 
-        $cls->serverState->set(ServerState::READY);
+        $cls->serverState = ServerState::READY;
         $response = $cls->route(['address' => 'localhost:7687'])->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::FAILED, $cls->serverState->get());
+        $this->assertEquals(ServerState::FAILED, $cls->serverState);
 
-        $cls->serverState->set(ServerState::READY);
+        $cls->serverState = ServerState::INTERRUPTED;
         $response = $cls->route(['address' => 'localhost:7687'])->getResponse();
-        $this->assertEquals(Response::SIGNATURE_IGNORED, $response->getSignature());
-        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState->get());
+        $this->assertEquals(Signature::IGNORED, $response->signature);
+        $this->assertEquals(ServerState::INTERRUPTED, $cls->serverState);
     }
 
 }

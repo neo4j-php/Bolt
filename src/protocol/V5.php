@@ -13,6 +13,7 @@ namespace Bolt\protocol;
 class V5 extends AProtocol
 {
     use \Bolt\protocol\v5\AvailableStructures;
+    use \Bolt\protocol\v4\ServerStateTransition;
 
     use \Bolt\protocol\v1\ResetMessage;
 

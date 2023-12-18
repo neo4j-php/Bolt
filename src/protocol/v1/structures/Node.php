@@ -16,26 +16,11 @@ use Bolt\protocol\IStructure;
 class Node implements IStructure
 {
     public function __construct(
-        private int   $id,
-        private array $labels,
-        private array $properties
+        public readonly int   $id,
+        public readonly array $labels,
+        public readonly array $properties
     )
     {
-    }
-
-    public function id(): int
-    {
-        return $this->id;
-    }
-
-    public function labels(): array
-    {
-        return $this->labels;
-    }
-
-    public function properties(): array
-    {
-        return $this->properties;
     }
 
     public function __toString(): string

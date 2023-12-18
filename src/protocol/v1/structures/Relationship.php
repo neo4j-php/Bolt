@@ -16,38 +16,13 @@ use Bolt\protocol\IStructure;
 class Relationship implements IStructure
 {
     public function __construct(
-        private int    $id,
-        private int    $startNodeId,
-        private int    $endNodeId,
-        private string $type,
-        private array  $properties
+        public readonly int    $id,
+        public readonly int    $startNodeId,
+        public readonly int    $endNodeId,
+        public readonly string $type,
+        public readonly array  $properties
     )
     {
-    }
-
-    public function id(): int
-    {
-        return $this->id;
-    }
-
-    public function startNodeId(): int
-    {
-        return $this->startNodeId;
-    }
-
-    public function endNodeId(): int
-    {
-        return $this->endNodeId;
-    }
-
-    public function type(): string
-    {
-        return $this->type;
-    }
-
-    public function properties(): array
-    {
-        return $this->properties;
     }
 
     public function __toString(): string

@@ -2,7 +2,8 @@
 
 namespace Bolt\tests;
 
-use Bolt\protocol\{AProtocol, Response};
+use Bolt\protocol\AProtocol;
+use Bolt\enum\Signature;
 use Bolt\helpers\Auth;
 
 /**
@@ -34,23 +35,23 @@ class ATest extends \PHPUnit\Framework\TestCase
      * @param string $name
      * @param string $password
      */
-    protected function sayHello(AProtocol $protocol, string $name, string $password)
+    protected function sayHello(AProtocol $protocol, string $name, string $password): void
     {
         if (method_exists($protocol, 'init')) {
-            $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->init(Auth::$defaultUserAgent, [
+            $this->assertEquals(Signature::SUCCESS, $protocol->init(Auth::$defaultUserAgent, [
                 'scheme' => 'basic',
                 'principal' => $name,
                 'credentials' => $password
-            ])->getSignature());
+            ])->getResponse()->signature);
         } elseif (method_exists($protocol, 'logon')) {
-            $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello()->getSignature());
-            $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->logon([
+            $this->assertEquals(Signature::SUCCESS, $protocol->hello()->getResponse()->signature);
+            $this->assertEquals(Signature::SUCCESS, $protocol->logon([
                 'scheme' => 'basic',
                 'principal' => $name,
                 'credentials' => $password
-            ])->getSignature());
+            ])->getResponse()->signature);
         } else {
-            $this->assertEquals(Response::SIGNATURE_SUCCESS, $protocol->hello(Auth::basic($name, $password))->getSignature());
+            $this->assertEquals(Signature::SUCCESS, $protocol->hello(Auth::basic($name, $password))->getResponse()->signature);
         }
     }
 

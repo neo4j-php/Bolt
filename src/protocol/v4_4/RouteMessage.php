@@ -2,7 +2,8 @@
 
 namespace Bolt\protocol\v4_4;
 
-use Bolt\protocol\{ServerState, Response, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
+use Bolt\enum\Message;
+use Bolt\protocol\{Response, V4_4, V5, V5_1, V5_2, V5_3, V5_4};
 use Bolt\error\BoltException;
 
 trait RouteMessage
@@ -17,7 +18,6 @@ trait RouteMessage
      */
     public function route(array $routing, array $bookmarks = [], array $extra = []): V4_4|V5|V5_1|V5_2|V5_3|V5_4
     {
-        $this->serverState->is(ServerState::READY);
         $this->write($this->packer->pack(0x66, (object)$routing, $bookmarks, (object)$extra));
         $this->pipelinedMessages[] = __FUNCTION__;
         return $this;
@@ -30,6 +30,6 @@ trait RouteMessage
     protected function _route(): iterable
     {
         $content = $this->read($signature);
-        yield new Response(Response::MESSAGE_ROUTE, $signature, $content);
+        yield new Response(Message::ROUTE, $signature, $content);
     }
 }

@@ -20,9 +20,9 @@ class DateTime extends v1_DateTime
 {
     public function __toString(): string
     {
-        $datetime = sprintf("%d", $this->seconds()) . '.' . substr(sprintf("%09d", $this->nanoseconds()), 0, 6);
+        $datetime = sprintf("%d", $this->seconds) . '.' . substr(sprintf("%09d", $this->nanoseconds), 0, 6);
         return \DateTime::createFromFormat('U.u', $datetime, new \DateTimeZone('UTC'))
-            ->setTimezone(new \DateTimeZone(sprintf("%+'05d", $this->tz_offset_seconds() / 3600 * 100)))
+            ->setTimezone(new \DateTimeZone(sprintf("%+'05d", $this->tz_offset_seconds / 3600 * 100)))
             ->format('Y-m-d\TH:i:s.uP');
     }
 }

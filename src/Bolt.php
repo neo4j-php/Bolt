@@ -4,7 +4,8 @@ namespace Bolt;
 
 use Bolt\error\ConnectException;
 use Bolt\error\BoltException;
-use Bolt\protocol\{AProtocol, Response, ServerState};
+use Bolt\protocol\{AProtocol, Response};
+use Bolt\enum\ServerState;
 use Bolt\connection\IConnection;
 
 /**
@@ -22,7 +23,6 @@ final class Bolt
     private int $packStreamVersion = 1;
 
     public static bool $debug = false;
-    public ServerState $serverState;
 
     public function __construct(private IConnection $connection)
     {
@@ -35,9 +35,6 @@ final class Bolt
      */
     public function build(): AProtocol
     {
-        $this->serverState = new ServerState();
-        $this->serverState->is(ServerState::DISCONNECTED, ServerState::DEFUNCT);
-
         $protocol = null;
 
         try {
@@ -51,10 +48,8 @@ final class Bolt
 
             if (empty($protocol)) {
                 $protocol = $this->normalBuild();
-                $this->serverState->set(ServerState::CONNECTED);
             }
         } catch (BoltException $e) {
-            $this->serverState->set(ServerState::DEFUNCT);
             $this->connection->disconnect();
             throw $e;
         }
@@ -75,7 +70,9 @@ final class Bolt
             throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
         }
 
-        return new $protocolClass($this->packStreamVersion, $this->connection, $this->serverState);
+        $protocol = new $protocolClass($this->packStreamVersion, $this->connection);
+        $protocol->serverState = version_compare($version, '5.1', '>=') ? ServerState::NEGOTIATION : ServerState::CONNECTED;
+        return $protocol;
     }
 
     private function persistentBuild(): ?AProtocol
@@ -91,7 +88,7 @@ final class Bolt
         }
 
         /** @var AProtocol $protocol */
-        $protocol = new $protocolClass($this->packStreamVersion, $this->connection, $this->serverState);
+        $protocol = new $protocolClass($this->packStreamVersion, $this->connection);
 
         /** @var Response $response */
         $response = $protocol->reset()->getResponse();

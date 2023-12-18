@@ -21,33 +21,17 @@ use Bolt\protocol\IStructure;
  */
 class DateTimeZoneId implements IStructure
 {
+    /**
+     * @param int $seconds seconds since the adjusted Unix epoch. This is not UTC
+     * @param int $nanoseconds
+     * @param string $tz_id identifier for a specific time zone
+     */
     public function __construct(
-        private int    $seconds,
-        private int    $nanoseconds,
-        private string $tz_id
+        public readonly int    $seconds,
+        public readonly int    $nanoseconds,
+        public readonly string $tz_id
     )
     {
-    }
-
-    /**
-     * seconds since the adjusted Unix epoch. This is not UTC
-     */
-    public function seconds(): int
-    {
-        return $this->seconds;
-    }
-
-    public function nanoseconds(): int
-    {
-        return $this->nanoseconds;
-    }
-
-    /**
-     * identifier for a specific time zone
-     */
-    public function tz_id(): string
-    {
-        return $this->tz_id;
     }
 
     public function __toString(): string

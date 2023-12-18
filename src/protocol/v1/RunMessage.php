@@ -2,8 +2,8 @@
 
 namespace Bolt\protocol\v1;
 
+use Bolt\enum\Message;
 use Bolt\protocol\{
-    ServerState,
     Response,
     V1,
     V2
@@ -21,10 +21,8 @@ trait RunMessage
      */
     public function run(string $query, array $parameters = []): V1|V2
     {
-        $this->serverState->is(ServerState::READY);
         $this->write($this->packer->pack(0x10, $query, (object)$parameters));
         $this->pipelinedMessages[] = __FUNCTION__;
-        $this->serverState->set(ServerState::STREAMING);
         return $this;
     }
 
@@ -35,11 +33,6 @@ trait RunMessage
     protected function _run(): iterable
     {
         $content = $this->read($signature);
-
-        if ($signature == Response::SIGNATURE_SUCCESS) {
-            $this->serverState->set(ServerState::STREAMING);
-        }
-
-        yield new Response(Response::MESSAGE_RUN, $signature, $content);
+        yield new Response(Message::RUN, $signature, $content);
     }
 }

@@ -25,7 +25,7 @@ class Packer implements IPacker
     /**
      * @inheritDoc
      */
-    public function __construct(private array $structuresLt = [])
+    public function __construct(private readonly array $structuresLt = [])
     {
         $this->littleEndian = unpack('S', "\x01\x00")[1] === 1;
     }
@@ -84,7 +84,7 @@ class Packer implements IPacker
                 yield from $this->packString($param);
                 break;
             case 'array':
-                if ($param === array_values($param)) {
+                if (array_is_list($param)) {
                     yield from $this->packList($param);
                 } else {
                     yield from $this->packDictionary($param);
@@ -233,8 +233,7 @@ class Packer implements IPacker
             }
             $packerMethod = 'pack' . ucfirst($packerMethod);
 
-            $methodName = $parameter->getName();
-            yield from $this->{$packerMethod}($structure->{$methodName}());
+            yield from [$this, $packerMethod]($structure->{$parameter->getName()});
         }
     }
 

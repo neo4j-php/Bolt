@@ -1,7 +1,5 @@
 <?php
 
-use Bolt\protocol\Response;
-use Bolt\protocol\ServerState;
 use Bolt\protocol\V5_4;
 
 /**
@@ -15,11 +13,8 @@ class V5_4Test extends \Bolt\tests\protocol\ATest
 {
     public function test__construct(): V5_4
     {
-        $cls = new V5_4(1, $this->mockConnection(), new \Bolt\protocol\ServerState());
+        $cls = new V5_4(1, $this->mockConnection());
         $this->assertInstanceOf(V5_4::class, $cls);
-        $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
-            $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
-        };
         return $cls;
     }
 
@@ -29,5 +24,6 @@ class V5_4Test extends \Bolt\tests\protocol\ATest
     public function testTelemetry(V5_4 $cls): void
     {
         // todo
+        $this->markTestSkipped();
     }
 }

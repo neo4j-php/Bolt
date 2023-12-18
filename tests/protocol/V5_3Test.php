@@ -1,8 +1,9 @@
 <?php
 
-use Bolt\protocol\Response;
-use Bolt\protocol\ServerState;
+namespace Bolt\tests\protocol;
+
 use Bolt\protocol\V5_3;
+use Bolt\enum\{Signature, ServerState};
 
 /**
  * Class V5_3Test
@@ -15,11 +16,8 @@ class V5_3Test extends \Bolt\tests\protocol\ATest
 {
     public function test__construct(): V5_3
     {
-        $cls = new V5_3(1, $this->mockConnection(), new \Bolt\protocol\ServerState());
+        $cls = new V5_3(1, $this->mockConnection());
         $this->assertInstanceOf(V5_3::class, $cls);
-        $cls->serverState->expectedServerStateMismatchCallback = function (string $current, array $expected) {
-            $this->markTestIncomplete('Server in ' . $current . ' state. Expected ' . implode(' or ', $expected) . '.');
-        };
         return $cls;
     }
 
@@ -33,13 +31,13 @@ class V5_3Test extends \Bolt\tests\protocol\ATest
             [0x7F, (object)['message' => 'some error message', 'code' => 'Neo.ClientError.Statement.SyntaxError']]
         ];
 
-        $cls->serverState->set(ServerState::CONNECTED);
-        $this->assertEquals(Response::SIGNATURE_SUCCESS, $cls->hello()->getSignature());
-        $this->assertEquals(ServerState::UNAUTHENTICATED, $cls->serverState->get());
+        $cls->serverState = ServerState::NEGOTIATION;
+        $this->assertEquals(Signature::SUCCESS, $cls->hello()->getResponse()->signature);
+        $this->assertEquals(ServerState::AUTHENTICATION, $cls->serverState);
 
-        $cls->serverState->set(ServerState::CONNECTED);
-        $response = $cls->hello();
+        $cls->serverState = ServerState::NEGOTIATION;
+        $response = $cls->hello()->getResponse();
         $this->checkFailure($response);
-        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState->get());
+        $this->assertEquals(ServerState::DEFUNCT, $cls->serverState);
     }
 }

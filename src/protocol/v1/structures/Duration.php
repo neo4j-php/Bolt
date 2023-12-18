@@ -18,32 +18,12 @@ use Bolt\protocol\IStructure;
 class Duration implements IStructure
 {
     public function __construct(
-        private int $months,
-        private int $days,
-        private int $seconds,
-        private int $nanoseconds
+        public readonly int $months,
+        public readonly int $days,
+        public readonly int $seconds,
+        public readonly int $nanoseconds
     )
     {
-    }
-
-    public function months(): int
-    {
-        return $this->months;
-    }
-
-    public function days(): int
-    {
-        return $this->days;
-    }
-
-    public function seconds(): int
-    {
-        return $this->seconds;
-    }
-
-    public function nanoseconds(): int
-    {
-        return $this->nanoseconds;
     }
 
     public function __toString(): string

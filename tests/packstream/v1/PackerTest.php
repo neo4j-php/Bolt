@@ -43,7 +43,7 @@ class PackerTest extends ATest
                 ->getResponses(),
             false
         );
-        $this->assertTrue($res[1]->getContent()[0]);
+        $this->assertTrue($res[1]->content[0]);
     }
 
     /**
@@ -58,7 +58,7 @@ class PackerTest extends ATest
                 ->getResponses(),
             false
         );
-        $this->assertTrue($res[1]->getContent()[0]);
+        $this->assertTrue($res[1]->content[0]);
 
         $res = iterator_to_array(
             $protocol
@@ -67,7 +67,7 @@ class PackerTest extends ATest
                 ->getResponses(),
             false
         );
-        $this->assertTrue($res[1]->getContent()[0]);
+        $this->assertTrue($res[1]->content[0]);
     }
 
     /**
@@ -83,7 +83,7 @@ class PackerTest extends ATest
                 ->getResponses(),
             false
         );
-        $this->assertTrue($res[1]->getContent()[0]);
+        $this->assertTrue($res[1]->content[0]);
     }
 
     public function providerInteger(): \Generator
@@ -108,7 +108,7 @@ class PackerTest extends ATest
                     ->getResponses(),
                 false
             );
-            $this->assertTrue($res[1]->getContent()[0]);
+            $this->assertTrue($res[1]->content[0]);
         }
     }
 
@@ -133,7 +133,7 @@ class PackerTest extends ATest
                     ->getResponses(),
                 false
             );
-            $this->assertTrue($res[1]->getContent()[0]);
+            $this->assertTrue($res[1]->content[0]);
         }
     }
 
@@ -151,7 +151,7 @@ class PackerTest extends ATest
                     ->getResponses(),
                 false
             );
-            $this->assertTrue($res[1]->getContent()[0]);
+            $this->assertTrue($res[1]->content[0]);
         }
     }
 
@@ -178,7 +178,7 @@ class PackerTest extends ATest
                     ->getResponses(),
                 false
             );
-            $this->assertTrue($res[1]->getContent()[0]);
+            $this->assertTrue($res[1]->content[0]);
         }
     }
 
@@ -201,7 +201,7 @@ class PackerTest extends ATest
             false
         );
         foreach ($data as $i => $value)
-            $this->assertEquals($value, $result[1 + $i]->getContent()[0]);
+            $this->assertEquals($value, $result[1 + $i]->content[0]);
     }
 
     /**
@@ -222,7 +222,7 @@ class PackerTest extends ATest
                 ->getResponses(),
             false
         );
-        $this->assertEquals($data, $result[1]->getContent()[0]);
+        $this->assertEquals($data, $result[1]->content[0]);
     }
 
 }

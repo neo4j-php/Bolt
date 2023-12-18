@@ -20,9 +20,9 @@ class DateTimeZoneId extends v1_DateTimeZoneId
 {
     public function __toString(): string
     {
-        $datetime = sprintf("%d", $this->seconds()) . '.' . substr(sprintf("%09d", $this->nanoseconds()), 0, 6);
+        $datetime = sprintf("%d", $this->seconds) . '.' . substr(sprintf("%09d", $this->nanoseconds), 0, 6);
         return \DateTime::createFromFormat('U.u', $datetime, new \DateTimeZone('UTC'))
-            ->setTimezone(new \DateTimeZone($this->tz_id()))
-            ->format('Y-m-d\TH:i:s.u') . '[' . $this->tz_id() . ']';
+            ->setTimezone(new \DateTimeZone($this->tz_id))
+            ->format('Y-m-d\TH:i:s.u') . '[' . $this->tz_id . ']';
     }
 }
