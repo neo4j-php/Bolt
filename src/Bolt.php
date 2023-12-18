@@ -89,6 +89,7 @@ final class Bolt
 
         /** @var AProtocol $protocol */
         $protocol = new $protocolClass($this->packStreamVersion, $this->connection);
+        $protocol->serverState = ServerState::INTERRUPTED;
 
         if ($protocol->reset()->getResponse()->signature != Signature::SUCCESS) {
             $this->connection->disconnect();
