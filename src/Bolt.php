@@ -4,7 +4,7 @@ namespace Bolt;
 
 use Bolt\error\ConnectException;
 use Bolt\error\BoltException;
-use Bolt\protocol\{AProtocol, Response};
+use Bolt\protocol\AProtocol;
 use Bolt\enum\{Signature, ServerState};
 use Bolt\connection\IConnection;
 
