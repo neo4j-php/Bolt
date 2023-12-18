@@ -24,9 +24,9 @@ https://www.neo4j.com/docs/bolt/current/bolt-compatibility/
 
 ## Requirements
 
-Keep up with [PHP supported versions](https://www.php.net/supported-versions.php) means we are at **PHP^8**.
+Keep up with [PHP supported versions](https://www.php.net/supported-versions.php) means we are at **PHP^8.1**.
 
-_If you need support for PHP < 7.4 you can use latest v3.x release and if you need support for PHP 7.4 you can use v5.x.
+_If you need support for end-of-life PHP versions, here is a short list: PHP < 7.4 - v3.x, PHP 7.4 - v5.x, PHP 8.0 - v6.x
 Not all new features are implement backwards and this readme is updated to latest released version._
 
 ### Extensions
@@ -71,17 +71,22 @@ More info about available Bolt messages: https://www.neo4j.com/docs/bolt/current
 ### Example
 
 ```php
-// Create connection class and specify target host and port.
+// Choose and create connection class and specify target host and port.
 $conn = new \Bolt\connection\Socket('127.0.0.1', 7687);
 // Create new Bolt instance and provide connection object.
 $bolt = new \Bolt\Bolt($conn);
-// Set requested protocol versions
-$bolt->setProtocolVersions(5.1, 5, 4.4);
+// Set requested protocol versions ..you can add up to 4 versions
+$bolt->setProtocolVersions(5.4);
 // Build and get protocol version instance which creates connection and executes handshake.
 $protocol = $bolt->build();
-// Connect and login into database
-$protocol->hello();
-$protocol->logon(['scheme' => 'basic', 'principal' => 'neo4j', 'credentials' => 'neo4j']);
+
+// Initialize communication with database
+$response = $protocol->hello()->getResponse();
+// verify $response for successful initialization
+
+// Login into database
+$response = $protocol->logon(['scheme' => 'basic', 'principal' => 'neo4j', 'credentials' => 'neo4j'])->getResponse();
+// verify $response for successful login
 
 // Pipeline two messages. One to execute query with parameters and second to pull records.
 $protocol
@@ -182,9 +187,6 @@ or [packer test](https://github.com/neo4j-php/Bolt/blob/master/tests/PackStream/
 Structures `Node`, `Relationship`, `UnboundRelationship` and `Path` cannot be used as parameter. They are available only
 as received data from database.
 
-Server state is not available from server but we assume it. Library contains `\Bolt\helpers\ServerState` and you can get
-used instance of this class with `$bolt->serverState` or `$protocol->serverState` (after you call `build()`).
-
 ### Autoload
 
 Directory `src` contains autoload file which accepts only Bolt library namespaces. Main Bolt namespace points to this
@@ -192,9 +194,7 @@ directory. If you have installed this project with composer, you have to load `v
 
 ## Server state
 
-If assumed server state is different than expected, library does not throw exception. This logic is silent but you can
-change it and if you would like to implement own logic when assumed server state is different than expected you can
-assign callable into class property `$serverState->expectedServerStateMismatchCallback`.
+Server state is not reported by server but it is evaluated by received response. You can access current state through `$protocol->serverState`. This property is updated with every call `getResponse(s)`.
 
 ## Connection
 
@@ -219,6 +219,12 @@ you have to call method `setSslContextOptions`. This method accept array by php 
 here: [https://www.php.net/manual/en/context.ssl.php](https://www.php.net/manual/en/context.ssl.php).
 
 _If you want to use it, you have to enable openssl php extension._
+
+**\Bolt\connection\PStreamSocket**
+
+This class extends StreamSocket and adds support for persistent connections. 
+
+todo add more description, maybe copy it from class annotation
 
 ### Neo4j Aura
 
