@@ -119,7 +119,7 @@ abstract class AProtocol
         $serverState = $this->serverState;
 
         $message = reset($this->pipelinedMessages);
-        if (empty($message))
+        if ($message === false)
             throw new ConnectException('No response waiting to be consumed');
         /** @var Response $response */
         $response = $this->{'_' . $message}()->current();
