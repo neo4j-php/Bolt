@@ -10,9 +10,11 @@ all available versions and keep up with protocol messages architecture and speci
 [![](https://img.shields.io/github/v/release/stefanak-michal/bolt)](https://github.com/neo4j-php/Bolt/releases)
 [![](https://img.shields.io/github/commits-since/stefanak-michal/bolt/latest)](https://github.com/neo4j-php/Bolt/releases/latest)
 
-<a href='https://ko-fi.com/Z8Z5ABMLW' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z5ABMLW)
 
 <a href='https://jb.gg/OpenSourceSupport' target='_blank'><img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo (Main) logo." width="100" /></a>
+
+[![image](https://github.com/neo4j-php/Bolt/assets/5502917/1aeb4e22-c9b1-4fe5-8956-1c2e784c4292)](https://awsmfoss.com/neo4j-bolt-php/)
 
 ## :label: Version support
 
