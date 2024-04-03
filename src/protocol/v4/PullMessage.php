@@ -26,14 +26,20 @@ trait PullMessage
     }
 
     /**
-     * Read PULL response
-     * @return array
+     * Read PULL responses
+     * @return iterable
      * @throws BoltException
      */
     protected function _pull(): iterable
     {
         do {
             $content = $this->read($signature);
+            if (!($content['has_more'] ?? false) && $this->openStreams) {
+                if ($signature === Signature::SUCCESS)
+                    $this->openStreams--;
+                elseif ($signature === Signature::FAILURE)
+                    $this->openStreams = 0;
+            }
             yield new Response(Message::PULL, $signature, $content);
         } while ($signature == Signature::RECORD);
     }

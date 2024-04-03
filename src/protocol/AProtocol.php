@@ -28,6 +28,14 @@ abstract class AProtocol
     public ServerState $serverState;
 
     /**
+     * Multiple RUN statements in transaction generates "streams" which are pulled or discarded
+     * We are keeping track of open streams to keep valid Server State
+     * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#transaction
+     * @var int
+     */
+    protected int $openStreams = 0;
+
+    /**
      * @throws UnpackException
      * @throws PackException
      */
@@ -141,8 +149,10 @@ abstract class AProtocol
         foreach (($this->serverStateTransition ?? []) as $transition) {
             if ($transition[0] === $serverState && $transition[1] === $response->message && $transition[2] === $response->signature) {
                 $this->serverState = $transition[3];
-                if ($response->signature === Signature::SUCCESS && ($response->content['has_more'] ?? false))
-                    $this->serverState = ($serverState === ServerState::TX_READY || $serverState === ServerState::TX_STREAMING) ? ServerState::TX_STREAMING : ServerState::STREAMING;
+                if (in_array($response->message, [Message::PULL, Message::DISCARD], true)
+                    && $response->signature === Signature::SUCCESS
+                    && (($response->content['has_more'] ?? false) || $this->openStreams))
+                    $this->serverState = $this->serverState === ServerState::TX_READY ? ServerState::TX_STREAMING : ServerState::STREAMING;
                 if ($transition[3] === ServerState::DEFUNCT)
                     $this->connection->disconnect();
                 break;
