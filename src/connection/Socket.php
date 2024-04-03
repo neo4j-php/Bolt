@@ -75,7 +75,10 @@ class Socket extends AConnection
             throw new ConnectException('Not initialized socket');
 
         $output = '';
+        $t = microtime(true);
         do {
+            if (mb_strlen($output, '8bit') == 0 && $this->timeout > 0 && (microtime(true) - $t) >= $this->timeout)
+                throw new ConnectionTimeoutException('Read from connection reached timeout after ' . $this->timeout . ' seconds.');
             $readed = @socket_read($this->socket, $length - mb_strlen($output, '8bit'));
             if ($readed === false)
                 $this->throwConnectException();

@@ -90,11 +90,15 @@ class StreamSocket extends AConnection
     public function read(int $length = 2048): string
     {
         $output = '';
+        $t = microtime(true);
         do {
+            if (mb_strlen($output, '8bit') == 0 && $this->timeout > 0 && (microtime(true) - $t) >= $this->timeout)
+                throw new ConnectionTimeoutException('Read from connection reached timeout after ' . $this->timeout . ' seconds.');
+
             $readed = stream_get_contents($this->stream, $length - mb_strlen($output, '8bit'));
 
             if (stream_get_meta_data($this->stream)['timed_out'] ?? false)
-                throw new ConnectionTimeoutException('Connection timeout reached after ' . $this->timeout . ' seconds.');
+                throw new ConnectionTimeoutException('Stream connection timed out after ' . $this->timeout . ' seconds.');
             if ($readed === false)
                 throw new ConnectException('Read error');
 
