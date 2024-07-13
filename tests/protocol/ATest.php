@@ -100,6 +100,10 @@ abstract class ATest extends TestCase
      */
     protected function setUp(): void
     {
+        if (!file_exists(getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR)) {
+            mkdir(getcwd() . DIRECTORY_SEPARATOR . 'temp');
+        }
+
         self::$readBuffer = '';
         self::$readArray = [];
         self::$writeIndex = 0;
