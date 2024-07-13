@@ -26,16 +26,14 @@ final class Bolt
 
     public function __construct(private IConnection $connection)
     {
-        if (!getenv('TEMP')) {
-            putenv('TEMP=' . dirname(__DIR__) . DIRECTORY_SEPARATOR . 'temp');
-            if (!file_exists(getenv('TEMP'))) {
-                mkdir(getenv('TEMP'), recursive: true);
-            }
+        $_ENV['TEMP_DIR'] = getenv('TEMP') ?? getenv('TMPDIR') ?? (dirname(__DIR__) . DIRECTORY_SEPARATOR . 'temp');
+        if (!file_exists($_ENV['TEMP_DIR'])) {
+            mkdir($_ENV['TEMP_DIR'], recursive: true);
         }
 
         if (!getenv('BOLT_ANALYTICS_OPTOUT')) {
-            if (!file_exists(getenv('TEMP') . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR)) {
-                mkdir(getenv('TEMP') . DIRECTORY_SEPARATOR . 'php-bolt-analytics');
+            if (!file_exists($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR)) {
+                mkdir($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics');
             }
             $this->track();
         }
@@ -45,7 +43,7 @@ final class Bolt
 
     private function track(): void
     {
-        foreach (glob(getenv('TEMP') . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'queries.*.cnt') as $file) {
+        foreach (glob($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'queries.*.cnt') as $file) {
             $time = intval(explode('.', basename($file))[1]);
             if ($time < strtotime('today')) {
                 $count = file_get_contents($file);

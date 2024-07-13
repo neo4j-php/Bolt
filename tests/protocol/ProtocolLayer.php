@@ -100,17 +100,14 @@ abstract class ProtocolLayer extends TestCase
      */
     protected function setUp(): void
     {
-        if (!getenv('TEMP')) {
-            putenv('TEMP=' . dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'temp');
-            if (!file_exists(getenv('TEMP'))) {
-                mkdir(getenv('TEMP'), recursive: true);
-            }
-            var_dump(getenv('TEMP'));
+        $_ENV['TEMP_DIR'] = getenv('TEMP') ?? getenv('TMPDIR') ?? (dirname(__DIR__) . DIRECTORY_SEPARATOR . 'temp');
+        if (!file_exists($_ENV['TEMP_DIR'])) {
+            mkdir($_ENV['TEMP_DIR'], recursive: true);
         }
 
         if (!getenv('BOLT_ANALYTICS_OPTOUT')) {
-            if (!file_exists(getenv('TEMP') . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR)) {
-                mkdir(getenv('TEMP') . DIRECTORY_SEPARATOR . 'php-bolt-analytics');
+            if (!file_exists($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR)) {
+                mkdir($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics');
             }
         }
 

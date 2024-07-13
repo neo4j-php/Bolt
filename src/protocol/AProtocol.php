@@ -73,7 +73,7 @@ abstract class AProtocol
 
     private function track(): void
     {
-        $file = getenv('TEMP') . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'queries.' . strtotime('today') . '.cnt';
+        $file = $_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'queries.' . strtotime('today') . '.cnt';
         $count = file_exists($file) ? intval(file_get_contents($file)) : 0;
         file_put_contents($file, $count + 1);
     }

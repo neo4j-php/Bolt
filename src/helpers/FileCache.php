@@ -17,9 +17,9 @@ class FileCache implements CacheInterface
 
     public function __construct()
     {
-        $this->tempDir = getenv('TEMP') . DIRECTORY_SEPARATOR . 'php-bolt-filecache' . DIRECTORY_SEPARATOR;
+        $this->tempDir = $_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-filecache' . DIRECTORY_SEPARATOR;
         if (!file_exists($this->tempDir)) {
-            mkdir(getenv('TEMP') . DIRECTORY_SEPARATOR . 'php-bolt-filecache');
+            mkdir($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-filecache');
         }
 
         // clean old
