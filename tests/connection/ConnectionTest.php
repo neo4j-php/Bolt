@@ -3,7 +3,7 @@
 namespace Bolt\tests\connection;
 
 use Bolt\Bolt;
-use Bolt\tests\ATest;
+use Bolt\tests\TestLayer;
 use Bolt\connection\{
     IConnection,
     Socket,
@@ -18,7 +18,7 @@ use Bolt\enum\Signature;
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests\connection
  */
-final class ConnectionTest extends ATest
+final class ConnectionTest extends TestLayer
 {
     public function provideConnections(): array
     {

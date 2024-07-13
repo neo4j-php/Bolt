@@ -12,7 +12,7 @@ use Bolt\protocol\V1;
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests\protocol
  */
-class V1Test extends ATest
+class V1Test extends ProtocolLayer
 {
     public function test__construct(): V1
     {

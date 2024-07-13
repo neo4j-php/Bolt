@@ -14,7 +14,7 @@ use Bolt\protocol\AProtocol;
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests
  */
-class BoltTest extends ATest
+class BoltTest extends TestLayer
 {
     public function testSockets(): void
     {

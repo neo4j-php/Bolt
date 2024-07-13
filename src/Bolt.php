@@ -26,18 +26,26 @@ final class Bolt
 
     public function __construct(private IConnection $connection)
     {
-        if (!file_exists(getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR)) {
-            mkdir(getcwd() . DIRECTORY_SEPARATOR . 'temp');
+        if (!getenv('TEMP')) {
+            putenv('TEMP=' . dirname(__DIR__) . DIRECTORY_SEPARATOR . 'temp');
+            if (!file_exists(getenv('TEMP'))) {
+                mkdir(getenv('TEMP'), recursive: true);
+            }
         }
+
         if (!getenv('BOLT_ANALYTICS_OPTOUT')) {
+            if (!file_exists(getenv('TEMP') . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR)) {
+                mkdir(getenv('TEMP') . DIRECTORY_SEPARATOR . 'php-bolt-analytics');
+            }
             $this->track();
         }
+
         $this->setProtocolVersions(5.4, 5, 4.4);
     }
 
     private function track(): void
     {
-        foreach (glob(getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . 'queries.*.cnt') as $file) {
+        foreach (glob(getenv('TEMP') . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'queries.*.cnt') as $file) {
             $time = intval(explode('.', basename($file))[1]);
             if ($time < strtotime('today')) {
                 $count = file_get_contents($file);

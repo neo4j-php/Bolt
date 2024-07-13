@@ -9,7 +9,7 @@ use Bolt\protocol\V5_4;
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests\protocol
  */
-class V5_4Test extends \Bolt\tests\protocol\ATest
+class V5_4Test extends \Bolt\tests\protocol\ProtocolLayer
 {
     public function test__construct(): V5_4
     {

@@ -22,7 +22,7 @@ use Bolt\protocol\v1\structures\Path;
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests\protocol\v5
  */
-class StructuresTest extends \Bolt\tests\structures\AStructures
+class StructuresTest extends \Bolt\tests\structures\StructureLayer
 {
     public function testInit(): AProtocol|V4_3|V4_4|V5|V5_1
     {

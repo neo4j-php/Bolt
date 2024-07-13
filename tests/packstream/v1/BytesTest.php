@@ -5,13 +5,13 @@ namespace Bolt\tests\packstream\v1;
 use Bolt\Bolt;
 use Bolt\packstream\Bytes;
 use Bolt\protocol\AProtocol;
-use Bolt\tests\ATest;
+use Bolt\tests\TestLayer;
 
 /**
  * Class BytesTest
  * @package Bolt\tests\packstream\v1
  */
-class BytesTest extends ATest
+class BytesTest extends TestLayer
 {
     public function testInit(): AProtocol
     {

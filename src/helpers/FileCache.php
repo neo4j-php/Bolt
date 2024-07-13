@@ -17,14 +17,13 @@ class FileCache implements CacheInterface
 
     public function __construct()
     {
-        $this->tempDir = getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR;
-
+        $this->tempDir = getenv('TEMP') . DIRECTORY_SEPARATOR . 'php-bolt-filecache' . DIRECTORY_SEPARATOR;
         if (!file_exists($this->tempDir)) {
-            mkdir(rtrim($this->tempDir, DIRECTORY_SEPARATOR));
+            mkdir(getenv('TEMP') . DIRECTORY_SEPARATOR . 'php-bolt-filecache');
         }
 
         // clean old
-        foreach (scandir($this->tempDir . 'temp') as $file) {
+        foreach (scandir($this->tempDir) as $file) {
             if ($file == '.' || $file == '..')
                 continue;
             if (filemtime($this->tempDir . $file) < strtotime('-1 hour'))
