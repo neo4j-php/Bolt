@@ -26,7 +26,8 @@ final class Bolt
 
     public function __construct(private IConnection $connection)
     {
-        $_ENV['TEMP_DIR'] = getenv('TEMP') ?? getenv('TMPDIR') ?? (dirname(__DIR__) . DIRECTORY_SEPARATOR . 'temp');
+        $_ENV['TEMP_DIR'] = getenv('TEMP') ?: getenv('TMPDIR') ?: (dirname(__DIR__) . DIRECTORY_SEPARATOR . 'temp');
+        var_dump($_ENV['TEMP_DIR']);
         if (!file_exists($_ENV['TEMP_DIR'])) {
             mkdir($_ENV['TEMP_DIR'], recursive: true);
         }

@@ -100,7 +100,7 @@ abstract class ProtocolLayer extends TestCase
      */
     protected function setUp(): void
     {
-        $_ENV['TEMP_DIR'] = getenv('TEMP') ?? getenv('TMPDIR') ?? (dirname(__DIR__) . DIRECTORY_SEPARATOR . 'temp');
+        $_ENV['TEMP_DIR'] = getenv('TEMP') ?: getenv('TMPDIR') ?: (dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'temp');
         if (!file_exists($_ENV['TEMP_DIR'])) {
             mkdir($_ENV['TEMP_DIR'], recursive: true);
         }
