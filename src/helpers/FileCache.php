@@ -13,17 +13,22 @@ use Psr\SimpleCache\CacheInterface;
  */
 class FileCache implements CacheInterface
 {
+    private string $tempDir;
+
     public function __construct()
     {
-        if (!file_exists(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR))
-            mkdir(__DIR__ . DIRECTORY_SEPARATOR . 'temp');
+        $this->tempDir = getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR;
+
+        if (!file_exists($this->tempDir)) {
+            mkdir(rtrim($this->tempDir, DIRECTORY_SEPARATOR));
+        }
 
         // clean old
-        foreach (scandir(__DIR__ . DIRECTORY_SEPARATOR . 'temp') as $file) {
+        foreach (scandir($this->tempDir . 'temp') as $file) {
             if ($file == '.' || $file == '..')
                 continue;
-            if (filemtime(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $file) < strtotime('-1 hour'))
-                unlink(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $file);
+            if (filemtime($this->tempDir . $file) < strtotime('-1 hour'))
+                unlink($this->tempDir . $file);
         }
     }
 
@@ -37,7 +42,7 @@ class FileCache implements CacheInterface
      */
     public function get(string $key, mixed $default = null): mixed
     {
-        return $this->has($key) ? file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $key) : $default;
+        return $this->has($key) ? file_get_contents($this->tempDir . $key) : $default;
     }
 
     /**
@@ -53,7 +58,7 @@ class FileCache implements CacheInterface
      */
     public function set(string $key, mixed $value, \DateInterval|int|null $ttl = null): bool
     {
-        return is_int(file_put_contents(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $key, $value));
+        return is_int(file_put_contents($this->tempDir . $key, $value));
     }
 
     /**
@@ -65,7 +70,7 @@ class FileCache implements CacheInterface
      */
     public function delete(string $key): bool
     {
-        return $this->has($key) && unlink(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $key);
+        return $this->has($key) && unlink($this->tempDir . $key);
     }
 
     /**
@@ -73,10 +78,10 @@ class FileCache implements CacheInterface
      */
     public function clear(): bool
     {
-        foreach (scandir(__DIR__ . DIRECTORY_SEPARATOR . 'temp') as $file) {
+        foreach (scandir(rtrim($this->tempDir, DIRECTORY_SEPARATOR)) as $file) {
             if ($file == '.' || $file == '..')
                 continue;
-            unlink(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $file);
+            unlink($this->tempDir . $file);
         }
         return true;
     }
@@ -143,6 +148,6 @@ class FileCache implements CacheInterface
      */
     public function has(string $key): bool
     {
-        return file_exists(__DIR__ . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . $key);
+        return file_exists($this->tempDir . $key);
     }
 }

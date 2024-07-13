@@ -10,6 +10,7 @@
     "require": {
         "php": "^8.1",
         "ext-mbstring": "*",
+        "ext-curl": "*",
         "psr/simple-cache": "^3.0"
     },
     "require-dev": {

@@ -26,7 +26,54 @@ final class Bolt
 
     public function __construct(private IConnection $connection)
     {
+        if (!file_exists(getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR)) {
+            mkdir(getcwd() . DIRECTORY_SEPARATOR . 'temp');
+        }
+        if (!getenv('BOLT_ANALYTICS_OPTOUT')) {
+            $this->track();
+        }
         $this->setProtocolVersions(5.4, 5, 4.4);
+    }
+
+    private function track(): void
+    {
+        foreach (glob(getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . 'queries.*.cnt') as $file) {
+            $time = intval(explode('.', basename($file))[1]);
+            if ($time < strtotime('today')) {
+                $count = file_get_contents($file);
+                unlink($file);
+
+                $curl = curl_init();
+                curl_setopt_array($curl, [
+                    CURLOPT_URL => 'https://api-eu.mixpanel.com/import?strict=0&project_id=3355308',
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_ENCODING => '',
+                    CURLOPT_MAXREDIRS => 10,
+                    CURLOPT_TIMEOUT => $this->connection->getTimeout(),
+                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                    CURLOPT_CUSTOMREQUEST => 'POST',
+                    CURLOPT_SSL_VERIFYPEER => false,
+                    CURLOPT_POSTFIELDS => json_encode([
+                        [
+                            'properties' => [
+                                '$insert_id' => $file,
+                                'distinct_id' => sha1(implode('', [php_uname(), disk_total_space('.'), filectime('/'), phpversion()])),
+                                'amount' => $count,
+                                'time' => $time
+                            ],
+                            'event' => 'queries'
+                        ]
+                    ]),
+                    CURLOPT_HTTPHEADER => [
+                        'Content-Type: application/json',
+                        'accept: application/json',
+                        'authorization: Basic MDJhYjRiOWE2YTM4MThmNWFlZDEzYjNiMmE5M2MxNzQ6',
+                    ],
+                ]);
+                curl_exec($curl);
+                curl_close($curl);
+            }
+        }
     }
 
     /**

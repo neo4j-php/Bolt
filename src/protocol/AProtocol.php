@@ -63,8 +63,19 @@ abstract class AProtocol
      */
     protected function write(iterable $generator): void
     {
-        foreach ($generator as $buffer)
+        if (!getenv('BOLT_ANALYTICS_OPTOUT')) {
+            $this->track();
+        }
+        foreach ($generator as $buffer) {
             $this->connection->write($buffer);
+        }
+    }
+
+    private function track(): void
+    {
+        $file = getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . 'queries.' . strtotime('today') . '.cnt';
+        $count = file_exists($file) ? intval(file_get_contents($file)) : 0;
+        file_put_contents($file, $count + 1);
     }
 
     /**
