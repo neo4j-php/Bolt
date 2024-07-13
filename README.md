@@ -255,6 +255,12 @@ environments for security reasons._
 
 Server state is not reported by server but it is evaluated by received response. You can access current state through property `$protocol->serverState`. This property is updated with every call `getResponse(s)`.
 
+## :bar_chart: Analytics
+
+Bolt does collect anonymous analytics data. These data are stored offline (as files in temp directory) and submitted once a day. You can opt out with environment variable `BOLT_ANALYTICS_OPTOUT`.
+
+Analytics data are public and available at [Mixpanel](https://eu.mixpanel.com/p/7ttVKqvjdqJtGCjLCFgdeC).
+
 ## :pushpin: More solutions
 
 If you need simple class to cover basic functionality you can
