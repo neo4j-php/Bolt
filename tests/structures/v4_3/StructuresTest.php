@@ -26,7 +26,7 @@ use Bolt\enum\Signature;
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests\protocol\v4_3
  */
-class StructuresTest extends \Bolt\tests\structures\AStructures
+class StructuresTest extends \Bolt\tests\structures\StructureLayer
 {
     public function testInit(): AProtocol|V4_4|V4_3
     {

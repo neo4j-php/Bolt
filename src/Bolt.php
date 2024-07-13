@@ -26,18 +26,25 @@ final class Bolt
 
     public function __construct(private IConnection $connection)
     {
-        if (!file_exists(getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR)) {
-            mkdir(getcwd() . DIRECTORY_SEPARATOR . 'temp');
+        $_ENV['TEMP_DIR'] = getenv('TEMP') ?: getenv('TMPDIR') ?: (dirname(__DIR__) . DIRECTORY_SEPARATOR . 'temp');
+        var_dump($_ENV['TEMP_DIR']);
+        if (!file_exists($_ENV['TEMP_DIR'])) {
+            mkdir($_ENV['TEMP_DIR'], recursive: true);
         }
+
         if (!getenv('BOLT_ANALYTICS_OPTOUT')) {
+            if (!file_exists($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR)) {
+                mkdir($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics');
+            }
             $this->track();
         }
+
         $this->setProtocolVersions(5.4, 5, 4.4);
     }
 
     private function track(): void
     {
-        foreach (glob(getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . 'queries.*.cnt') as $file) {
+        foreach (glob($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'queries.*.cnt') as $file) {
             $time = intval(explode('.', basename($file))[1]);
             if ($time < strtotime('today')) {
                 $count = file_get_contents($file);

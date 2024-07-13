@@ -4,7 +4,7 @@ namespace Bolt\tests\packstream\v1;
 
 use Bolt\Bolt;
 use Bolt\protocol\AProtocol;
-use Bolt\tests\ATest;
+use Bolt\tests\TestLayer;
 
 /**
  * Class PackerTest
@@ -13,7 +13,7 @@ use Bolt\tests\ATest;
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests\packstream\v1
  */
-class PackerTest extends ATest
+class PackerTest extends TestLayer
 {
     public function testInit(): AProtocol
     {

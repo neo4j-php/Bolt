@@ -14,7 +14,7 @@ use Bolt\tests\packstream\v1\generators\RandomDataGenerator;
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests
  */
-class PerformanceTest extends ATest
+class PerformanceTest extends TestLayer
 {
     public function test50KRecords(): void
     {

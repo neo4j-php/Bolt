@@ -3,7 +3,6 @@
 namespace Bolt\tests\protocol;
 
 use Bolt\protocol\V4_2;
-use Bolt\packstream\v1\{Packer, Unpacker};
 
 /**
  * Class V4_2Test
@@ -12,7 +11,7 @@ use Bolt\packstream\v1\{Packer, Unpacker};
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests\protocol
  */
-class V4_2Test extends ATest
+class V4_2Test extends ProtocolLayer
 {
     public function test__construct(): V4_2
     {

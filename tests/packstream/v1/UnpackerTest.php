@@ -4,7 +4,7 @@ namespace Bolt\tests\packstream\v1;
 
 use Bolt\Bolt;
 use Bolt\protocol\{AProtocol, Response};
-use Bolt\tests\ATest;
+use Bolt\tests\TestLayer;
 use Bolt\enum\Signature;
 
 /**
@@ -14,7 +14,7 @@ use Bolt\enum\Signature;
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests\packstream\v1
  */
-class UnpackerTest extends ATest
+class UnpackerTest extends TestLayer
 {
     public function testInit(): AProtocol
     {

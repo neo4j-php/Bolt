@@ -12,7 +12,7 @@ use Bolt\enum\{Signature, ServerState};
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests\protocol
  */
-class V5_3Test extends \Bolt\tests\protocol\ATest
+class V5_3Test extends \Bolt\tests\protocol\ProtocolLayer
 {
     public function test__construct(): V5_3
     {

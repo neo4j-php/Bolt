@@ -12,7 +12,7 @@ use Bolt\packstream\v1\{Packer, Unpacker};
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests\protocol
  */
-class V2Test extends ATest
+class V2Test extends ProtocolLayer
 {
     public function test__construct(): V2
     {

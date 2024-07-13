@@ -9,7 +9,7 @@ use Bolt\enum\Signature;
  * Class ATest
  * @package Bolt\tests
  */
-class ATest extends \PHPUnit\Framework\TestCase
+abstract class TestLayer extends \PHPUnit\Framework\TestCase
 {
     public static function setUpBeforeClass(): void
     {

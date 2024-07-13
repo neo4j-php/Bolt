@@ -14,7 +14,7 @@ use Bolt\enum\Signature;
  * @link https://github.com/neo4j-php/Bolt
  * @package Bolt\tests
  */
-abstract class ATest extends TestCase
+abstract class ProtocolLayer extends TestCase
 {
     /**
      * @var string Temporal buffer for packed message to be read
@@ -100,8 +100,15 @@ abstract class ATest extends TestCase
      */
     protected function setUp(): void
     {
-        if (!file_exists(getcwd() . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR)) {
-            mkdir(getcwd() . DIRECTORY_SEPARATOR . 'temp');
+        $_ENV['TEMP_DIR'] = getenv('TEMP') ?: getenv('TMPDIR') ?: (dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'temp');
+        if (!file_exists($_ENV['TEMP_DIR'])) {
+            mkdir($_ENV['TEMP_DIR'], recursive: true);
+        }
+
+        if (!getenv('BOLT_ANALYTICS_OPTOUT')) {
+            if (!file_exists($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR)) {
+                mkdir($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics');
+            }
         }
 
         self::$readBuffer = '';
