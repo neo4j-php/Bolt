@@ -31,7 +31,7 @@ final class Bolt
             mkdir($_ENV['TEMP_DIR'], recursive: true);
         }
 
-        if (!getenv('BOLT_ANALYTICS_OPTOUT')) {
+        if (!getenv('BOLT_ANALYTICS_OPTOUT') && is_writable($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR)) {
             if (!file_exists($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR)) {
                 mkdir($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics');
             }
