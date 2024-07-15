@@ -27,6 +27,8 @@ abstract class AProtocol
 
     public ServerState $serverState;
 
+    private int $writeCalls = 0;
+
     /**
      * Multiple RUN statements in transaction generates "streams" which are pulled or discarded
      * We are keeping track of open streams to keep valid Server State
@@ -63,18 +65,9 @@ abstract class AProtocol
      */
     protected function write(iterable $generator): void
     {
-        $this->track();
+        $this->writeCalls++;
         foreach ($generator as $buffer) {
             $this->connection->write($buffer);
-        }
-    }
-
-    private function track(): void
-    {
-        if (!getenv('BOLT_ANALYTICS_OPTOUT') && is_writable($_ENV['TEMP_DIR']. DIRECTORY_SEPARATOR)) {
-            $file = $_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'queries.' . strtotime('today') . '.cnt';
-            $count = file_exists($file) ? intval(file_get_contents($file)) : 0;
-            file_put_contents($file, $count + 1);
         }
     }
 
@@ -171,5 +164,14 @@ abstract class AProtocol
         }
 
         return $response;
+    }
+
+    public function __destruct()
+    {
+        if (!getenv('BOLT_ANALYTICS_OPTOUT') && is_writable($_ENV['TEMP_DIR']. DIRECTORY_SEPARATOR)) {
+            $file = $_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'queries.' . strtotime('today') . '.cnt';
+            $count = file_exists($file) ? intval(file_get_contents($file)) : 0;
+            file_put_contents($file, $count + $this->writeCalls);
+        }
     }
 }
