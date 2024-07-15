@@ -63,9 +63,7 @@ abstract class AProtocol
      */
     protected function write(iterable $generator): void
     {
-        if (!getenv('BOLT_ANALYTICS_OPTOUT')) {
-            $this->track();
-        }
+        $this->track();
         foreach ($generator as $buffer) {
             $this->connection->write($buffer);
         }
@@ -73,9 +71,11 @@ abstract class AProtocol
 
     private function track(): void
     {
-        $file = $_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'queries.' . strtotime('today') . '.cnt';
-        $count = file_exists($file) ? intval(file_get_contents($file)) : 0;
-        file_put_contents($file, $count + 1);
+        if (!getenv('BOLT_ANALYTICS_OPTOUT') && is_writable($_ENV['TEMP_DIR']. DIRECTORY_SEPARATOR)) {
+            $file = $_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'queries.' . strtotime('today') . '.cnt';
+            $count = file_exists($file) ? intval(file_get_contents($file)) : 0;
+            file_put_contents($file, $count + 1);
+        }
     }
 
     /**
