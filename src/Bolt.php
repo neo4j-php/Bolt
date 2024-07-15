@@ -27,7 +27,6 @@ final class Bolt
     public function __construct(private IConnection $connection)
     {
         $_ENV['TEMP_DIR'] = getenv('TEMP') ?: getenv('TMPDIR') ?: (dirname(__DIR__) . DIRECTORY_SEPARATOR . 'temp');
-        var_dump($_ENV['TEMP_DIR']);
         if (!file_exists($_ENV['TEMP_DIR'])) {
             mkdir($_ENV['TEMP_DIR'], recursive: true);
         }
@@ -48,12 +47,11 @@ final class Bolt
             $time = intval(explode('.', basename($file))[1]);
             if ($time < strtotime('today')) {
                 $count = file_get_contents($file);
-                unlink($file);
 
                 $curl = curl_init();
                 curl_setopt_array($curl, [
                     CURLOPT_URL => 'https://api-eu.mixpanel.com/import?strict=0&project_id=3355308',
-                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_RETURNTRANSFER => false,
                     CURLOPT_ENCODING => '',
                     CURLOPT_MAXREDIRS => 10,
                     CURLOPT_TIMEOUT => $this->connection->getTimeout(),
@@ -77,7 +75,10 @@ final class Bolt
                         'authorization: Basic MDJhYjRiOWE2YTM4MThmNWFlZDEzYjNiMmE5M2MxNzQ6',
                     ],
                 ]);
-                curl_exec($curl);
+
+                if (curl_exec($curl)) {
+                    unlink($file);
+                }
                 curl_close($curl);
             }
         }
