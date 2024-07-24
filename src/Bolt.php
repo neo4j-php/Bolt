@@ -71,7 +71,7 @@ final class Bolt
                     CURLOPT_POSTFIELDS => json_encode([
                         [
                             'properties' => [
-                                '$insert_id' => $file,
+                                '$insert_id' => basename($file),
                                 'distinct_id' => sha1(implode('', [php_uname(), disk_total_space('.'), filectime('/'), phpversion()])),
                                 'amount' => $count,
                                 'time' => $time
