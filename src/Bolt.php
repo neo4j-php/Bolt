@@ -56,7 +56,7 @@ final class Bolt
         foreach (glob($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'analytics.*.json') as $file) {
             $time = intval(explode('.', basename($file))[1]);
             if ($time < strtotime('today')) {
-                $data = json_decode(file_get_contents($file), true);
+                $data = (array)json_decode((string)file_get_contents($file), true);
                 $distinctId = sha1(implode('', [php_uname(), disk_total_space('.'), filectime('/'), phpversion()]));
 
                 $curl = curl_init();
