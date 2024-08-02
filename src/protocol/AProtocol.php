@@ -169,9 +169,11 @@ abstract class AProtocol
     public function __destruct()
     {
         if (!getenv('BOLT_ANALYTICS_OPTOUT') && is_writable($_ENV['TEMP_DIR']. DIRECTORY_SEPARATOR)) {
-            $file = $_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'queries.' . strtotime('today') . '.cnt';
-            $count = file_exists($file) ? intval(file_get_contents($file)) : 0;
-            file_put_contents($file, $count + $this->writeCalls);
+            $file = $_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'analytics.' . strtotime('today') . '.json';
+            $data = file_exists($file) ? (array)json_decode((string)file_get_contents($file), true) : [];
+            $data['queries'] = ($data['queries'] ?? 0) + $this->writeCalls;
+            $data['sessions'] = ($data['sessions'] ?? 0) + 1;
+            file_put_contents($file, json_encode($data));
         }
     }
 }
