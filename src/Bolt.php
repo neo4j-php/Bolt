@@ -62,7 +62,7 @@ final class Bolt
                 $curl = curl_init();
                 curl_setopt_array($curl, [
                     CURLOPT_URL => 'https://api-eu.mixpanel.com/import?strict=0&project_id=3355308',
-                    CURLOPT_RETURNTRANSFER => false,
+                    CURLOPT_RETURNTRANSFER => true,
                     CURLOPT_ENCODING => '',
                     CURLOPT_MAXREDIRS => 10,
                     CURLOPT_TIMEOUT => $this->connection->getTimeout(),
@@ -96,7 +96,7 @@ final class Bolt
                     ],
                 ]);
 
-                if (curl_exec($curl)) {
+                if (curl_exec($curl) !== false) {
                     unlink($file);
                 }
                 curl_close($curl);
