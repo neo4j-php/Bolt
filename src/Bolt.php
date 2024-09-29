@@ -26,10 +26,9 @@ final class Bolt
 
     public function __construct(private IConnection $connection)
     {
-        $this->tempDirectoryInit();
-        if (!getenv('BOLT_ANALYTICS_OPTOUT') && is_writable($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR)) {
-            if (!file_exists($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR)) {
-                mkdir($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics');
+        if (!getenv('BOLT_ANALYTICS_OPTOUT') && is_writable(sys_get_temp_dir() . DIRECTORY_SEPARATOR)) {
+            if (!file_exists(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR)) {
+                mkdir(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-bolt-analytics', recursive: true);
             }
             $this->track();
         }
@@ -37,23 +36,9 @@ final class Bolt
         $this->setProtocolVersions(5.4, 5, 4.4);
     }
 
-    private function tempDirectoryInit(): void
-    {
-        $_ENV['TEMP_DIR'] = getenv('TEMP');
-        if ($_ENV['TEMP_DIR'] === false || !is_writable($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR)) {
-            $_ENV['TEMP_DIR'] = getenv('TMPDIR');
-        }
-        if ($_ENV['TEMP_DIR'] === false || !is_writable($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR)) {
-            $_ENV['TEMP_DIR'] = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'temp';
-        }
-        if (!file_exists($_ENV['TEMP_DIR'])) {
-            mkdir($_ENV['TEMP_DIR'], recursive: true);
-        }
-    }
-
     private function track(): void
     {
-        foreach (glob($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'analytics.*.json') as $file) {
+        foreach (glob(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'analytics.*.json') as $file) {
             $time = intval(explode('.', basename($file))[1]);
             if ($time < strtotime('today')) {
                 $data = (array)json_decode((string)file_get_contents($file), true);
