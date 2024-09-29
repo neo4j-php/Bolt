@@ -100,20 +100,9 @@ abstract class ProtocolLayer extends TestCase
      */
     protected function setUp(): void
     {
-        $_ENV['TEMP_DIR'] = getenv('TEMP');
-        if ($_ENV['TEMP_DIR'] === false || !is_writable($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR)) {
-            $_ENV['TEMP_DIR'] = getenv('TMPDIR');
-        }
-        if ($_ENV['TEMP_DIR'] === false || !is_writable($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR)) {
-            $_ENV['TEMP_DIR'] = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'temp';
-        }
-        if (!file_exists($_ENV['TEMP_DIR'])) {
-            mkdir($_ENV['TEMP_DIR'], recursive: true);
-        }
-
-        if (!getenv('BOLT_ANALYTICS_OPTOUT') && is_writable($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR)) {
-            if (!file_exists($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR)) {
-                mkdir($_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics');
+        if (!getenv('BOLT_ANALYTICS_OPTOUT') && is_writable(sys_get_temp_dir() . DIRECTORY_SEPARATOR)) {
+            if (!file_exists(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR)) {
+                mkdir(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-bolt-analytics', recursive: true);
             }
         }
 

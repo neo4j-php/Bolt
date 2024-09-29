@@ -168,8 +168,8 @@ abstract class AProtocol
 
     public function __destruct()
     {
-        if (!getenv('BOLT_ANALYTICS_OPTOUT') && is_writable($_ENV['TEMP_DIR']. DIRECTORY_SEPARATOR)) {
-            $file = $_ENV['TEMP_DIR'] . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'analytics.' . strtotime('today') . '.json';
+        if (!getenv('BOLT_ANALYTICS_OPTOUT') && is_writable(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR)) {
+            $file = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'analytics.' . strtotime('today') . '.json';
             $data = file_exists($file) ? (array)json_decode((string)file_get_contents($file), true) : [];
             $data['queries'] = ($data['queries'] ?? 0) + $this->writeCalls;
             $data['sessions'] = ($data['sessions'] ?? 0) + 1;
