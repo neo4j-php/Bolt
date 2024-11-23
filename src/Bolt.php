@@ -82,7 +82,7 @@ final class Bolt
                 ]);
 
                 if (curl_exec($curl) !== false) {
-                    unlink($file);
+                    @unlink($file);
                 }
                 curl_close($curl);
             }
