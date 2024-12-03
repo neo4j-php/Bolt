@@ -103,7 +103,9 @@ where you can look into your version and bolt message.
 :information_source: Annotation of methods in protocol classes contains direct link to specific version and message from mentioned
 documentation website.
 
-### Authentification
+### Authentication
+
+Method logon expects `$auth` array. This array has to contain up to these three keys: scheme, principal and credentials. It depends on chosen scheme, as content for the other keys. Look at following table to choose the right structure.
 
 | scheme   | principal | credentials |
 |----------|-----------|-------------|
