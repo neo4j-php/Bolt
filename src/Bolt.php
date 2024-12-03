@@ -33,7 +33,7 @@ final class Bolt
             $this->track();
         }
 
-        $this->setProtocolVersions(5.4, 5, 4.4);
+        $this->setProtocolVersions(5.6, 5.4, 5, 4.4);
     }
 
     private function track(): void
