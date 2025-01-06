@@ -18,7 +18,7 @@ all available versions and keep up with protocol messages architecture and speci
 
 ## :label: Version support
 
-We are trying to keep up and this library supports **Bolt <= 5.6**.
+We are trying to keep up and this library supports **Bolt <= 5.8**.
 
 https://www.neo4j.com/docs/bolt/current/bolt-compatibility/
 
