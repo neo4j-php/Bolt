@@ -18,7 +18,7 @@ all available versions and keep up with protocol messages architecture and speci
 
 ## :label: Version support
 
-We are trying to keep up and this library supports **Bolt <= 5.6**.
+We are trying to keep up and this library supports **Bolt <= 5.8**.
 
 https://www.neo4j.com/docs/bolt/current/bolt-compatibility/
 
@@ -126,17 +126,17 @@ _`run` executes query in auto-commit transaction if explicit transaction was not
 
 ### Cypher query parameters
 
-| Neo4j      | PHP                                                                                                                               |
-|------------|-----------------------------------------------------------------------------------------------------------------------------------|
-| Null       | null                                                                                                                              |
-| Boolean    | boolean                                                                                                                           |
-| Integer    | integer                                                                                                                           |
-| Float      | float                                                                                                                             |
-| Bytes      | [Bytes class](https://github.com/neo4j-php/Bolt/blob/master/src/structures/Bytes.php)                                             |
-| String     | string                                                                                                                            |
-| List       | array with consecutive numeric keys from 0                                                                                        |
-| Dictionary | object or array which is not considered as list                                                                                   |
-| Structure  | Classes implementing `IStructure` by protocol version ([docs](https://www.neo4j.com/docs/bolt/current/bolt/structure-semantics/)) |
+| Neo4j      | PHP                                                                                                                                                             |
+|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Null       | null                                                                                                                                                            |
+| Boolean    | boolean                                                                                                                                                         |
+| Integer    | integer                                                                                                                                                         |
+| Float      | float                                                                                                                                                           |
+| Bytes      | [Bytes class]([https://github.com/neo4j-php/Bolt/blob/master/src/structures/Bytes.php](https://github.com/neo4j-php/Bolt/blob/master/src/packstream/Bytes.php)) |
+| String     | string                                                                                                                                                          |
+| List       | array with consecutive numeric keys from 0                                                                                                                      |
+| Dictionary | object or array which is not considered as list                                                                                                                 |
+| Structure  | Classes implementing `IStructure` by protocol version ([docs](https://www.neo4j.com/docs/bolt/current/bolt/structure-semantics/))                               |
 
 List or dictionary can be also provided as instance of class implementing `Bolt\packstream\IPackListGenerator`
 or `Bolt\PackStream\IPackDictionaryGenerator`. This approach helps with memory management while working with big amount
