@@ -1,8 +1,6 @@
 name: Tests with Neo4j^5 on PHP^8
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
 
