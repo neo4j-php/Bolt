@@ -3,7 +3,7 @@
 namespace Bolt\protocol\v5_1;
 
 use Bolt\enum\Message;
-use Bolt\protocol\{V5_1, V5_2, V5_3, V5_4, V5_6};
+use Bolt\protocol\{V5_1, V5_2, V5_3, V5_4, V5_6, V5_7, V5_8};
 use Bolt\error\BoltException;
 
 trait HelloMessage
@@ -15,7 +15,7 @@ trait HelloMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-hello
      * @throws BoltException
      */
-    public function hello(array $extra = []): V5_1|V5_2|V5_3|V5_4|V5_6
+    public function hello(array $extra = []): V5_1|V5_2|V5_3|V5_4|V5_6|V5_7|V5_8
     {
         if (empty($extra['user_agent']))
             $extra['user_agent'] = 'bolt-php';

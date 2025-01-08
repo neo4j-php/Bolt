@@ -3,7 +3,7 @@
 namespace Bolt\protocol\v4_4;
 
 use Bolt\enum\Message;
-use Bolt\protocol\{V4_4, V5, V5_1, V5_2, V5_3, V5_4, V5_6};
+use Bolt\protocol\{V4_4, V5, V5_1, V5_2, V5_3, V5_4, V5_6, V5_7, V5_8};
 use Bolt\error\BoltException;
 
 trait RouteMessage
@@ -16,7 +16,7 @@ trait RouteMessage
      * @param array $extra [db::String, imp_user::String]
      * @throws BoltException
      */
-    public function route(array $routing, array $bookmarks = [], array $extra = []): V4_4|V5|V5_1|V5_2|V5_3|V5_4|V5_6
+    public function route(array $routing, array $bookmarks = [], array $extra = []): V4_4|V5|V5_1|V5_2|V5_3|V5_4|V5_6|V5_7|V5_8
     {
         $this->write($this->packer->pack(0x66, (object)$routing, $bookmarks, (object)$extra));
         $this->pipelinedMessages[] = Message::ROUTE;
