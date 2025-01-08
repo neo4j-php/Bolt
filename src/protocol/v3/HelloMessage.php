@@ -3,7 +3,6 @@
 namespace Bolt\protocol\v3;
 
 use Bolt\enum\Message;
-use Bolt\protocol\{V3, V4, V4_1, V4_2, V4_3, V4_4, V5};
 use Bolt\error\BoltException;
 
 trait HelloMessage
@@ -16,7 +15,7 @@ trait HelloMessage
      * @param array $extra Use \Bolt\helpers\Auth to generate appropriate array
      * @throws BoltException
      */
-    public function hello(array $extra): V3|V4|V4_1|V4_2|V4_3|V4_4|V5
+    public function hello(array $extra): static
     {
         $this->write($this->packer->pack(0x01, $extra));
         $this->pipelinedMessages[] = Message::HELLO;

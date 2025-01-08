@@ -3,7 +3,6 @@
 namespace Bolt\protocol\v1;
 
 use Bolt\enum\Message;
-use Bolt\protocol\{V1, V2, V3};
 use Bolt\error\BoltException;
 
 trait DiscardAllMessage
@@ -15,7 +14,7 @@ trait DiscardAllMessage
      * https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-discard
      * @throws BoltException
      */
-    public function discardAll(): V1|V2|V3
+    public function discardAll(): static
     {
         $this->write($this->packer->pack(0x2F));
         $this->pipelinedMessages[] = Message::DISCARD_ALL;

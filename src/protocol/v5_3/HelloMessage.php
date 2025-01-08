@@ -2,7 +2,6 @@
 
 namespace Bolt\protocol\v5_3;
 
-use Bolt\protocol\{V5_1, V5_2, V5_3, V5_4, V5_6, V5_7, V5_8};
 use Bolt\error\BoltException;
 
 trait HelloMessage
@@ -19,7 +18,7 @@ trait HelloMessage
      * @param array $extra Use \Bolt\helpers\Auth to generate appropiate array
      * @throws BoltException
      */
-    public function hello(array $extra = []): V5_1|V5_2|V5_3|V5_4|V5_6|V5_7|V5_8
+    public function hello(array $extra = []): static
     {
         $extra['bolt_agent'] = [
             'product' => 'php-bolt/' . \Composer\InstalledVersions::getPrettyVersion('stefanak-michal/bolt'),

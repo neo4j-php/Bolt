@@ -3,7 +3,7 @@
 namespace Bolt\protocol\v3;
 
 use Bolt\enum\Message;
-use Bolt\protocol\{Response, V3, V4, V4_1, V4_2, V4_3, V4_4, V5, V5_1, V5_2, V5_3, V5_4, V5_6, V5_7, V5_8};
+use Bolt\protocol\Response;
 use Bolt\error\BoltException;
 
 trait RollbackMessage
@@ -15,7 +15,7 @@ trait RollbackMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-rollback
      * @throws BoltException
      */
-    public function rollback(): V3|V4|V4_1|V4_2|V4_3|V4_4|V5|V5_1|V5_2|V5_3|V5_4|V5_6|V5_7|V5_8
+    public function rollback(): static
     {
         $this->write($this->packer->pack(0x13));
         $this->pipelinedMessages[] = Message::ROLLBACK;

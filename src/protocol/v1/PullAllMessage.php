@@ -3,12 +3,7 @@
 namespace Bolt\protocol\v1;
 
 use Bolt\enum\{Message, Signature};
-use Bolt\protocol\{
-    Response,
-    V1,
-    V2,
-    V3
-};
+use Bolt\protocol\Response;
 use Bolt\error\BoltException;
 
 trait PullAllMessage
@@ -20,7 +15,7 @@ trait PullAllMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#message-pull
      * @throws BoltException
      */
-    public function pullAll(): V1|V2|V3
+    public function pullAll(): static
     {
         $this->write($this->packer->pack(0x3F));
         $this->pipelinedMessages[] = Message::PULL_ALL;

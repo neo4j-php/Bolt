@@ -3,7 +3,6 @@
 namespace Bolt\protocol\v1;
 
 use Bolt\enum\Message;
-use Bolt\protocol\{V1, V2};
 use Bolt\error\BoltException;
 
 trait InitMessage
@@ -15,7 +14,7 @@ trait InitMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-init
      * @throws BoltException
      */
-    public function init(string $userAgent, array $authToken): V1|V2
+    public function init(string $userAgent, array $authToken): static
     {
         $this->write($this->packer->pack(0x01, $userAgent, $authToken));
         $this->pipelinedMessages[] = Message::INIT;
