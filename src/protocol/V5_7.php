@@ -3,14 +3,14 @@
 namespace Bolt\protocol;
 
 /**
- * Class Protocol version 5.6
+ * Class Protocol version 5.7
  *
  * @author Michal Stefanak
  * @link https://github.com/neo4j-php/Bolt
  * @see https://www.neo4j.com/docs/bolt/current/bolt/message/
  * @package Bolt\protocol
  */
-class V5_6 extends AProtocol
+class V5_7 extends AProtocol
 {
     use \Bolt\protocol\v5\AvailableStructures;
     use \Bolt\protocol\v5_1\ServerStateTransition;

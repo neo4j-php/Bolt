@@ -4,7 +4,6 @@ namespace Bolt\protocol\v5_1;
 
 use Bolt\enum\Message;
 use Bolt\error\BoltException;
-use Bolt\protocol\{V5_1, V5_2, V5_3, V5_4, V5_6};
 
 trait LogoffMessage
 {
@@ -15,7 +14,7 @@ trait LogoffMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-logoff
      * @throws BoltException
      */
-    public function logoff(): V5_1|V5_2|V5_3|V5_4|V5_6
+    public function logoff(): static
     {
         $this->write($this->packer->pack(0x6B));
         $this->pipelinedMessages[] = Message::LOGOFF;

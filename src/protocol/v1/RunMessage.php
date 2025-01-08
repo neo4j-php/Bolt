@@ -3,7 +3,6 @@
 namespace Bolt\protocol\v1;
 
 use Bolt\enum\Message;
-use Bolt\protocol\{V1, V2};
 use Bolt\error\BoltException;
 
 trait RunMessage
@@ -15,7 +14,7 @@ trait RunMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-run
      * @throws BoltException
      */
-    public function run(string $query, array $parameters = []): V1|V2
+    public function run(string $query, array $parameters = []): static
     {
         $this->write($this->packer->pack(0x10, $query, (object)$parameters));
         $this->pipelinedMessages[] = Message::RUN;

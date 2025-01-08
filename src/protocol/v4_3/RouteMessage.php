@@ -3,7 +3,6 @@
 namespace Bolt\protocol\v4_3;
 
 use Bolt\enum\Message;
-use Bolt\protocol\{V4_3};
 use Bolt\error\BoltException;
 
 trait RouteMessage
@@ -15,7 +14,7 @@ trait RouteMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-route
      * @throws BoltException
      */
-    public function route(array $routing, array $bookmarks = [], ?string $db = null): V4_3
+    public function route(array $routing, array $bookmarks = [], ?string $db = null): static
     {
         $this->write($this->packer->pack(0x66, (object)$routing, $bookmarks, $db));
         $this->pipelinedMessages[] = Message::ROUTE;

@@ -3,7 +3,6 @@
 namespace Bolt\protocol\v1;
 
 use Bolt\enum\Message;
-use Bolt\protocol\{V1, V2};
 use Bolt\error\BoltException;
 
 trait AckFailureMessage
@@ -16,7 +15,7 @@ trait AckFailureMessage
      * @link https://www.neo4j.com/docs/bolt/current/bolt/message/#messages-ack-failure
      * @throws BoltException
      */
-    public function ackFailure(): V1|V2
+    public function ackFailure(): static
     {
         $this->write($this->packer->pack(0x0E));
         $this->pipelinedMessages[] = Message::ACK_FAILURE;
