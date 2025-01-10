@@ -3,7 +3,7 @@
 namespace Bolt\tests\structures\v5;
 
 use Bolt\Bolt;
-use Bolt\protocol\{AProtocol, V4_3, V4_4, V5, V5_1};
+use Bolt\protocol\AProtocol;
 use Bolt\tests\structures\v1\DateTimeTrait;
 use Bolt\tests\structures\v1\DateTimeZoneIdTrait;
 use Bolt\protocol\v5\structures\{
@@ -24,7 +24,7 @@ use Bolt\protocol\v1\structures\Path;
  */
 class StructuresTest extends \Bolt\tests\structures\StructureLayer
 {
-    public function testInit(): AProtocol|V4_3|V4_4|V5|V5_1
+    public function testInit(): AProtocol
     {
         $conn = new \Bolt\connection\StreamSocket($GLOBALS['NEO_HOST'] ?? '127.0.0.1', $GLOBALS['NEO_PORT'] ?? 7687);
         $this->assertInstanceOf(\Bolt\connection\StreamSocket::class, $conn);
@@ -32,7 +32,6 @@ class StructuresTest extends \Bolt\tests\structures\StructureLayer
         $bolt = new Bolt($conn);
         $this->assertInstanceOf(Bolt::class, $bolt);
 
-        /** @var AProtocol|V4_3|V4_4|V5|V5_1 $protocol */
         $protocol = $bolt->build();
         $this->assertInstanceOf(AProtocol::class, $protocol);
 
@@ -54,7 +53,7 @@ class StructuresTest extends \Bolt\tests\structures\StructureLayer
     /**
      * @depends testInit
      */
-    public function testNode(AProtocol|V4_3|V4_4|V5|V5_1 $protocol)
+    public function testNode(AProtocol $protocol)
     {
         $protocol->begin()->getResponse();
 
@@ -81,7 +80,7 @@ class StructuresTest extends \Bolt\tests\structures\StructureLayer
     /**
      * @depends testInit
      */
-    public function testPath(AProtocol|V4_3|V4_4|V5|V5_1 $protocol)
+    public function testPath(AProtocol $protocol)
     {
         $protocol->begin()->getResponse();
 
@@ -112,7 +111,7 @@ class StructuresTest extends \Bolt\tests\structures\StructureLayer
     /**
      * @depends testInit
      */
-    public function testRelationship(AProtocol|V4_3|V4_4|V5|V5_1 $protocol)
+    public function testRelationship(AProtocol $protocol)
     {
         $protocol->begin()->getResponse();
 
