@@ -198,7 +198,7 @@ final class Bolt
     /**
      * Read and compose selected protocol version
      */
-    private function unpackProtocolVersion(string $bytes): ?string
+    private function unpackProtocolVersion(string $bytes): string
     {
         $result = [];
 
@@ -210,8 +210,7 @@ final class Bolt
             array_shift($result);
         }
 
-        $version = implode('.', array_reverse($result));
-        return in_array($version, $this->protocolVersions) ? $version : null;
+        return implode('.', array_reverse($result));
     }
 
     /**
