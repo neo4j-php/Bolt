@@ -181,6 +181,8 @@ foreach ($protocol->getResponses() as $response) {
 }
 ```
 
+:information_source: Default settings for bolt protocol version is 4.3, 4.4 and 5.0 to 5.8. If you are within this list you can ommit calling `$bolt->setProtocolVersions(5.4);`.
+
 ### Autoload
 
 Directory `src` contains autoload file which accepts only Bolt library namespaces. Main Bolt namespace points to this
