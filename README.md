@@ -12,8 +12,6 @@ all available versions and keep up with protocol messages architecture and speci
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Z8Z5ABMLW)
 
-<a href='https://jb.gg/OpenSourceSupport' target='_blank'><img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo (Main) logo." width="100" /></a>
-
 [![image](https://github.com/neo4j-php/Bolt/assets/5502917/1aeb4e22-c9b1-4fe5-8956-1c2e784c4292)](https://awsmfoss.com/neo4j-bolt-php/)
 
 ## :label: Version support
@@ -261,7 +259,7 @@ Server state is not reported by server but it is evaluated by received response.
 
 ## :bar_chart: Analytics
 
-Bolt does collect anonymous analytics data. These data are stored offline (as files in temp directory) and submitted once a day. You can opt out with environment variable `BOLT_ANALYTICS_OPTOUT`.
+Bolt does collect anonymous analytics data. These data are just aggregated counts of executed queries and sessions. They are stored offline (as files in temp directory) and submitted once a day after midnight. You can opt out with environment variable `BOLT_ANALYTICS_OPTOUT`.
 
 Analytics data are public and available at [Mixpanel](https://eu.mixpanel.com/p/7ttVKqvjdqJtGCjLCFgdeC).
 
