@@ -170,10 +170,19 @@ abstract class AProtocol
     {
         if (!getenv('BOLT_ANALYTICS_OPTOUT') && is_writable(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR)) {
             $file = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'analytics.' . strtotime('today') . '.json';
-            $data = file_exists($file) ? (array)json_decode((string)file_get_contents($file), true) : [];
-            $data['queries'] = ($data['queries'] ?? 0) + $this->writeCalls;
-            $data['sessions'] = ($data['sessions'] ?? 0) + 1;
-            file_put_contents($file, json_encode($data));
+            
+            $fp = fopen($file, 'c+');
+            if (flock($fp, LOCK_EX)) {
+                $data = json_decode(fread($fp, length: 8192), true) ?? [];
+                $data['queries'] = ($data['queries'] ?? 0) + $this->writeCalls;
+                $data['sessions'] = ($data['sessions'] ?? 0) + 1;
+
+                ftruncate($fp, 0);
+                rewind($fp);
+                fwrite($fp, json_encode($data));
+                flock($fp, LOCK_UN);
+            }
+            fclose($fp);
         }
     }
 }
