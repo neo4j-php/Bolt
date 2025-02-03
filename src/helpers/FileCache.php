@@ -14,20 +14,31 @@ use Psr\SimpleCache\CacheInterface;
 class FileCache implements CacheInterface
 {
     private string $tempDir;
+    /**
+     * @var resource[]
+     */
+    private array $handles = [];
 
     public function __construct()
     {
         $this->tempDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-bolt-filecache' . DIRECTORY_SEPARATOR;
+        
         if (!file_exists($this->tempDir)) {
             mkdir(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-bolt-filecache', recursive: true);
         }
+        // dotted directory to hold "time-to-live" informations
+        if (!file_exists($this->tempDir . '.ttl' . DIRECTORY_SEPARATOR)) {
+            mkdir($this->tempDir . '.ttl');
+        }
 
-        // clean old
-        foreach (scandir($this->tempDir) as $file) {
-            if ($file == '.' || $file == '..')
-                continue;
-            if (filemtime($this->tempDir . $file) < strtotime('-1 hour'))
-                unlink($this->tempDir . $file);
+        register_shutdown_function([$this, 'shutdown']);
+    }
+
+    private function shutdown(): void
+    {
+        foreach ($this->handles as $handle) {
+            flock($handle, LOCK_UN);
+            fclose($handle);
         }
     }
 
@@ -41,7 +52,19 @@ class FileCache implements CacheInterface
      */
     public function get(string $key, mixed $default = null): mixed
     {
-        return $this->has($key) ? file_get_contents($this->tempDir . $key) : $default;
+        if (array_key_exists($key, $this->handles)) {
+            rewind($this->handles[$key]);
+            return unserialize(stream_get_contents($this->handles[$key]), ['allowed_classes' => false]);
+        }
+
+        if ($this->has($key)) {
+            $data = file_get_contents($this->tempDir . $key);
+            if ($data !== false) {
+                return unserialize($data, ['allowed_classes' => false]);
+            }
+        }
+
+        return $default;
     }
 
     /**
@@ -57,7 +80,20 @@ class FileCache implements CacheInterface
      */
     public function set(string $key, mixed $value, \DateInterval|int|null $ttl = null): bool
     {
-        return is_int(file_put_contents($this->tempDir . $key, $value));
+        if ($ttl) {
+            is_writable($this->tempDir . '.ttl' . DIRECTORY_SEPARATOR) && file_put_contents(
+                $this->tempDir . '.ttl' . DIRECTORY_SEPARATOR . $key,
+                $ttl instanceof \DateInterval ? (new \DateTime())->add($ttl)->getTimestamp() : $ttl
+            );
+        }
+
+        if (array_key_exists($key, $this->handles)) {
+            ftruncate($this->handles[$key], 0);
+            rewind($this->handles[$key]);
+            return fwrite($this->handles[$key], serialize($value)) !== false;
+        }
+
+        return is_writable($this->tempDir) && file_put_contents($this->tempDir . $key, serialize($value)) !== false;
     }
 
     /**
@@ -69,7 +105,14 @@ class FileCache implements CacheInterface
      */
     public function delete(string $key): bool
     {
-        return $this->has($key) && unlink($this->tempDir . $key);
+        if ($this->has($key)) {
+            if (file_exists($this->tempDir . '.ttl' . DIRECTORY_SEPARATOR . $key)) {
+                @unlink($this->tempDir . '.ttl' . DIRECTORY_SEPARATOR . $key);
+            }
+            return @unlink($this->tempDir . $key);
+        }
+
+        return true;
     }
 
     /**
@@ -77,11 +120,8 @@ class FileCache implements CacheInterface
      */
     public function clear(): bool
     {
-        foreach (scandir(rtrim($this->tempDir, DIRECTORY_SEPARATOR)) as $file) {
-            if ($file == '.' || $file == '..')
-                continue;
-            unlink($this->tempDir . $file);
-        }
+        array_map('unlink', glob($this->tempDir . '*.*'));
+        array_map('unlink', glob($this->tempDir . '.ttl' . DIRECTORY_SEPARATOR . '*.*'));
         return true;
     }
 
@@ -147,6 +187,40 @@ class FileCache implements CacheInterface
      */
     public function has(string $key): bool
     {
-        return file_exists($this->tempDir . $key);
+        // remove file when is expired
+        if (
+            file_exists($this->tempDir . '.ttl' . DIRECTORY_SEPARATOR . $key)
+            && intval(file_get_contents($this->tempDir . '.ttl' . DIRECTORY_SEPARATOR . $key)) < time()
+        ) {
+            @unlink($this->tempDir . '.ttl' . DIRECTORY_SEPARATOR . $key);
+            @unlink($this->tempDir . $key);
+        }
+
+        return file_exists($this->tempDir . $key) && is_file($this->tempDir . $key);
+    }
+
+    /**
+     * Lock a key to prevent other processes from modifying it
+     * @param string $key
+     * @return bool
+     */
+    public function lock(string $key): bool
+    {
+        $this->handles[$key] = fopen($this->tempDir . $key, 'c+');
+        return flock($this->handles[$key], LOCK_EX);
+    }
+
+    /**
+     * Unlock a key
+     * @param string $key
+     * @return void
+     */
+    public function unlock(string $key): void
+    {
+        if (array_key_exists($key, $this->handles)) {
+            flock($this->handles[$key], LOCK_UN);
+            fclose($this->handles[$key]);
+            unset($this->handles[$key]);
+        }
     }
 }
