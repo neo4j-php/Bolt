@@ -9,6 +9,7 @@ use Bolt\error\UnpackException;
 use Bolt\packstream\{IPacker, IUnpacker};
 use Bolt\connection\IConnection;
 use Bolt\error\ConnectException;
+use Bolt\helpers\CacheProvider;
 
 /**
  * Abstract class AProtocol
@@ -168,21 +169,24 @@ abstract class AProtocol
 
     public function __destruct()
     {
-        if (!getenv('BOLT_ANALYTICS_OPTOUT') && is_writable(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR)) {
-            $file = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'analytics.' . strtotime('today') . '.json';
-            
-            $fp = fopen($file, 'c+');
-            if (flock($fp, LOCK_EX)) {
-                $data = json_decode(fread($fp, length: 8192), true) ?? [];
-                $data['queries'] = ($data['queries'] ?? 0) + $this->writeCalls;
-                $data['sessions'] = ($data['sessions'] ?? 0) + 1;
+        if (getenv('BOLT_ANALYTICS_OPTOUT')) {
+            return;
+        }
+        
+        if (method_exists(CacheProvider::get(), 'lock')) {
+            CacheProvider::get()->lock('analytics');
+        }
 
-                ftruncate($fp, 0);
-                rewind($fp);
-                fwrite($fp, json_encode($data));
-                flock($fp, LOCK_UN);
-            }
-            fclose($fp);
+        // update analytics data
+        $data = (array)CacheProvider::get()->get('analytics');
+        $data[strtotime('today')] = [
+            'queries' => ($data[strtotime('today')]['queries'] ?? 0) + $this->writeCalls,
+            'sessions' => ($data[strtotime('today')]['sessions'] ?? 0) + 1
+        ];
+        CacheProvider::get()->set('analytics', $data);
+
+        if (method_exists(CacheProvider::get(), 'unlock')) {
+            CacheProvider::get()->unlock('analytics');
         }
     }
 }

@@ -7,6 +7,7 @@ use Bolt\error\BoltException;
 use Bolt\protocol\AProtocol;
 use Bolt\enum\{Signature, ServerState};
 use Bolt\connection\IConnection;
+use Bolt\helpers\CacheProvider;
 
 /**
  * Main class Bolt
@@ -38,53 +39,72 @@ final class Bolt
 
     private function track(): void
     {
-        foreach (glob(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-bolt-analytics' . DIRECTORY_SEPARATOR . 'analytics.*.json') as $file) {
-            $time = intval(explode('.', basename($file))[1]);
+        $data = (array)CacheProvider::get()->get('analytics', []);
+        if (empty($data))  {
+            return;
+        }
+
+        $distinctId = sha1(implode('', [php_uname(), disk_total_space('.'), filectime('/'), phpversion()]));
+
+        $toSend = [];
+        foreach ($data as $time => $counts) {
             if ($time < strtotime('today')) {
-                $data = (array)json_decode((string)file_get_contents($file), true);
-                $distinctId = sha1(implode('', [php_uname(), disk_total_space('.'), filectime('/'), phpversion()]));
-
-                $curl = curl_init();
-                curl_setopt_array($curl, [
-                    CURLOPT_URL => 'https://api-eu.mixpanel.com/import?strict=0&project_id=3355308',
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_ENCODING => '',
-                    CURLOPT_MAXREDIRS => 10,
-                    CURLOPT_TIMEOUT => $this->connection->getTimeout(),
-                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                    CURLOPT_CUSTOMREQUEST => 'POST',
-                    CURLOPT_SSL_VERIFYPEER => false,
-                    CURLOPT_POSTFIELDS => json_encode([
-                        [
-                            'properties' => [
-                                '$insert_id' => (string)$time,
-                                'distinct_id' => $distinctId,
-                                'amount' => $data['queries'] ?? 0,
-                                'time' => $time
-                            ],
-                            'event' => 'queries'
-                        ],
-                        [
-                            'properties' => [
-                                '$insert_id' => (string)$time,
-                                'distinct_id' => $distinctId,
-                                'amount' => $data['sessions'] ?? 0,
-                                'time' => $time
-                            ],
-                            'event' => 'sessions'
-                        ]
-                    ]),
-                    CURLOPT_HTTPHEADER => [
-                        'Content-Type: application/json',
-                        'accept: application/json',
-                        'authorization: Basic MDJhYjRiOWE2YTM4MThmNWFlZDEzYjNiMmE5M2MxNzQ6',
+                $toSend[] = [
+                    'properties' => [
+                        '$insert_id' => (string) $time,
+                        'distinct_id' => $distinctId,
+                        'amount' => $counts['queries'] ?? 0,
+                        'time' => $time
                     ],
-                ]);
+                    'event' => 'queries'
+                ];
+                $toSend[] = [
+                    'properties' => [
+                        '$insert_id' => (string) $time,
+                        'distinct_id' => $distinctId,
+                        'amount' => $counts['sessions'] ?? 0,
+                        'time' => $time
+                    ],
+                    'event' => 'sessions'
+                ];
+            }
+        }
 
-                if (curl_exec($curl) !== false) {
-                    @unlink($file);
+        //curl
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => 'https://api-eu.mixpanel.com/import?strict=0&project_id=3355308',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => $this->connection->getTimeout(),
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_POSTFIELDS => json_encode($toSend),
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'accept: application/json',
+                'authorization: Basic MDJhYjRiOWE2YTM4MThmNWFlZDEzYjNiMmE5M2MxNzQ6',
+            ],
+        ]);
+
+        if (curl_exec($curl) !== false) {
+            curl_close($curl);
+            
+            // clean sent analytics data
+            if (method_exists(CacheProvider::get(), 'lock')) {
+                CacheProvider::get()->lock('analytics');
+            }
+            $data = (array)CacheProvider::get()->get('analytics');
+            foreach ($data as $time => $counts) {
+                if ($time < strtotime('today')) {
+                    unset($data[$time]);
                 }
-                curl_close($curl);
+            }
+            CacheProvider::get()->set('analytics', $data);
+            if (method_exists(CacheProvider::get(), 'unlock')) {
+                CacheProvider::get()->unlock('analytics');
             }
         }
     }
@@ -102,10 +122,7 @@ final class Bolt
                 throw new ConnectException('Connection failed');
             }
 
-            if ($this->connection instanceof \Bolt\connection\PStreamSocket) {
-                $protocol = $this->persistentBuild();
-            }
-
+            $protocol = $this->persistentBuild();
             if (empty($protocol)) {
                 $protocol = $this->normalBuild();
             }
@@ -115,7 +132,7 @@ final class Bolt
         }
 
         if ($this->connection instanceof \Bolt\connection\PStreamSocket) {
-            $this->connection->getCache()->set($this->connection->getIdentifier(), $protocol->getVersion());
+            CacheProvider::get()->set($this->connection->getIdentifier(), $protocol->getVersion(), strtotime('+15 minutes'));
         }
 
         return $protocol;
@@ -137,27 +154,30 @@ final class Bolt
 
     private function persistentBuild(): ?AProtocol
     {
-        $version = $this->connection->getCache()->get($this->connection->getIdentifier());
-        if (empty($version)) {
-            return null;
+        if ($this->connection instanceof \Bolt\connection\PStreamSocket) {
+            $version = CacheProvider::get()->get($this->connection->getIdentifier());
+            if (empty($version)) {
+                return null;
+            }
+
+            $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
+            if (!class_exists($protocolClass)) {
+                throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
+            }
+
+            /** @var AProtocol $protocol */
+            $protocol = new $protocolClass($this->packStreamVersion, $this->connection);
+            $protocol->serverState = ServerState::INTERRUPTED;
+
+            if ($protocol->reset()->getResponse()->signature != Signature::SUCCESS) {
+                $this->connection->disconnect();
+                $this->connection->connect();
+                return null;
+            }
+
+            return $protocol;
         }
-
-        $protocolClass = "\\Bolt\\protocol\\V" . str_replace('.', '_', $version);
-        if (!class_exists($protocolClass)) {
-            throw new ConnectException('Requested Protocol version (' . $version . ') not yet implemented');
-        }
-
-        /** @var AProtocol $protocol */
-        $protocol = new $protocolClass($this->packStreamVersion, $this->connection);
-        $protocol->serverState = ServerState::INTERRUPTED;
-
-        if ($protocol->reset()->getResponse()->signature != Signature::SUCCESS) {
-            $this->connection->disconnect();
-            $this->connection->connect();
-            return null;
-        }
-
-        return $protocol;
+        return null;
     }
 
     public function setProtocolVersions(int|float|string ...$v): Bolt
@@ -224,7 +244,7 @@ final class Bolt
             if (is_int($v))
                 $versions[] = pack('N', $v);
             else {
-                $splitted = explode('.', (string)$v);
+                $splitted = explode('.', (string) $v);
                 $splitted = array_reverse($splitted);
                 while (count($splitted) < 4)
                     array_unshift($splitted, 0);

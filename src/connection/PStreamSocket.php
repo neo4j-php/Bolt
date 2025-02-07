@@ -3,8 +3,8 @@
 
 namespace Bolt\connection;
 
-use Bolt\helpers\FileCache;
 use Psr\SimpleCache\CacheInterface;
+use Bolt\helpers\CacheProvider;
 
 /**
  * Persistent stream socket class
@@ -22,20 +22,23 @@ use Psr\SimpleCache\CacheInterface;
 class PStreamSocket extends StreamSocket
 {
     private string $identifier;
-    private CacheInterface $cache;
 
     protected int $connectionFlags = STREAM_CLIENT_CONNECT | STREAM_CLIENT_PERSISTENT;
 
+    /**
+     * @deprecated Cache is no longer held in this class. Use CacheProvider::set() instead.
+     */
     public function setCache(CacheInterface $cache): void
     {
-        $this->cache = $cache;
+        CacheProvider::set($cache);
     }
 
+    /**
+     * @deprecated Cache is no longer held in this class. Use CacheProvider::get() instead.
+     */
     public function getCache(): CacheInterface
     {
-        if (empty($this->cache))
-            $this->cache = new FileCache();
-        return $this->cache;
+        return CacheProvider::get();
     }
 
     public function connect(): bool
@@ -67,7 +70,7 @@ class PStreamSocket extends StreamSocket
             stream_socket_shutdown($this->stream, STREAM_SHUT_RDWR);
             fclose($this->stream);
             unset($this->stream);
-            $this->getCache()->delete($this->getIdentifier());
+            CacheProvider::get()->delete($this->getIdentifier());
         }
     }
 }
