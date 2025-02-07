@@ -206,9 +206,9 @@ here: [https://www.php.net/manual/en/context.ssl.php](https://www.php.net/manual
 
 **\Bolt\connection\PStreamSocket**
 
-This class extends StreamSocket and adds support for persistent connections. Upon reuse of connection remaining buffer is consumed and message RESET is automatically sent. PHP is stateless therefore using this connection class requires storing meta information about active TCP connection. Default storage is `\Bolt\helper\FileCache` which you can change with method `setCache` (PSR-16 Simple Cache).
+This class extends StreamSocket and adds support for persistent connections. Upon reuse of connection remaining buffer is consumed and message RESET is automatically sent. PHP is stateless therefore using this connection class requires storing meta information about active TCP connection. These informations are stored in [PSR-16 cache](#minidisc-psr-16-cache).
 
-:warning: If your system reuse persistent connection and meta information about it was lost for some reason, your attemt to connect will end with ConnectionTimeoutException. Repeated attempt to connect will succeed.
+:warning: If your system reuse persistent connection and meta information about it was lost for some reason, your attempt to connect will end with ConnectionTimeoutException. Repeated attempt to connect will succeed.
 
 ## :lock: SSL
 
@@ -257,9 +257,15 @@ environments for security reasons._
 
 Server state is not reported by server but it is evaluated by received response. You can access current state through property `$protocol->serverState`. This property is updated with every call `getResponse(s)`.
 
+## :minidisc: PSR-16 cache
+
+This library contains own PSR-16 cache implementation `\Bolt\helpers\FileCache`. It stores files in temporary directory. Obtaining cache instance throughout the project is secured with `\Bolt\helpers\CacheProvider::get()`. You can set own implementation by calling `\Bolt\helpers\CacheProvider::set($cache)`.
+
+[PSR-16 specification](https://www.php-fig.org/psr/psr-16/)
+
 ## :bar_chart: Analytics
 
-Bolt does collect anonymous analytics data. These data are just aggregated counts of executed queries and sessions. They are stored offline (as files in temp directory) and submitted once a day after midnight. You can opt out with environment variable `BOLT_ANALYTICS_OPTOUT`.
+Bolt does collect anonymous analytics data. These data are just aggregated counts of executed queries and sessions. They are stored in [cache](#minidisc-psr-16-cache) and submitted once a day after midnight. You can opt out with environment variable `BOLT_ANALYTICS_OPTOUT`.
 
 Analytics data are public and available at [Mixpanel](https://eu.mixpanel.com/p/7ttVKqvjdqJtGCjLCFgdeC).
 
