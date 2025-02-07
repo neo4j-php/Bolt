@@ -11,6 +11,7 @@
         </testsuite>
         <testsuite name="NoDatabase">
             <directory>./tests/protocol</directory>
+            <file>./tests/helpers/FileCacheTest.php</file>
         </testsuite>
     </testsuites>
     <php>
