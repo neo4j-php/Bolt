@@ -112,10 +112,18 @@ class FileCacheTest extends TestCase
     {
         $key = 'test_lock_key';
         $this->assertTrue($this->cache->delete($key));
-        
+
+        $descriptorspec = array(
+            0 => array("pipe", "r"),
+            1 => array("pipe", "w"),
+        );
+
         $t = microtime(true);
         // run another script in background
-        exec('php ' . __DIR__ . '/lock.php > /dev/null 2>&1 &');
+        $proc = proc_open('php ' . __DIR__ . DIRECTORY_SEPARATOR . 'lock.php', $descriptorspec, $pipes);
+        // wait to make sure another script is running and it locked the key
+        sleep(1);
+        proc_close($proc);
         
         if ($this->cache->lock($key)) {
             $this->assertGreaterThan(3.0, microtime(true) - $t);
