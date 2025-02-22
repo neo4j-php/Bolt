@@ -192,7 +192,9 @@ class FileCache implements CacheInterface
     {
         $this->validateKey($key);
 
-        $this->handles[$key] = fopen($this->tempDir . $key, 'c+');
+        $handle = @fopen($this->tempDir . $key, 'c+');
+        if ($handle === false) return false;
+        $this->handles[$key] = $handle;
         return flock($this->handles[$key], LOCK_EX);
     }
 
