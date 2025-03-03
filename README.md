@@ -20,9 +20,9 @@ We are trying to keep up and this library supports **Bolt <= 5.8**.
 
 ## :books: Supported ecosystems
 
-- [Neo4j](https://www.neo4j.com/docs/bolt/current/bolt-compatibility/)
-- Memgraph
-- Amazon Neptune
+- Neo4j [bolt compatibility](https://www.neo4j.com/docs/bolt/current/bolt-compatibility/)
+- Memgraph [bolt compatibility](https://memgraph.com/docs/client-libraries)
+- Amazon Neptune [bolt compatiblity](https://docs.aws.amazon.com/neptune/latest/userguide/access-graph-opencypher-bolt.html#access-graph-opencypher-bolt-connections)
 - DozerDB
 - ONgDB
 
