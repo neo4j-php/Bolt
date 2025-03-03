@@ -1,4 +1,4 @@
-![Logo](https://repository-images.githubusercontent.com/198229221/d2c5f5c9-dce2-4314-a0ba-7870154ea748)
+![Logo](https://repository-images.githubusercontent.com/198229221/9de925f4-668f-4f65-a9d0-e989db6d4fe3)
 
 # Bolt
 
