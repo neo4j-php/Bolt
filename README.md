@@ -1,4 +1,4 @@
-![Logo](https://repository-images.githubusercontent.com/198229221/fcf334aa-ef6b-4fe9-89ad-d03e4c7d89e3)
+![Logo](https://repository-images.githubusercontent.com/198229221/d2c5f5c9-dce2-4314-a0ba-7870154ea748)
 
 # Bolt
 
@@ -18,7 +18,13 @@ all available versions and keep up with protocol messages architecture and speci
 
 We are trying to keep up and this library supports **Bolt <= 5.8**.
 
-https://www.neo4j.com/docs/bolt/current/bolt-compatibility/
+## :books: Supported ecosystems
+
+- [Neo4j](https://www.neo4j.com/docs/bolt/current/bolt-compatibility/)
+- Memgraph
+- Amazon Neptune
+- DozerDB
+- ONgDB
 
 ## :white_check_mark: Requirements
 
@@ -45,7 +51,7 @@ Run the following command in your project to install the latest applicable versi
 
 ### Manual
 
-1. Download source code from [github](https://github.com/neo4j-php/Bolt/)
+1. Download source code from [github](https://github.com/stefanak-michal/php-bolt-driver/)
 2. Unpack
 3. Copy content of `src` directory into your project
 
@@ -130,7 +136,7 @@ _`run` executes query in auto-commit transaction if explicit transaction was not
 | Boolean    | boolean                                                                                                                                                         |
 | Integer    | integer                                                                                                                                                         |
 | Float      | float                                                                                                                                                           |
-| Bytes      | [Bytes class]([https://github.com/neo4j-php/Bolt/blob/master/src/structures/Bytes.php](https://github.com/neo4j-php/Bolt/blob/master/src/packstream/Bytes.php)) |
+| Bytes      | [Bytes class](https://github.com/stefanak-michal/php-bolt-driver/blob/master/src/packstream/Bytes.php)                                                          |
 | String     | string                                                                                                                                                          |
 | List       | array with consecutive numeric keys from 0                                                                                                                      |
 | Dictionary | object or array which is not considered as list                                                                                                                 |
@@ -268,23 +274,3 @@ This library contains own PSR-16 cache implementation `\Bolt\helpers\FileCache`.
 Bolt does collect anonymous analytics data. These data are just aggregated counts of executed queries and sessions. They are stored in [cache](#minidisc-psr-16-cache) and submitted once a day after midnight. You can opt out with environment variable `BOLT_ANALYTICS_OPTOUT`.
 
 Analytics data are public and available at [Mixpanel](https://eu.mixpanel.com/p/7ttVKqvjdqJtGCjLCFgdeC).
-
-## :pushpin: More solutions
-
-If you need simple class to cover basic functionality you can
-use: [neo4j-bolt-wrapper](https://packagist.org/packages/stefanak-michal/neo4j-bolt-wrapper)
-
-When you are in need of enterprise level take a look
-on: [php-client](https://packagist.org/packages/laudis/neo4j-php-client)
-
-PDO implementation is available at [pdo-bolt](https://github.com/stefanak-michal/pdo-bolt)
-
-More informations can be found at: https://neo4j.com/developer/php/
-
-## :recycle: Old versions
-
-If you need support for end-of-life PHP versions, here is a short info list. Not all new features are implement backwards and this readme is updated to latest released version.
-
-* PHP < 7.4 - v3.x
-* PHP 7.4 - v5.x
-* PHP 8.0 - v6.x
